@@ -17,6 +17,9 @@ use crate::state::{AppState, Config};
 const RETRY: Duration = Duration::from_secs(15);
 const TICK: Duration = Duration::from_secs(5);
 const MAX_TEXT: usize = 128;
+/// Name des Bilds unter „Rich Presence → Art Assets“ der Discord-Anwendung.
+/// Fehlt es dort, zeigt Discord an dieser Stelle nichts.
+const LOGO: &str = "brickstrap";
 
 // ---------- BloxstrapRPC ----------
 
@@ -150,6 +153,8 @@ struct Payload {
     state: Option<String>,
     large_image: Option<String>,
     large_text: Option<String>,
+    /// Kleines Bild unten rechts: Brickstrap-Logo (Asset-Schlüssel der Discord-Anwendung)
+    small: bool,
     start: Option<i64>,
     end: Option<i64>,
     buttons: Vec<(String, String)>,
@@ -168,8 +173,9 @@ fn launcher_payload(s: &Seite, since: i64) -> Payload {
     Payload {
         details: s.details.clone().or_else(|| clip("Im Launcher")),
         state: s.state.clone(),
-        large_image: None,
-        large_text: None,
+        large_image: Some(LOGO.into()),
+        large_text: clip("Brickstrap"),
+        small: false,
         start: Some(since),
         end: None,
         buttons,
@@ -186,6 +192,7 @@ fn build_payload(cfg: &Config, a: &Activity, rpc: Option<&RpcOverride>) -> Optio
         state: a.creator.as_deref().and_then(|c| clip(&format!("von {c}"))),
         large_image: a.icon_url.clone().filter(|u| u.starts_with("https://")),
         large_text: name,
+        small: true,
         start: a.since.map(|s| s as i64),
         end: None,
         buttons: Vec::new(),
@@ -225,8 +232,11 @@ fn show(client: &mut DiscordIpcClient, p: &Payload) -> Result<(), String> {
     if let Some(s) = &p.state {
         act = act.state(s);
     }
-    if p.large_image.is_some() || p.large_text.is_some() {
+    if p.large_image.is_some() || p.large_text.is_some() || p.small {
         let mut assets = drp::Assets::new();
+        if p.small {
+            assets = assets.small_image(LOGO).small_text("Brickstrap");
+        }
         if let Some(i) = &p.large_image {
             assets = assets.large_image(i);
         }

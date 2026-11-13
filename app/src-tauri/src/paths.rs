@@ -35,6 +35,17 @@ pub fn logs_dir() -> Option<PathBuf> {
     first_existing("logs")
 }
 
+/// Alle vorhandenen Log-Ordner: normale Installation und Store-Version.
+/// Sind beide da, kann jede die aktuelle sein, darum beide durchsuchen.
+pub fn all_logs_dirs() -> Vec<PathBuf> {
+    [roblox_dir(), store_dir()]
+        .into_iter()
+        .flatten()
+        .map(|d| d.join("logs"))
+        .filter(|d| d.is_dir())
+        .collect()
+}
+
 /// `%localappdata%\Roblox\GlobalBasicSettings_13.xml` (oder die Datei der Store-Version)
 pub fn basic_settings_file() -> Option<PathBuf> {
     first_existing("GlobalBasicSettings_13.xml")

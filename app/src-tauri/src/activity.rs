@@ -18,7 +18,7 @@ use serde_json::Value;
 use tauri::{AppHandle, Emitter, Manager, State};
 
 use crate::discord::{self, RpcOverride};
-use crate::paths::{logs_dir, player_version_dirs, roblox_running};
+use crate::paths::{all_logs_dirs, player_version_dirs, roblox_running};
 use crate::roblox_api::{game_brief, game_brief_by_place};
 use crate::state::{now, read_json, write_json, AppState};
 
@@ -446,10 +446,10 @@ fn open_shared(path: &Path) -> std::io::Result<File> {
     o.open(path)
 }
 
-/// Neueste Datei mit „Player“ im Namen und ihre Erstellzeit.
-fn newest_player_log(dir: &Path) -> Option<(PathBuf, SystemTime)> {
+/// Neueste Datei mit „Player“ im Namen und ihre Erstellzeit, über alle Log-Ordner.
+fn newest_player_log(dirs: &[PathBuf]) -> Option<(PathBuf, SystemTime)> {
     let mut best: Option<(PathBuf, SystemTime)> = None;
-    for e in std::fs::read_dir(dir).ok()?.flatten() {
+    for e in dirs.iter().filter_map(|d| std::fs::read_dir(d).ok()).flatten().flatten() {
         let name = e.file_name().to_string_lossy().into_owned();
         if !name.contains("Player") {
             continue;
@@ -514,8 +514,11 @@ impl Watcher {
 
     /// Ein Durchlauf. `false` heißt: kein Logs-Ordner, später neu versuchen.
     fn tick(&mut self, app: &AppHandle) -> bool {
-        let Some(dir) = logs_dir().filter(|d| d.is_dir()) else { return false };
-        let newest = newest_player_log(&dir);
+        let dirs = all_logs_dirs();
+        if dirs.is_empty() {
+            return false;
+        }
+        let newest = newest_player_log(&dirs);
 
         if !self.initialized {
             // Beim Start die aktuellste Datei nehmen. Läuft Roblox schon, den Stand aus dem
@@ -562,8 +565,15 @@ impl Watcher {
         }
         self.was_running = running;
 
-        // Roblox abgestürzt oder beendet, ohne dass eine Abschlusszeile kam.
-        if lock().activity.state != "idle" && !roblox_running() {
+        // Roblox abgestürzt oder beendet, ohne dass eine Abschlusszeile kam. Schreibt Roblox
+        // noch in die Logdatei, läuft es (z. B. Store-Version mit anderem Prozessnamen).
+        let log_aktiv = self
+            .current
+            .as_ref()
+            .and_then(|p| std::fs::metadata(p).and_then(|m| m.modified()).ok())
+            .and_then(|t| t.elapsed().ok())
+            .is_some_and(|d| d < Duration::from_secs(30));
+        if lock().activity.state != "idle" && !running && !log_aktiv {
             self.gone_ticks = self.gone_ticks.saturating_add(1);
             if self.gone_ticks >= 3 {
                 process_event(app, LogEvent::Leave);
