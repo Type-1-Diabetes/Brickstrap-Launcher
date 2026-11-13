@@ -182,6 +182,22 @@ fn launcher_payload(s: &Seite, since: i64) -> Payload {
     }
 }
 
+/// Zweite Zeile beim Spielen: „Server in Frankfurt, DE (7 von 30)“. Fehlt etwas, entfällt der Teil.
+fn server_line(a: &Activity) -> Option<String> {
+    let ort = a.region.as_deref().map(|r| format!("Server in {r}"));
+    let zahl = match (a.server_playing, a.server_max) {
+        (Some(p), Some(m)) if m > 0 => Some(format!("({p} von {m})")),
+        _ => None,
+    };
+    let text = match (ort, zahl) {
+        (Some(o), Some(z)) => format!("{o} {z}"),
+        (Some(o), None) => o,
+        (None, Some(z)) => format!("Server {z}"),
+        (None, None) => return None,
+    };
+    clip(&text)
+}
+
 fn build_payload(cfg: &Config, a: &Activity, rpc: Option<&RpcOverride>) -> Option<Payload> {
     if a.state != "playing" {
         return None;
@@ -189,9 +205,10 @@ fn build_payload(cfg: &Config, a: &Activity, rpc: Option<&RpcOverride>) -> Optio
     let name = a.game_name.as_deref().and_then(clip);
     let mut p = Payload {
         details: name.clone().or_else(|| clip("Spielt Roblox")),
-        state: a.creator.as_deref().and_then(|c| clip(&format!("von {c}"))),
+        state: server_line(a),
         large_image: a.icon_url.clone().filter(|u| u.starts_with("https://")),
-        large_text: name,
+        // Discord zeigt nur zwei Zeilen: Der Ersteller steht beim Darüberfahren über dem Bild.
+        large_text: a.creator.as_deref().and_then(|c| clip(&format!("von {c}"))).or(name),
         small: true,
         start: a.since.map(|s| s as i64),
         end: None,
@@ -414,7 +431,8 @@ mod tests {
         a.creator = Some("Ersteller".into());
         let p = build_payload(&cfg, &a, None);
         let p = p.expect("payload");
-        assert_eq!(p.state.as_deref(), Some("von Ersteller"));
+        assert_eq!(p.state, None);
+        assert_eq!(p.large_text.as_deref(), Some("von Ersteller"));
         assert_eq!(p.buttons.len(), 2);
     }
 }

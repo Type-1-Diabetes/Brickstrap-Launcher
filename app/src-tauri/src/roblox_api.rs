@@ -772,6 +772,26 @@ pub async fn servers(
     })
 }
 
+/// Spieler auf einem bestimmten Server (für Discord). Sucht höchstens drei Seiten
+/// (300 Server, volle zuerst). Bei großen Spielen kann der Server fehlen: dann `None`.
+pub async fn server_count(state: &AppState, place_id: u64, job_id: &str) -> Option<(u64, u64)> {
+    let mut cursor: Option<String> = None;
+    for _ in 0..3 {
+        let mut url = format!("https://games.roblox.com/v1/games/{place_id}/servers/Public?sortOrder=Desc&limit=100");
+        if let Some(c) = &cursor {
+            url.push_str("&cursor=");
+            url.push_str(&urlencode(c));
+        }
+        let v = get_json(state, &url).await.ok()?;
+        let list = v.get("data").and_then(Value::as_array)?;
+        if let Some(s) = list.iter().find(|s| text(s, &["id"]).eq_ignore_ascii_case(job_id)) {
+            return Some((num(s, &["playing"]), num(s, &["maxPlayers"])));
+        }
+        cursor = Some(v.get("nextPageCursor").and_then(Value::as_str)?.to_string());
+    }
+    None
+}
+
 fn urlencode(s: &str) -> String {
     let mut out = String::new();
     for b in s.bytes() {

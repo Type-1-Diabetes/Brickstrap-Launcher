@@ -130,7 +130,7 @@ const playtime = {
   playtime.recent = playtime.month.slice(0, 30);
 }
 
-let activity = { state: "idle", placeId: null, jobId: null, universeId: null, serverIp: null, region: null, since: null, gameName: null, iconUrl: null };
+let activity = { state: "idle", placeId: null, jobId: null, universeId: null, serverIp: null, region: null, serverPlaying: null, serverMax: null, since: null, gameName: null, iconUrl: null };
 const listeners = new Map();
 
 function servers(placeId, cursor, order, excludeFull) {
@@ -217,7 +217,7 @@ const handlers = {
     await delay(300);
     const g = games.find((x) => x.placeId === placeId);
     if (!g) return null;
-    setTimeout(() => emit({ ...activity, state: "joining", placeId, jobId: jobId ?? "0a1b2c3d-0000-4444-8888-aabbccddeeff", universeId: g.universeId, serverIp: "128.116.44.33", region: "Frankfurt, DE", since: jetzt() }), 400);
+    setTimeout(() => emit({ ...activity, state: "joining", placeId, jobId: jobId ?? "0a1b2c3d-0000-4444-8888-aabbccddeeff", universeId: g.universeId, serverIp: "128.116.44.33", region: "Frankfurt, DE", serverPlaying: 7, serverMax: 30, since: jetzt() }), 400);
     setTimeout(() => emit({ ...activity, state: "playing", gameName: g.name, iconUrl: bild(g, 256, 256) }), 1800);
     return null;
   },
@@ -336,5 +336,5 @@ export function on(event, handler) {
 
 // Für Tests in der Konsole: demoBeenden() beendet das Demo-Spiel.
 if (typeof window !== "undefined") {
-  window.demoBeenden = () => emit({ state: "idle", placeId: null, jobId: null, universeId: null, serverIp: null, region: null, since: null, gameName: null, iconUrl: null });
+  window.demoBeenden = () => emit({ state: "idle", placeId: null, jobId: null, universeId: null, serverIp: null, region: null, serverPlaying: null, serverMax: null, since: null, gameName: null, iconUrl: null });
 }

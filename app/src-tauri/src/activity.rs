@@ -42,6 +42,9 @@ pub struct Activity {
     pub server_ip: Option<String>,
     /// Ungefährer Standort des Servers, z. B. „Frankfurt, DE“ (aus der IP, kann fehlen)
     pub region: Option<String>,
+    /// Spieler und Plätze auf dem eigenen Server (aus der Serverliste, kann fehlen)
+    pub server_playing: Option<u64>,
+    pub server_max: Option<u64>,
     /// Unix-Zeit in Sekunden, ab wann das Spiel läuft
     pub since: Option<u64>,
     pub game_name: Option<String>,
@@ -58,6 +61,8 @@ impl Default for Activity {
             universe_id: None,
             server_ip: None,
             region: None,
+            server_playing: None,
+            server_max: None,
             since: None,
             game_name: None,
             icon_url: None,
@@ -363,6 +368,34 @@ fn spawn_brief(app: AppHandle, universe: Option<u64>, place: Option<u64>, job: O
     });
 }
 
+/// Fragt während des Spiels jede Minute die Spielerzahl des eigenen Servers ab (für Discord).
+/// Endet, sobald die Sitzung vorbei ist. Höchstens drei Abrufe pro Minute.
+fn spawn_server_poll(app: AppHandle, place: Option<u64>, job: Option<String>) {
+    let (Some(place_id), Some(job_id)) = (place, job) else { return };
+    let _ = std::thread::Builder::new().name("brickstrap-server".into()).spawn(move || loop {
+        let state: State<'_, AppState> = app.state();
+        let count = tauri::async_runtime::block_on(crate::roblox_api::server_count(&state, place_id, &job_id));
+        let snapshot = {
+            let mut t = lock();
+            if t.activity.state != "playing" || t.activity.job_id.as_deref() != Some(job_id.as_str()) {
+                return;
+            }
+            let (p, m) = count.map_or((None, None), |(p, m)| (Some(p), Some(m)));
+            if t.activity.server_playing != p || t.activity.server_max != m {
+                t.activity.server_playing = p;
+                t.activity.server_max = m;
+                Some((t.activity.clone(), t.rpc.clone()))
+            } else {
+                None
+            }
+        };
+        if let Some((a, rpc)) = snapshot {
+            publish(&app, &a, &rpc);
+        }
+        std::thread::sleep(Duration::from_secs(60));
+    });
+}
+
 fn process_line(app: &AppHandle, line: &str) {
     let Some(ev) = parse_line(line) else { return };
     let (out, snapshot) = {
@@ -378,6 +411,7 @@ fn process_line(app: &AppHandle, line: &str) {
     }
     if out.fetch_brief {
         spawn_brief(app.clone(), snapshot.0.universe_id, snapshot.0.place_id, snapshot.0.job_id.clone());
+        spawn_server_poll(app.clone(), snapshot.0.place_id, snapshot.0.job_id.clone());
     }
 }
 
