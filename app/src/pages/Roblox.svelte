@@ -68,6 +68,30 @@
     }
   }
 
+  // Kurze Erklärungen für bekannte Einträge der Datei. Unbekannte zeigen nur ihren Typ.
+  const ERKLAERUNG = {
+    AllTutorialsDisabled: "Blendet die Einführungen für neue Spieler aus.",
+    BadgeVisible: "Zeigt eine Meldung, wenn du ein Abzeichen bekommst.",
+    CameraYInverted: "Kehrt die Kamera nach oben und unten um.",
+    ChatTranslationEnabled: "Übersetzt Chatnachrichten automatisch.",
+    ChatTranslationFTUXShown: "Merkt sich, dass der Hinweis zur Chat-Übersetzung schon kam.",
+    ChatTranslationLocale: "Sprache, in die der Chat übersetzt wird.",
+    ChatTranslationToggleEnabled: "Zeigt einen Knopf zum Umschalten der Übersetzung.",
+    ChatVisible: "Zeigt das Chatfenster im Spiel.",
+    ComputerMovementMode: "Steuerung mit Maus und Tastatur.",
+    ControlMode: "Wie die Maus die Kamera steuert.",
+    DefaultCameraID: "Gewählte Kamera für Gesichtserkennung.",
+    GamepadCameraSensitivity: "Kamera-Tempo mit dem Controller.",
+    GraphicsOptimizationMode: "Wie Roblox die Grafik an deinen PC anpasst.",
+    HapticStrength: "Stärke der Vibration am Controller.",
+    HasEverUsedVR: "Merkt sich, ob du schon VR genutzt hast.",
+    MasterVolumeStudio: "Lautstärke in Roblox Studio.",
+    MaxQualityEnabled: "Höchste Grafikstufe freigeschaltet.",
+    MicroProfilerWebServerEnabled: "Werkzeug für Entwickler. Aus lassen.",
+    MouseSensitivityFirstPerson: "Maus-Tempo in der Ich-Ansicht (X und Y).",
+    MouseSensitivityThirdPerson: "Maus-Tempo in der Schulteransicht (X und Y).",
+  };
+
   const f = $derived(fehler ? fehlerText(fehler) : null);
   const fpsText = (v) => (Number(v) === 0 ? "Ohne Limit" : `${v} FPS`);
 </script>
@@ -134,7 +158,7 @@
           <div class="karte">
             {#each weitere as e (e.name)}
               <div class="zeile">
-                <div class="text"><code class="waehlbar">{e.name}</code><span class="hint">{e.kind}</span></div>
+                <div class="text"><code class="waehlbar">{e.name}</code><span class="hint">{ERKLAERUNG[e.name] ?? e.kind}</span></div>
                 <div class="steuer">
                   {#if e.kind === "bool"}
                     <span class="schalter">
