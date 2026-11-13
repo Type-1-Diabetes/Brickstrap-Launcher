@@ -12,6 +12,7 @@
   import Flags from "./pages/Flags.svelte";
   import Roblox from "./pages/Roblox.svelte";
   import Einstellungen from "./pages/Einstellungen.svelte";
+  import Anmelden from "./pages/Anmelden.svelte";
   import { app, init, back, go, eingeklappt, leiste } from "./lib/app.svelte.js";
   import { ladeFlags } from "./lib/flags.svelte.js";
   import { suche } from "./lib/suche.svelte.js";
@@ -67,7 +68,10 @@
 
 <svelte:window onkeydown={tasten} onmouseup={maus} />
 
-{#if bereit}
+{#if bereit && !app.auth?.loggedIn}
+  <Anmelden />
+  <Toasts />
+{:else if bereit}
   <div class="shell" class:zu={eingeklappt()} class:breit={leiste.breite >= 1360}>
     <Leiste />
     <div class="haupt">

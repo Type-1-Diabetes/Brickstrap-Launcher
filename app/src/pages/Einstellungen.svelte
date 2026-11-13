@@ -25,6 +25,19 @@
 
   {#if app.config}
     <section>
+      <h2>Konto</h2>
+      <div class="karte">
+        <div class="zeile">
+          <div class="text">
+            <span class="label">Angemeldet als {app.auth?.displayName ?? ""} {app.auth?.name ? `(@${app.auth.name})` : ""}</span>
+            <p class="hint">Die Anmeldung liegt verschlüsselt im Windows-Anmeldeinformations-Manager und geht nur an roblox.com.</p>
+          </div>
+          <button class="knopf" onclick={() => call("auth_logout")}>Abmelden</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
       <h2>Discord-Status</h2>
       <div class="karte">
         <div class="zeile">

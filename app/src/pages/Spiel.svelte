@@ -1,11 +1,10 @@
 <script>
   // Spielseite: Kopf mit Spielen/Anpinnen, darunter der Server-Picker.
   import { onMount } from "svelte";
-  import Bild from "../ui/Bild.svelte";
   import Icon from "../ui/Icon.svelte";
   import Hinweis from "../ui/Hinweis.svelte";
   import Serverliste from "../ui/Serverliste.svelte";
-  import Galerie from "../ui/Galerie.svelte";
+  import Diashow from "../ui/Diashow.svelte";
   import { launch, starting, togglePin, isPinned, kopieren } from "../lib/app.svelte.js";
   import { call, openExternal } from "../lib/bridge.js";
   import { fehlerText } from "../lib/errors.js";
@@ -18,8 +17,6 @@
   let fehler = $state(null);
   let mehrText = $state(false);
   let meineZeit = $state(null);
-  /** großes Bild oben; null = Titelbild */
-  let gross = $state(null);
 
   const game = $derived({
     universeId: params.universeId,
@@ -55,11 +52,7 @@
 <div class="spiel">
   <section class="kopf">
     <div class="titelbild">
-      {#if gross}
-        <img class="grossbild" src={gross} alt="" />
-      {:else}
-        <Bild universeId={game.universeId} name={game.name} kind="banner" eager />
-      {/if}
+      <Diashow {game} />
     </div>
     <div class="info">
       <div class="titel">
@@ -117,8 +110,6 @@
     </section>
   {/if}
 
-  <Galerie {game} {gross} onzeigen={(u) => (gross = gross === u ? null : u)} />
-
   {#if game.placeId}
     <Serverliste {game} />
   {/if}
@@ -128,7 +119,6 @@
   .spiel { display: flex; flex-direction: column; gap: 28px; padding-top: 4px; }
   .kopf { display: grid; grid-template-columns: minmax(300px, 440px) 1fr; gap: 28px; align-items: start; }
   .titelbild { border-radius: var(--r-l); overflow: hidden; box-shadow: inset 0 0 0 1px var(--rand-bild); aspect-ratio: 16 / 9; }
-  .grossbild { display: block; width: 100%; height: 100%; object-fit: cover; animation: seite-rein 180ms var(--ein); }
   .info { display: flex; flex-direction: column; gap: 18px; min-width: 0; padding-top: 2px; }
   .titel { display: flex; flex-direction: column; gap: 6px; }
   h1 { font-size: 30px; overflow-wrap: anywhere; }

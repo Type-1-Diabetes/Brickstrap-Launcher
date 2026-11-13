@@ -2,6 +2,7 @@
 //! Keine Injection, kein Speicherzugriff, keine Änderung an der Client-Datei.
 
 mod account;
+mod auth;
 mod activity;
 mod basicsettings;
 mod discord;
@@ -92,6 +93,9 @@ pub fn run() {
             roblox_api::game_media,
             roblox_api::server_avatars,
             account::account_get,
+            auth::auth_status,
+            auth::auth_login,
+            auth::auth_logout,
             launch::pin_cover_set,
             launch::roblox_status,
             launch::launch,

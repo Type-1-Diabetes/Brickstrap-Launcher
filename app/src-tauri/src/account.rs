@@ -64,7 +64,7 @@ fn from_logs() -> Option<u64> {
 /// Angemeldetes Konto oder `None`, wenn Roblox noch nie gestartet wurde.
 #[tauri::command]
 pub async fn account_get(state: State<'_, AppState>) -> Result<Option<Account>, String> {
-    let Some(id) = from_app_storage().or_else(from_logs) else {
+    let Some(id) = crate::auth::angemeldet_id().or_else(from_app_storage).or_else(from_logs) else {
         return Ok(None);
     };
     let cache = state.file("cache").join("account.json");

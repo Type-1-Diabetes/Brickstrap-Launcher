@@ -16,6 +16,8 @@ export const app = $state({
   toasts: [],
   /** angemeldetes Roblox-Konto (aus Dateien von Roblox, ohne Login) */
   account: null,
+  /** Anmeldung bei Roblox (Pflicht): { loggedIn, userId, name, displayName } */
+  auth: null,
   /** Bild-URLs je Universe: icons[id], banners[id] */
   icons: {},
   banners: {},
@@ -158,6 +160,11 @@ export function prefetch(game) {
 // ---------- Start ----------
 
 export async function init() {
+  app.auth = await call("auth_status").catch(() => ({ loggedIn: false }));
+  on("auth", (a) => {
+    app.auth = a;
+    if (a.loggedIn) call("account_get").then((x) => (app.account = x)).catch(() => {});
+  });
   const [config, roblox, activity] = await Promise.all([
     call("config_get"),
     call("roblox_status").catch(() => app.roblox),

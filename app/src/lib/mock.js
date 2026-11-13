@@ -50,6 +50,8 @@ function bild(g, w, h) {
   return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
 }
 
+let angemeldet = !modus.has("abgemeldet");
+
 let config = {
   pinned: modus.has("leer") ? [] : [
     { universeId: 9001, placeId: 70007, name: "Insel-Tycoon", pinnedAt: 0 },
@@ -201,6 +203,12 @@ const handlers = {
   },
   async invite_link({ placeId }) { return `https://www.roblox.com/games/${placeId}`; },
   async discord_builtin() { return false; },
+  async auth_status() { return angemeldet ? { loggedIn: true, userId: 1, name: "DemoSpieler", displayName: "Demo" } : { loggedIn: false }; },
+  async auth_login() {
+    setTimeout(() => { angemeldet = true; for (const h of listeners.get("auth") ?? []) h({ loggedIn: true, userId: 1, name: "DemoSpieler", displayName: "Demo" }); }, 1200);
+    return null;
+  },
+  async auth_logout() { angemeldet = false; for (const h of listeners.get("auth") ?? []) h({ loggedIn: false }); return null; },
   async server_avatars({ tokens }) {
     await delay(300);
     return tokens.map((t, k) => bild({ hue: (k * 47) % 360, universeId: 300 + k }, 150, 150));
