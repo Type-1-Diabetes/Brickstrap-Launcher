@@ -55,7 +55,7 @@
             {#if discordBereit}<span class="marke">Aktiv</span>{/if}
           </div>
           <div class="steuer">
-            <input class="feld idfeld zahl" inputmode="numeric" placeholder="z. B. 1234567890" bind:value={appId} onchange={() => setze({ discordAppId: appId })} />
+            <input class="feld idfeld zahl" inputmode="numeric" placeholder="z. B. 1234567890" aria-label="Discord-Anwendungs-ID" value={appId} oninput={(e) => { appId = e.currentTarget.value.replace(/\D/g, ""); e.currentTarget.value = appId; }} onchange={() => setze({ discordAppId: appId })} />
             <button class="knopf flach klein rund" onclick={() => openExternal("https://discord.com/developers/applications")} aria-label="Developer Portal öffnen" title="Developer Portal öffnen"><Icon name="extern" size={15} /></button>
           </div>
         </div>
@@ -68,7 +68,7 @@
         <div class="zeile">
           <div class="text">
             <span class="label">Beim Schließen im Infobereich bleiben</span>
-            <p class="hint">Brickstrap läuft unten rechts neben der Uhr weiter, öffnet sich dann sofort und zählt deine Spielzeit.</p>
+            <p class="hint">Das Fenster schließt sich, Brickstrap läuft im Infobereich neben der Uhr weiter. So öffnet es sich schneller und zählt weiter deine Spielzeit.</p>
           </div>
           <span class="schalter"><input type="checkbox" aria-label="Im Infobereich bleiben" checked={app.config.closeToTray} onchange={(e) => setze({ closeToTray: e.currentTarget.checked })} /><span></span></span>
         </div>
@@ -93,7 +93,7 @@
       <h2>Über Brickstrap</h2>
       <div class="karte ueber">
         <p><strong>Brickstrap {__APP_VERSION__}</strong>{#if isDemo} · Vorschau im Browser mit Demo-Daten{/if}</p>
-        <p class="hint">Startet den offiziellen Roblox-Client nur von außen: per Link oder über das Programm von Roblox. Keine Änderung am Client, kein Zugriff auf seinen Speicher, kein Login nötig.</p>
+        <p class="hint">Brickstrap startet den offiziellen Roblox-Client nur von außen, per Link oder über das Programm von Roblox. Es ändert nichts am Client, greift nicht auf seinen Speicher zu und braucht kein Login.</p>
         <p class="hint">Kein Produkt von Roblox Corporation. Roblox ist eine Marke der Roblox Corporation.</p>
         <p class="hint">Schrift: Archivo (SIL Open Font License).</p>
       </div>

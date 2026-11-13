@@ -41,11 +41,11 @@
   </ul>
 
   <div class="gruppe">
-    <h3 class="gruppentitel">Angepinnt</h3>
+    <p class="gruppentitel" id="leiste-angepinnt">Angepinnt</p>
     {#if app.pinned.length === 0 && !zu}
       <p class="leer">Pinne Spiele auf ihrer Seite an, dann stehen sie hier.</p>
     {:else}
-      <ul class="pins">
+      <ul class="pins" aria-labelledby="leiste-angepinnt">
         {#each app.pinned as p (p.universeId)}
           <li>
             <button
@@ -87,7 +87,8 @@
   }
   .marke-oben { position: relative; display: flex; align-items: center; gap: 10px; padding: 2px 8px 6px; height: 36px; }
   .klappen { margin-left: auto; color: var(--t3); }
-  .lbl, .wort, .pinname, .gruppentitel, .leer { transition: opacity 140ms ease; white-space: nowrap; }
+  .lbl, .wort, .pinname, .gruppentitel { transition: opacity 140ms ease; white-space: nowrap; }
+  .leer { transition: opacity 140ms ease; }
 
   /* Eingeklappt: nur Symbole, Namen als Tooltip */
   .zu { padding-left: 10px; padding-right: 10px; }
@@ -132,7 +133,7 @@
     background: var(--t1);
   }
   .gruppe { display: flex; flex-direction: column; gap: 6px; min-height: 0; flex: 1; }
-  .gruppentitel { padding: 0 10px; font-size: 12px; font-weight: 600; color: var(--t3); }
+  .gruppentitel { margin: 0; padding: 0 10px; font-size: 12px; font-weight: 600; color: var(--t3); }
   .leer { padding: 2px 10px; font-size: 12.5px; color: var(--t3); }
   .pins { overflow-y: auto; min-height: 0; scrollbar-width: thin; }
   .pin { height: 40px; gap: 10px; padding: 0 8px; }

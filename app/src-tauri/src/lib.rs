@@ -54,6 +54,18 @@ pub fn run() {
                 .build(app)?;
 
             activity::start(app.handle().clone());
+
+            // Rückfall: Die Oberfläche zeigt das Fenster nach dem ersten Zeichnen selbst.
+            // Scheitert sie beim Laden, wäre das Fenster sonst für immer unsichtbar.
+            let handle = app.handle().clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_secs(4));
+                if let Some(w) = handle.get_webview_window("main") {
+                    if !w.is_visible().unwrap_or(true) && !w.is_minimized().unwrap_or(false) {
+                        let _ = w.show();
+                    }
+                }
+            });
             Ok(())
         })
         .on_window_event(|window, event| {

@@ -9,7 +9,7 @@
 <div class="hinweis {art}" class:kompakt role={art === "fehler" ? "alert" : undefined}>
   <span class="symbol"><Icon name={art === "leer" ? icon : "warnung"} size={20} /></span>
   <div class="text">
-    <h3>{titel}</h3>
+    <p class="titel">{titel}</p>
     {#if text}<p>{text}</p>{/if}
     {#if children}<div class="aktion">{@render children()}</div>{/if}
   </div>
@@ -39,6 +39,7 @@
   .fehler .symbol { background: var(--fehler-flaeche); color: var(--fehler); }
   .warnung .symbol { background: var(--warnung-flaeche); color: var(--warnung); }
   .text { display: flex; flex-direction: column; gap: 4px; padding-top: 2px; }
+  .titel { font-weight: 700; color: var(--t1); }
   p { color: var(--t3); max-width: 60ch; }
   .aktion { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
 </style>

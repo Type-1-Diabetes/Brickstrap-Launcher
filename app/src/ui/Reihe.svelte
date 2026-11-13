@@ -61,6 +61,10 @@
     /* Kacheln dürfen beim Anheben nicht oben abgeschnitten werden */
     padding-top: 3px;
     margin-top: -3px;
+    /* bis zum Fensterrand laufen, damit angeschnittene Karten am Rand enden, nicht im Seitenabstand */
+    margin-right: calc(-1 * var(--seite-rand));
+    padding-right: var(--seite-rand);
+    scroll-padding-inline: 0 var(--seite-rand);
   }
   .spur::-webkit-scrollbar { display: none; }
   .platz { scroll-snap-align: start; content-visibility: auto; contain-intrinsic-size: 152px 230px; }

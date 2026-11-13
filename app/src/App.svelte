@@ -143,7 +143,7 @@
     color: var(--t3);
     transition: border-color 120ms ease, background-color 120ms ease;
   }
-  .suche:hover { border-color: #43444d; }
+  .suche:hover { border-color: var(--linie-hover); }
   .suche:focus-within { border-color: var(--t2); background: var(--s2); color: var(--t2); }
   .suche input {
     flex: 1;
@@ -168,7 +168,8 @@
   }
   .inhalt { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; scrollbar-gutter: stable; }
   .seite {
-    padding: 8px 28px 40px;
+    --seite-rand: 28px;
+    padding: 8px var(--seite-rand) 40px;
     max-width: 1400px;
     animation: seite-rein 180ms var(--ein);
   }

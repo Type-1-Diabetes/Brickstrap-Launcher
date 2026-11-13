@@ -59,7 +59,7 @@
       {/if}
     </header>
     {#if app.pinned.length === 0}
-      <Hinweis icon="pin" titel="Noch nichts angepinnt" text="Öffne ein Spiel und klick auf „Anpinnen“. Angepinnte Spiele stehen hier groß und in der Leiste links, ein Klick führt zur Serverliste.">
+      <Hinweis icon="pin" titel="Noch nichts angepinnt" text="Öffne ein Spiel und klick auf „Anpinnen“. Dann steht es hier und links in der Leiste. Ein Klick darauf öffnet die Serverliste.">
         <button class="knopf" onclick={() => go("suche")}><Icon name="suche" size={16} />Spiel suchen</button>
       </Hinweis>
     {:else}
@@ -105,7 +105,7 @@
       <p class="stand leise">Stand {seit(feed.fetchedAt)}. {f.titel}. <button class="link" onclick={laden}>Erneut versuchen</button></p>
     {/if}
   {:else if fehler}
-    <Hinweis art="fehler" titel={f.titel} text={`${f.hinweis} Angepinnte Spiele und die Suche funktionieren trotzdem.`}>
+    <Hinweis art="fehler" titel={f.titel} text={`${f.hinweis} Angepinnte Spiele lassen sich trotzdem starten.`}>
       <button class="knopf" onclick={laden}><Icon name="neu" size={16} />Erneut laden</button>
     </Hinweis>
   {:else if laedt}

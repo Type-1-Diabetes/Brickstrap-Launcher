@@ -149,6 +149,12 @@ Der Workflow erwartet die App unter `app/` mit `app/package-lock.json` und `app/
 - **Rate-Limits:** `games?universeIds=` höchstens 50 IDs und ein verstecktes Limit pro IP (~430 IDs/min), Suche ~4/s, Explore 50–120/min. Bilder gebündelt (`wantImage` sammelt 30 ms), Details und Bilder gecacht, Server-Vorladen erst nach 180 ms Hover.
 - **Feldnamen der undokumentierten APIs** (omni-search, explore-api, servers) stammen aus Quelltext anderer Launcher, nicht aus eigenem Abruf (Roblox ist aus der Cloud gesperrt). `roblox_api.rs` liest darum mehrere mögliche Namen. Erster echter Test unter Windows: Rohantworten ansehen und anpassen.
 - **Discord-Knöpfe** brauchen http(s): „Server beitreten“ zeigt auf `https://www.roblox.com/games/start?placeId=…&gameInstanceId=…` (Format unbestätigt).
+- **Schalter (`.schalter`):** Die sichtbare Fläche hat `pointer-events: none`, sonst kommen Mausklicks nicht am Kontrollkästchen an. So lassen.
+- **Bool-Flags sind dreiwertig:** kein Wert = „Standard“ (Roblox entscheidet), An = `True`, Aus = `False`. Manche Flags sind ab Werk an.
+- **Mock lädt die echte `allowlist.json`** und hat dieselben Presets wie `fastflags.rs`. Presets in beiden ändern. Zustände ansehen über die Adresse: `?leer`, `?offline`, `?ohne-roblox` (kombinierbar).
+- **Microsoft-Store-Roblox:** „installiert“ heißt Versionsordner **oder** registriertes `roblox://`. Logs und `GlobalBasicSettings_13.xml` werden auch unter `Packages\ROBLOXCORPORATION.ROBLOX_55nm5eh3cm0pr\LocalState` gesucht. FastFlags lassen sich dort nicht schreiben.
+- **FastFlags und Roblox-Updates:** Aktualisiert sich Roblox beim Start, entsteht ein neuer Versionsordner ohne `ClientAppSettings.json`. Die Flags greifen dann erst beim nächsten Start.
+- **Fenster-Rückfall:** `lib.rs` zeigt das Fenster nach 4 s selbst, falls die Oberfläche beim Laden scheitert.
 - **Neuer Befehl:** Rust-Funktion → `generate_handler!` → Handler in `mock.js` → Aufruf über `call()`. Ohne Mock bricht die Browser-Vorschau.
 - **Overlay-Fenster** nur als eigenes transparentes Tauri-Fenster (`always_on_top`, Klick-Durchlass). Es zeigt nur, was der Launcher von außen weiß.
 - **Rust lokal in Claude-Cloud-Sessions:** Tauri braucht unter Linux GTK/WebKit. Für den Windows-Teil `cargo check --target x86_64-pc-windows-gnu` (braucht `mingw-w64`). Den echten Windows-Build gibt es nur in GitHub Actions.

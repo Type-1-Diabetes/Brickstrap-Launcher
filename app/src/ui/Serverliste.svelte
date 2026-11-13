@@ -3,7 +3,7 @@
   // Die erste Seite kommt oft schon aus dem Vorladen (Hover auf der Kachel).
   import Icon from "./Icon.svelte";
   import Hinweis from "./Hinweis.svelte";
-  import { app, firstServers, launch, starting, saveConfig, toast } from "../lib/app.svelte.js";
+  import { app, firstServers, launch, starting, saveConfig, toast, kopieren } from "../lib/app.svelte.js";
   import { call } from "../lib/bridge.js";
   import { fehlerText } from "../lib/errors.js";
   import { seit } from "../lib/format.js";
@@ -90,10 +90,7 @@
   // Signalbalken 1–3 aus dem Server-Ping (Messpunkt laut Roblox, nicht dein eigener Ping).
   const balken = (ping) => (ping == null ? 0 : ping < 70 ? 3 : ping < 140 ? 2 : 1);
 
-  async function idKopieren(id) {
-    await navigator.clipboard.writeText(id);
-    toast("Server-ID kopiert");
-  }
+  const idKopieren = (id) => kopieren(id, "Server-ID kopiert");
 
   const f = $derived(fehler ? fehlerText(fehler) : null);
   const kurzId = (id) => id.slice(0, 8);
@@ -103,7 +100,7 @@
   <header class="kopf">
     <div class="titel">
       <h2>Server</h2>
-      {#if !laedt || server.length}
+      {#if server.length}
         <span class="leise zahl">
           {server.length}{cursor ? "+" : ""} geladen{#if stand}&nbsp;· Stand {seit(stand)}{/if}
         </span>

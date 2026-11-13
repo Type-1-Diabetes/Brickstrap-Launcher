@@ -36,7 +36,7 @@
     border-radius: 10px;
     background: var(--s3);
     color: var(--t1);
-    box-shadow: 0 8px 24px #00000080, 0 0 0 1px #ffffff0f;
+    border: 1px solid var(--linie-stark);
     transform-origin: bottom right;
     transition: opacity 180ms ease, transform 220ms var(--ein);
     @starting-style { opacity: 0; transform: translateY(8px) scale(0.97); }

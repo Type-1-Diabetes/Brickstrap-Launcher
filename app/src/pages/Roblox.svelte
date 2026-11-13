@@ -74,7 +74,7 @@
 <div class="roblox">
   <header>
     <h1>Roblox-Einstellungen</h1>
-    <p class="lead">Die Werte aus dem Spielmenü von Roblox, direkt in seiner Einstellungsdatei. Manche lassen sich hier feiner setzen als im Spiel.</p>
+    <p class="lead">Hier stehen die Einstellungen aus dem Spielmenü von Roblox, gelesen aus seiner Einstellungsdatei. Manche lassen sich hier feiner setzen als im Spiel.</p>
   </header>
 
   {#if laeuft}
@@ -171,7 +171,7 @@
   .steuer select { min-width: 150px; }
   .zahlfeld { width: 120px; text-align: right; }
   .wert { min-width: 36px; text-align: right; font-weight: 600; }
-  .regler { width: 180px; accent-color: #fff; }
+  .regler { width: 180px; height: 24px; accent-color: var(--primaer); }
   code { font-family: var(--mono); font-size: 12.5px; color: var(--t2); }
   .weitere { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
   .weitere .karte { width: 100%; }
@@ -188,7 +188,7 @@
     padding: 8px 8px 8px 16px;
     border-radius: 12px;
     background: var(--s3);
-    box-shadow: 0 10px 30px #00000090, 0 0 0 1px #ffffff12;
+    border: 1px solid var(--linie-stark);
     animation: auftauchen 200ms var(--ein);
   }
   .speichernleiste span { margin-right: 6px; }

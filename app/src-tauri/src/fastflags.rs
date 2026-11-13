@@ -225,13 +225,13 @@ pub fn flags_presets() -> Vec<Preset> {
         Preset {
             id: "max-fps".into(),
             name: "Max FPS".into(),
-            description: "Niedrigste Stufen, kein Gras, Voxel-Licht pausiert. Das Bild wird schlichter, die FPS steigen.".into(),
+            description: "Niedrigste Stufen, kein Gras, statisches Licht. Das Bild wird schlichter, die FPS steigen.".into(),
             values: max_fps_values(),
         },
         Preset {
             id: "ausgewogen".into(),
             name: "Ausgewogen".into(),
-            description: "Mittlere Texturen und 2x Kantenglättung. Guter Start für die meisten Geräte.".into(),
+            description: "Hohe Texturen und 2× Kantenglättung. Ein guter Start für die meisten PCs.".into(),
             values: map(&[
                 ("DFFlagTextureQualityOverrideEnabled", "True"),
                 ("DFIntTextureQualityOverride", "2"),
@@ -241,7 +241,7 @@ pub fn flags_presets() -> Vec<Preset> {
         Preset {
             id: "qualitaet".into(),
             name: "Qualität".into(),
-            description: "Beste Texturen, 4x Kantenglättung, höchste Grafikstufe und weites Gras. Kostet viel Leistung.".into(),
+            description: "Beste Texturen, 4× Kantenglättung, höchste Grafikstufe und weites Gras. Kostet viel Leistung.".into(),
             values: map(&[
                 ("DFFlagTextureQualityOverrideEnabled", "True"),
                 ("DFIntTextureQualityOverride", "3"),

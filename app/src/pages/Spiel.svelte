@@ -5,7 +5,7 @@
   import Icon from "../ui/Icon.svelte";
   import Hinweis from "../ui/Hinweis.svelte";
   import Serverliste from "../ui/Serverliste.svelte";
-  import { launch, starting, togglePin, isPinned, toast } from "../lib/app.svelte.js";
+  import { launch, starting, togglePin, isPinned, kopieren } from "../lib/app.svelte.js";
   import { call, openExternal } from "../lib/bridge.js";
   import { fehlerText } from "../lib/errors.js";
   import { zahl, dauer, seit } from "../lib/format.js";
@@ -42,8 +42,7 @@
 
   async function linkKopieren() {
     const link = await call("invite_link", { placeId: game.placeId });
-    await navigator.clipboard.writeText(link);
-    toast("Link zur Spielseite kopiert");
+    await kopieren(link, "Link zur Spielseite kopiert");
   }
 
   const pinned = $derived(isPinned(game.universeId));
@@ -99,7 +98,7 @@
   </section>
 
   {#if fehler && !detail}
-    <Hinweis art="fehler" kompakt titel={f.titel} text="Details fehlen. Starten und Server wählen geht trotzdem." />
+    <Hinweis art="fehler" kompakt titel={f.titel} text="Die Details fehlen. „Spielen“ funktioniert trotzdem." />
   {/if}
 
   {#if detail?.description}
@@ -119,7 +118,7 @@
 <style>
   .spiel { display: flex; flex-direction: column; gap: 28px; padding-top: 4px; }
   .kopf { display: grid; grid-template-columns: minmax(300px, 440px) 1fr; gap: 28px; align-items: start; }
-  .titelbild { border-radius: var(--r-l); overflow: hidden; box-shadow: inset 0 0 0 1px #ffffff12; }
+  .titelbild { border-radius: var(--r-l); overflow: hidden; box-shadow: inset 0 0 0 1px var(--rand-bild); }
   .info { display: flex; flex-direction: column; gap: 18px; min-width: 0; padding-top: 2px; }
   .titel { display: flex; flex-direction: column; gap: 6px; }
   h1 { font-size: 30px; overflow-wrap: anywhere; }

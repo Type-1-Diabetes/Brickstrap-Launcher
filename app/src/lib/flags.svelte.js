@@ -40,6 +40,8 @@ export function speichern(sofort = false) {
     } catch (e) {
       const f = fehlerText(e);
       toast("FastFlags nicht gespeichert", "fehler", f.hinweis);
+      // Anzeige wieder auf den gespeicherten Stand bringen.
+      ladeFlags().catch(() => {});
     }
   };
   if (sofort) run();
@@ -61,8 +63,11 @@ export function presetWaehlen(id) {
 export function setzen(name, value) {
   const f = flags.allowlist.find((x) => x.name === name);
   const next = { ...flags.values };
-  if (value === null || value === undefined || value === "") delete next[name];
-  else next[name] = String(value);
+  if (value === null || value === undefined || value === "" || Number.isNaN(value)) delete next[name];
+  else if (f?.kind === "int" && typeof value === "number") {
+    // Gleiche Grenzen wie im Rust-Teil, damit Anzeige und Datei übereinstimmen.
+    next[name] = String(Math.min(f.max ?? Infinity, Math.max(f.min ?? -Infinity, value)));
+  } else next[name] = String(value);
   // Nur eine Grafik-API gleichzeitig
   if (f?.exclusive && value === "True") {
     for (const o of flags.allowlist) if (o.exclusive === f.exclusive && o.name !== name) delete next[o.name];

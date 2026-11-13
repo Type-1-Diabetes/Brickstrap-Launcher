@@ -1,7 +1,7 @@
 <script>
   // Leiste unten: was Roblox gerade macht, aktives FastFlag-Preset, Roblox starten.
   import Icon from "./Icon.svelte";
-  import { app, launch, starting, go, openGame, toast } from "../lib/app.svelte.js";
+  import { app, launch, starting, go, openGame, kopieren } from "../lib/app.svelte.js";
   import { flags, presetWaehlen, presetName } from "../lib/flags.svelte.js";
   import { call } from "../lib/bridge.js";
   import { dauer } from "../lib/format.js";
@@ -18,8 +18,7 @@
   async function einladen() {
     if (!a.placeId) return;
     const link = await call("invite_link", { placeId: a.placeId });
-    await navigator.clipboard.writeText(link);
-    toast("Link zur Spielseite kopiert");
+    await kopieren(link, "Link zur Spielseite kopiert");
   }
 </script>
 

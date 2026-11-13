@@ -1,3 +1,4 @@
+import allowlist from "../../src-tauri/resources/allowlist.json";
 // Browser-Mock: erfundene Demo-Daten, damit sich die Oberfläche ohne Tauri und ohne
 // Roblox-Zugang entwickeln und prüfen lässt. Alle Spiele, Zahlen und Bilder sind synthetisch.
 
@@ -32,6 +33,9 @@ const games = SPIELE.map(([name, playing, up, down, hue], i) => ({
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Zustände zum Ansehen über die Adresse, z. B. http://localhost:1420/?leer&offline&ohne-roblox
+const modus = new Set(typeof location !== "undefined" ? [...new URLSearchParams(location.search).keys()] : []);
+
 // Flaches Demo-Bild aus Blöcken (kein Verlauf), je Spiel eigene Farbe.
 function bild(g, w, h) {
   const c = (l, s = 55) => `hsl(${g.hue} ${s}% ${l}%)`;
@@ -47,7 +51,7 @@ function bild(g, w, h) {
 }
 
 let config = {
-  pinned: [
+  pinned: modus.has("leer") ? [] : [
     { universeId: 9001, placeId: 70007, name: "Insel-Tycoon", pinnedAt: 0 },
     { universeId: 9009, placeId: 70063, name: "Monsterjagd", pinnedAt: 0 },
     { universeId: 9005, placeId: 70035, name: "Blockbau Arena", pinnedAt: 0 },
@@ -60,38 +64,21 @@ let config = {
   hideFullServers: true,
 };
 
-const ALLOW = [
-  ["FFlagDebugGraphicsPreferD3D11", "bool", "Grafik-API", "Direct3D 11 erzwingen", "Meist am stabilsten. Hilft bei Grafikfehlern unter Vulkan.", { exclusive: "grafik-api" }],
-  ["FFlagDebugGraphicsPreferVulkan", "bool", "Grafik-API", "Vulkan erzwingen", "Auf manchen Grafikkarten mehr FPS, auf anderen Ruckler. Ausprobieren.", { exclusive: "grafik-api" }],
-  ["FFlagDebugGraphicsPreferOpenGL", "bool", "Grafik-API", "OpenGL erzwingen", "Nur als Notlösung für ältere Grafikkarten.", { exclusive: "grafik-api" }],
-  ["DFIntDebugFRMQualityLevelOverride", "int", "Qualität", "Grafikstufe erzwingen", "1 bis 21, feiner als der Regler im Spiel. 0 lässt Roblox entscheiden.", { min: 0, max: 21 }],
-  ["DFFlagTextureQualityOverrideEnabled", "bool", "Qualität", "Texturqualität überschreiben", "Schaltet die Einstellung darunter frei.", {}],
-  ["DFIntTextureQualityOverride", "int", "Qualität", "Texturqualität", "Niedrig spart Grafikspeicher, hoch sieht schärfer aus.", { options: [["0", "Niedrig"], ["1", "Mittel"], ["2", "Hoch"], ["3", "Sehr hoch"]] }],
-  ["FIntDebugForceMSAASamples", "int", "Qualität", "Kantenglättung (MSAA)", "Glättet Kanten. Jede Stufe kostet Leistung.", { options: [["0", "Aus"], ["1", "1×"], ["2", "2×"], ["4", "4×"], ["8", "8×"]] }],
-  ["DFFlagDebugPauseVoxelizer", "bool", "Licht und Himmel", "Lichtberechnung anhalten", "Statisches Licht und Schatten. Spürbar mehr FPS, Licht ändert sich nicht mehr.", {}],
-  ["FFlagDebugSkyGray", "bool", "Licht und Himmel", "Grauer Himmel", "Ersetzt die Skybox durch Grau.", {}],
-  ["DFIntCSGLevelOfDetailSwitchingDistance", "int", "Detailstufen", "Detail-Abstand", "Ab hier werden Modelle vereinfacht. 0 heißt immer die einfachste Stufe.", { min: 0, max: 10000 }],
-  ["DFIntCSGLevelOfDetailSwitchingDistanceL12", "int", "Detailstufen", "Abstand Stufe 1 → 2", "Kleiner = früher einfacher.", { min: 0, max: 10000 }],
-  ["DFIntCSGLevelOfDetailSwitchingDistanceL23", "int", "Detailstufen", "Abstand Stufe 2 → 3", "Kleiner = früher einfacher.", { min: 0, max: 10000 }],
-  ["DFIntCSGLevelOfDetailSwitchingDistanceL34", "int", "Detailstufen", "Abstand Stufe 3 → 4", "Kleiner = früher einfacher.", { min: 0, max: 10000 }],
-  ["FIntFRMMaxGrassDistance", "int", "Gras", "Gras bis Entfernung", "0 blendet Gras ganz aus.", { min: 0, max: 1000 }],
-  ["FIntFRMMinGrassDistance", "int", "Gras", "Gras ab Entfernung", "Untere Grenze für dichtes Gras.", { min: 0, max: 1000 }],
-  ["FIntGrassMovementReducedMotionFactor", "int", "Gras", "Grasbewegung", "Weniger Bewegung, ruhigeres Bild.", { min: 0, max: 100 }],
-  ["DFFlagDisableDPIScale", "bool", "Oberfläche", "DPI-Skalierung aus", "Kleinere, schärfere Oberfläche auf hochauflösenden Bildschirmen.", {}],
-  ["FFlagHandleAltEnterFullscreenManually", "bool", "Oberfläche", "Alt+Enter wie Fenster-Vollbild", "Aus = echtes Vollbild bei Alt+Enter.", {}],
-  ["DFIntDebugDynamicRenderKiloPixels", "int", "Qualität", "Renderauflösung senken", "Für schwache Geräte. Wirkung noch unbestätigt.", { min: 0, max: 4000, experimental: true }],
-].map(([name, kind, group, label, hint, o]) => ({
-  name, kind, group, label, hint,
-  min: o.min ?? null, max: o.max ?? null,
-  options: o.options?.map(([value, text]) => ({ value, label: text })) ?? null,
-  experimental: !!o.experimental, exclusive: o.exclusive ?? null,
-}));
+// Gleiche Allowlist wie im Rust-Teil (eingebettete Datei)
+const ALLOW = allowlist.flags.map((f) => ({ min: null, max: null, options: null, experimental: false, exclusive: null, ...f }));
 
+// Gleiche Presets wie flags_presets() in fastflags.rs
+const LOD = ["", "L12", "L23", "L34"].map((s) => "DFIntCSGLevelOfDetailSwitchingDistance" + s);
+const MAX_FPS = {
+  DFIntDebugFRMQualityLevelOverride: "1", FIntFRMMaxGrassDistance: "0", FIntFRMMinGrassDistance: "0",
+  DFFlagTextureQualityOverrideEnabled: "True", DFIntTextureQualityOverride: "0", FIntDebugForceMSAASamples: "0",
+  DFFlagDebugPauseVoxelizer: "True", ...Object.fromEntries(LOD.map((n) => [n, "0"])),
+};
 const PRESETS = [
-  { id: "max-fps", name: "Max FPS", description: "Alles für flüssiges Bild: niedrige Details, kein Gras, statisches Licht.", values: { DFIntDebugFRMQualityLevelOverride: "1", DFFlagTextureQualityOverrideEnabled: "True", DFIntTextureQualityOverride: "0", FIntDebugForceMSAASamples: "0", DFFlagDebugPauseVoxelizer: "True", FIntFRMMaxGrassDistance: "0", FIntFRMMinGrassDistance: "0", DFIntCSGLevelOfDetailSwitchingDistance: "0", DFIntCSGLevelOfDetailSwitchingDistanceL12: "0", DFIntCSGLevelOfDetailSwitchingDistanceL23: "0", DFIntCSGLevelOfDetailSwitchingDistanceL34: "0" } },
-  { id: "ausgewogen", name: "Ausgewogen", description: "Gute Optik bei stabilen FPS.", values: { DFFlagTextureQualityOverrideEnabled: "True", DFIntTextureQualityOverride: "2", FIntDebugForceMSAASamples: "2" } },
-  { id: "qualitaet", name: "Qualität", description: "Schärfste Texturen, glatte Kanten, volle Grafikstufe.", values: { DFFlagTextureQualityOverrideEnabled: "True", DFIntTextureQualityOverride: "3", FIntDebugForceMSAASamples: "4", DFIntDebugFRMQualityLevelOverride: "21" } },
-  { id: "schwacher-laptop", name: "Schwacher Laptop", description: "Wie Max FPS, dazu niedrigere Renderauflösung (experimentell).", values: { DFIntDebugFRMQualityLevelOverride: "1", DFFlagTextureQualityOverrideEnabled: "True", DFIntTextureQualityOverride: "0", FIntDebugForceMSAASamples: "0", DFFlagDebugPauseVoxelizer: "True", FIntFRMMaxGrassDistance: "0", DFIntDebugDynamicRenderKiloPixels: "720" } },
+  { id: "max-fps", name: "Max FPS", description: "Niedrigste Stufen, kein Gras, statisches Licht. Das Bild wird schlichter, die FPS steigen.", values: MAX_FPS },
+  { id: "ausgewogen", name: "Ausgewogen", description: "Hohe Texturen und 2× Kantenglättung. Ein guter Start für die meisten PCs.", values: { DFFlagTextureQualityOverrideEnabled: "True", DFIntTextureQualityOverride: "2", FIntDebugForceMSAASamples: "2" } },
+  { id: "qualitaet", name: "Qualität", description: "Beste Texturen, 4× Kantenglättung, höchste Grafikstufe und weites Gras. Kostet viel Leistung.", values: { DFFlagTextureQualityOverrideEnabled: "True", DFIntTextureQualityOverride: "3", FIntDebugForceMSAASamples: "4", DFIntDebugFRMQualityLevelOverride: "21", FIntFRMMaxGrassDistance: "400" } },
+  { id: "schwacher-laptop", name: "Schwacher Laptop", description: "Wie Max FPS, dazu eine niedrigere Renderauflösung (experimentell, Wirkung unklar).", values: { ...MAX_FPS, DFIntDebugDynamicRenderKiloPixels: "720" } },
 ];
 
 let flags = { values: { ...PRESETS[1].values }, preset: "ausgewogen" };
@@ -156,6 +143,7 @@ const handlers = {
   async home_feed({ fresh }) {
     await delay(fresh ? 600 : 5);
     if (!fresh) return null;
+    if (modus.has("offline")) throw { code: "NETZ", message: "Demo: keine Verbindung" };
     const pick = (o) => games.filter((_, i) => (i + o) % 3 !== 0);
     return {
       fetchedAt: jetzt(),
@@ -174,6 +162,7 @@ const handlers = {
   },
   async game_details({ universeIds }) {
     await delay(250);
+    if (modus.has("offline")) throw { code: "NETZ", message: "Demo" };
     return universeIds.map((id) => games.find((g) => g.universeId === id)).filter(Boolean).map((g) => ({
       universeId: g.universeId, placeId: g.placeId, name: g.name,
       description: `Demo-Beschreibung für „${g.name}“. Alle Daten in der Vorschau sind erfunden.\n\nBaue, sammle und spiel mit Freunden. Neue Inhalte jeden Freitag.`,
@@ -193,12 +182,13 @@ const handlers = {
   },
   async servers({ placeId, cursor, order, excludeFull }) {
     await delay(500);
+    if (modus.has("offline")) throw { code: "RATE_LIMIT", message: "30" };
     return servers(placeId, cursor, order, excludeFull);
   },
   async universe_of_place({ placeId }) {
     return games.find((g) => g.placeId === placeId)?.universeId ?? null;
   },
-  async roblox_status() { return { installed: true, running: activity.state !== "idle", version: "version-demo" }; },
+  async roblox_status() { return { installed: !modus.has("ohne-roblox"), running: activity.state !== "idle", version: "version-demo" }; },
   async launch({ placeId, jobId }) {
     await delay(300);
     const g = games.find((x) => x.placeId === placeId);
@@ -210,7 +200,7 @@ const handlers = {
   async invite_link({ placeId }) { return `https://www.roblox.com/games/${placeId}`; },
   async discord_builtin() { return false; },
   async config_get() { return structuredClone(config); },
-  async config_set({ config: c }) { config = { ...c, pinned: config.pinned }; return structuredClone(config); },
+  async config_set({ config: c }) { config = { ...c, pinned: config.pinned, discordAppId: String(c.discordAppId ?? "").replace(/\D/g, "") }; return structuredClone(config); },
   async pin_set({ universeId, placeId, name, pinned }) {
     config.pinned = config.pinned.filter((p) => p.universeId !== universeId);
     if (pinned) config.pinned.unshift({ universeId, placeId, name, pinnedAt: jetzt() });
@@ -223,10 +213,17 @@ const handlers = {
   async flags_get() {
     return { allowlist: ALLOW, values: { ...flags.values }, preset: flags.preset, allowlistDate: "2025-09-29", appliedTo: ["version-demo"], lastApplied: jetzt() - 7200 };
   },
-  async flags_set({ values, preset }) { flags = { values: { ...values }, preset }; return null; },
+  async flags_set({ values, preset }) {
+    // wie fastflags.rs: Zahlen auf den erlaubten Bereich kappen
+    const v = { ...values };
+    for (const f of ALLOW) if (f.kind === "int" && v[f.name] != null) v[f.name] = String(Math.min(f.max ?? Infinity, Math.max(f.min ?? -Infinity, Number(v[f.name]))));
+    flags = { values: v, preset };
+    return null;
+  },
   async flags_presets() { return PRESETS; },
   async basic_get() {
     await delay(80);
+    if (modus.has("ohne-roblox")) return { path: "C:\\Users\\Demo\\AppData\\Local\\Roblox\\GlobalBasicSettings_13.xml", exists: false, running: false, entries: [] };
     return { path: "C:\\Users\\Demo\\AppData\\Local\\Roblox\\GlobalBasicSettings_13.xml", exists: true, running: activity.state !== "idle", entries: structuredClone(basic) };
   },
   async basic_set({ changes }) {
@@ -239,7 +236,7 @@ const handlers = {
     return null;
   },
   async activity_get() { return { ...activity }; },
-  async playtime_get() { return structuredClone(playtime); },
+  async playtime_get() { return modus.has("leer") ? { games: [], recent: [] } : structuredClone(playtime); },
 };
 
 function emit(a) {

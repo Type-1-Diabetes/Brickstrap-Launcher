@@ -19,7 +19,7 @@ pub struct RobloxStatus {
 pub fn roblox_status() -> RobloxStatus {
     let dir = paths::player_version_dirs().into_iter().next();
     RobloxStatus {
-        installed: dir.is_some(),
+        installed: dir.is_some() || paths::protocol_registered(),
         running: paths::roblox_running(),
         version: dir.and_then(|d| d.file_name().map(|n| n.to_string_lossy().into_owned())),
     }
@@ -42,7 +42,9 @@ fn is_job_id(s: &str) -> bool {
 /// (mit `job_id` ein bestimmter Server). Vorher werden die FastFlags geschrieben.
 #[tauri::command]
 pub fn launch(app: AppHandle, state: State<'_, AppState>, place_id: Option<u64>, job_id: Option<String>) -> Result<(), String> {
-    if !paths::player_version_dirs().is_empty() {
+    let has_dirs = !paths::player_version_dirs().is_empty();
+    let installed = has_dirs || paths::protocol_registered();
+    if has_dirs {
         if let Err(e) = crate::fastflags::apply_before_launch(&state) {
             // Ein Fehler hier darf den Start nicht verhindern.
             eprintln!("FastFlags: {e}");
@@ -53,15 +55,23 @@ pub fn launch(app: AppHandle, state: State<'_, AppState>, place_id: Option<u64>,
             let link = deeplink(p, job_id.as_deref());
             tauri_plugin_opener::open_url(link, None::<&str>).map_err(|e| format!("START|{e}"))?;
         }
-        None => {
-            let exe = paths::player_exe().ok_or_else(|| "NICHT_INSTALLIERT|Roblox ist nicht installiert.".to_string())?;
-            std::process::Command::new(exe)
-                .arg("--app")
-                .spawn()
-                .map_err(|e| format!("START|{e}"))?;
-        }
+        None => match paths::player_exe() {
+            Some(exe) => {
+                std::process::Command::new(exe)
+                    .arg("--app")
+                    .spawn()
+                    .map_err(|e| format!("START|{e}"))?;
+            }
+            // Ohne Versionsordner (z. B. Store-Version) startet der Link die Roblox-App.
+            None if installed => {
+                tauri_plugin_opener::open_url("roblox://", None::<&str>).map_err(|e| format!("START|{e}"))?;
+            }
+            None => return Err("NICHT_INSTALLIERT|Roblox ist nicht installiert.".to_string()),
+        },
     }
-    if state.config().hide_on_launch {
+    // Ohne gefundene Roblox-Installation öffnet Windows evtl. nur „App auswählen“:
+    // dann bleibt Brickstrap sichtbar.
+    if installed && state.config().hide_on_launch {
         if let Some(w) = app.get_webview_window("main") {
             let _ = w.hide();
         }

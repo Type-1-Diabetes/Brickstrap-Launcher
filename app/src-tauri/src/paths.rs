@@ -8,14 +8,59 @@ pub fn roblox_dir() -> Option<PathBuf> {
     std::env::var_os("LOCALAPPDATA").map(|p| PathBuf::from(p).join("Roblox"))
 }
 
-/// `%localappdata%\Roblox\logs`
-pub fn logs_dir() -> Option<PathBuf> {
-    roblox_dir().map(|d| d.join("logs"))
+/// Datenordner der Microsoft-Store-Version:
+/// `%localappdata%\Packages\ROBLOXCORPORATION.ROBLOX_55nm5eh3cm0pr\LocalState`
+fn store_dir() -> Option<PathBuf> {
+    std::env::var_os("LOCALAPPDATA").map(|p| {
+        PathBuf::from(p)
+            .join("Packages")
+            .join("ROBLOXCORPORATION.ROBLOX_55nm5eh3cm0pr")
+            .join("LocalState")
+    })
 }
 
-/// `%localappdata%\Roblox\GlobalBasicSettings_13.xml`
+/// Erster vorhandener Pfad: normale Installation vor Store-Version.
+fn first_existing(rel: &str) -> Option<PathBuf> {
+    let normal = roblox_dir().map(|d| d.join(rel));
+    let store = store_dir().map(|d| d.join(rel));
+    [normal.clone(), store]
+        .into_iter()
+        .flatten()
+        .find(|p| p.exists())
+        .or(normal)
+}
+
+/// `%localappdata%\Roblox\logs` (oder der Ordner der Store-Version)
+pub fn logs_dir() -> Option<PathBuf> {
+    first_existing("logs")
+}
+
+/// `%localappdata%\Roblox\GlobalBasicSettings_13.xml` (oder die Datei der Store-Version)
 pub fn basic_settings_file() -> Option<PathBuf> {
-    roblox_dir().map(|d| d.join("GlobalBasicSettings_13.xml"))
+    first_existing("GlobalBasicSettings_13.xml")
+}
+
+/// Ist das Protokoll `roblox://` registriert? Dann öffnet Windows Roblox per Link,
+/// auch ohne Versionsordner (z. B. Microsoft-Store-Version).
+#[cfg(windows)]
+pub fn protocol_registered() -> bool {
+    use windows_sys::Win32::System::Registry::{RegCloseKey, RegOpenKeyExW, HKEY, HKEY_CLASSES_ROOT, KEY_READ};
+    let name: Vec<u16> = "roblox\0".encode_utf16().collect();
+    let mut key: HKEY = std::ptr::null_mut();
+    // SAFETY: gültiger nullterminierter Name, Schlüssel wird bei Erfolg geschlossen.
+    unsafe {
+        if RegOpenKeyExW(HKEY_CLASSES_ROOT, name.as_ptr(), 0, KEY_READ, &mut key) == 0 {
+            RegCloseKey(key);
+            true
+        } else {
+            false
+        }
+    }
+}
+
+#[cfg(not(windows))]
+pub fn protocol_registered() -> bool {
+    false
 }
 
 /// Alle Versionsordner, die einen Player enthalten (neuester zuerst).

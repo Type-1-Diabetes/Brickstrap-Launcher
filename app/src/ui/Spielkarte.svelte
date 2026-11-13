@@ -69,7 +69,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    box-shadow: inset 0 0 0 1px #ffffff12;
+    box-shadow: inset 0 0 0 1px var(--rand-bild);
     transition: box-shadow 160ms ease;
   }
   @media (hover: hover) and (pointer: fine) {
@@ -88,7 +88,7 @@
     width: 24px;
     height: 24px;
     border-radius: 6px;
-    background: #0b0b0dcc;
+    background: var(--abdeckung);
     color: var(--t1);
   }
   .name {

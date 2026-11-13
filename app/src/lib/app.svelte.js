@@ -52,6 +52,16 @@ export function toast(text, art = "info", hinweis = "") {
   }, art === "fehler" ? 7000 : 3500);
 }
 
+/** Text kopieren und Bescheid geben. Die Zwischenablage kann gesperrt sein. */
+export async function kopieren(text, meldung) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(meldung);
+  } catch {
+    toast("Kopieren hat nicht geklappt", "fehler", "Die Zwischenablage ist gerade belegt. Versuch es gleich noch einmal.");
+  }
+}
+
 // ---------- Anpinnen ----------
 
 export const isPinned = (universeId) => app.pinned.some((p) => p.universeId === universeId);
@@ -149,7 +159,7 @@ export async function launch(game = null, jobId = null) {
   starting.key = key;
   try {
     await call("launch", { placeId: game?.placeId ?? null, jobId });
-    toast(game ? (jobId ? `Trete dem Server bei: ${game.name}` : `Starte ${game.name}`) : "Roblox startet");
+    toast(game ? (jobId ? `Roblox startet ${game.name} auf dem gewählten Server` : `Roblox startet ${game.name}`) : "Roblox startet");
   } catch (e) {
     const f = fehlerText(e);
     toast(f.titel, "fehler", f.hinweis);

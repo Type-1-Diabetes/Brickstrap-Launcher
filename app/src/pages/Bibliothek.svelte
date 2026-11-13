@@ -98,7 +98,7 @@
   .rang { width: 18px; text-align: right; font-weight: 600; }
   .bild { width: 48px; height: 48px; padding: 0; border: 0; border-radius: 9px; overflow: hidden; flex: none; background: none; cursor: default; }
   .bild :global(.platz) { font-size: 14px; }
-  .name { flex: 1; min-width: 0; padding: 0; border: 0; background: none; color: var(--t1); font: inherit; font-weight: 600; font-size: 15px; text-align: left; cursor: default; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .name { flex: 1; min-width: 0; padding: 10px 0; border: 0; background: none; color: var(--t1); font: inherit; font-weight: 600; font-size: 15px; text-align: left; cursor: default; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .werkzeuge { display: flex; align-items: center; gap: 4px; }
   .hoch { display: inline-flex; transform: rotate(-90deg); }
   .runter { display: inline-flex; transform: rotate(90deg); }

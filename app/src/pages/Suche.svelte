@@ -26,7 +26,11 @@
       const r = await call("search", { query: q, page: null });
       if (id === lauf) ergebnis = { ...r, query: q };
     } catch (e) {
-      if (id === lauf) fehler = e;
+      if (id === lauf) {
+        fehler = e;
+        // Alte Treffer gehören zu einem anderen Begriff: nicht unter der neuen Überschrift zeigen.
+        if (ergebnis?.query !== q) ergebnis = null;
+      }
     } finally {
       if (id === lauf) laedt = false;
     }

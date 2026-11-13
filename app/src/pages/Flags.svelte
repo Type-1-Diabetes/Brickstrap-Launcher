@@ -3,7 +3,7 @@
   import Icon from "../ui/Icon.svelte";
   import Hinweis from "../ui/Hinweis.svelte";
   import { flags, ladeFlags, presetWaehlen, setzen, speichern } from "../lib/flags.svelte.js";
-  import { toast } from "../lib/app.svelte.js";
+  import { toast, kopieren } from "../lib/app.svelte.js";
   import { seit } from "../lib/format.js";
 
   let importOffen = $state(false);
@@ -29,9 +29,8 @@
 
   const datum = $derived(flags.allowlistDate ? new Date(flags.allowlistDate).toLocaleDateString("de-DE") : "");
 
-  async function kopieren() {
-    await navigator.clipboard.writeText(JSON.stringify($state.snapshot(flags.values), null, 2));
-    toast("FastFlags als JSON kopiert");
+  async function alsJson() {
+    await kopieren(JSON.stringify($state.snapshot(flags.values), null, 2), "FastFlags als JSON kopiert");
   }
 
   function importieren() {
@@ -77,8 +76,8 @@
     <div>
       <h1>FastFlags</h1>
       <p class="lead">
-        Feineinstellungen für Grafik und Leistung. Sie gelten beim nächsten Start von Roblox.
-        Roblox beachtet nur Flags auf seiner Allowlist{datum ? ` (Stand ${datum})` : ""}, andere ignoriert es ohne Folgen.
+        Mit FastFlags stellst du Grafik und Leistung feiner ein. Sie gelten ab dem nächsten Start von Roblox.
+        Roblox beachtet nur Flags auf seiner Allowlist{datum ? ` (Stand ${datum})` : ""} und ignoriert alle anderen ohne Folgen.
       </p>
     </div>
     <div class="status leise" aria-live="polite">
@@ -124,8 +123,15 @@
               </div>
               <div class="steuer">
                 {#if f.kind === "bool"}
+                  {#if wert === undefined}
+                    <span class="standard" title="Kein eigener Wert: Roblox entscheidet">Standard</span>
+                  {:else}
+                    <button class="knopf flach klein rund" onclick={() => setzen(f.name, null)} aria-label="{f.label} auf Standard zurücksetzen" title="Auf Standard zurücksetzen">
+                      <Icon name="x" size={14} />
+                    </button>
+                  {/if}
                   <span class="schalter">
-                    <input type="checkbox" aria-label={f.label} checked={wert === "True"} onchange={(e) => setzen(f.name, e.currentTarget.checked ? "True" : null)} />
+                    <input type="checkbox" aria-label={f.label} checked={wert === "True"} onchange={(e) => setzen(f.name, e.currentTarget.checked ? "True" : "False")} />
                     <span></span>
                   </span>
                 {:else if f.options}
@@ -143,7 +149,11 @@
                     min={f.min ?? undefined}
                     max={f.max ?? undefined}
                     value={wert ?? ""}
-                    onchange={(e) => setzen(f.name, e.currentTarget.value === "" ? null : Math.round(Number(e.currentTarget.value)))}
+                    onchange={(e) => {
+                      const el = e.currentTarget;
+                      setzen(f.name, el.value === "" ? null : Math.round(Number(el.value)));
+                      el.value = flags.values[f.name] ?? "";
+                    }}
                   />
                   {#if wert !== undefined}
                     <button class="knopf flach klein rund" onclick={() => setzen(f.name, null)} aria-label="{f.label} zurücksetzen" title="Auf Standard zurücksetzen">
@@ -178,7 +188,7 @@
     <section class="gruppe">
       <h2>Teilen</h2>
       <div class="teilen">
-        <button class="knopf" onclick={kopieren}><Icon name="kopieren" size={15} />Als JSON kopieren</button>
+        <button class="knopf" onclick={alsJson}><Icon name="kopieren" size={15} />Als JSON kopieren</button>
         <button class="knopf" aria-expanded={importOffen} onclick={() => (importOffen = !importOffen)}>JSON einfügen</button>
       </div>
       {#if importOffen}
@@ -232,6 +242,7 @@
   .steuer select { min-width: 150px; }
   .zahlfeld { width: 120px; text-align: right; }
   .platzhalter { width: 28px; }
+  .standard { font-size: 12.5px; color: var(--t3); padding: 0 6px; }
   .teilen { display: flex; gap: 8px; }
   .import { display: flex; flex-direction: column; gap: 10px; }
   textarea.feld { height: auto; padding: 10px 12px; font-family: var(--mono); font-size: 13px; resize: vertical; }
