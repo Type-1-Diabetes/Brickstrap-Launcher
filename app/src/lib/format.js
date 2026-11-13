@@ -15,6 +15,29 @@ export function bewertung(up, down) {
   return t > 0 ? Math.round((up / t) * 100) : null;
 }
 
+/** Unix-Sekunden → Beginn des lokalen Tages (Unix-Sekunden). */
+export function tagBeginn(unix) {
+  const d = new Date(unix * 1000);
+  d.setHours(0, 0, 0, 0);
+  return Math.floor(d.getTime() / 1000);
+}
+
+const wochentag = new Intl.DateTimeFormat("de-DE", { weekday: "short" });
+const tagMonat = new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "numeric" });
+const tagLang = new Intl.DateTimeFormat("de-DE", { weekday: "long", day: "numeric", month: "long" });
+const zeitpunkt = new Intl.DateTimeFormat("de-DE", { weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
+
+/** Unix-Sekunden → „Mo“, „3.11.“, „Montag, 3. November“ */
+export const tagKurz = (unix) => wochentag.format(unix * 1000).replace(".", "");
+export const tagDatum = (unix) => tagMonat.format(unix * 1000);
+export const tagVoll = (unix) => tagLang.format(unix * 1000);
+
+/** ISO-Zeit → „Sa., 15.11., 18:00“ oder "" */
+export function wann(iso) {
+  const t = Date.parse(iso ?? "");
+  return Number.isNaN(t) ? "" : zeitpunkt.format(t);
+}
+
 /** Sekunden → „2 Std. 5 Min.“ */
 export function dauer(sek) {
   sek = Math.max(0, Math.round(sek ?? 0));

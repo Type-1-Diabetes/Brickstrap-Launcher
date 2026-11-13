@@ -73,6 +73,8 @@ pub struct AppState {
     pub http: reqwest::Client,
     /// Zufällige ID je Programmstart, verlangt von Such- und Explore-API.
     pub session_id: String,
+    /// Neueste Roblox-Version laut Roblox: (Zeit des Abrufs, `version-…`)
+    pub latest_version: Mutex<Option<(u64, String)>>,
 }
 
 impl AppState {
@@ -90,6 +92,7 @@ impl AppState {
             config: Mutex::new(config),
             http,
             session_id: uuid::Uuid::new_v4().to_string(),
+            latest_version: Mutex::new(None),
         }
     }
 

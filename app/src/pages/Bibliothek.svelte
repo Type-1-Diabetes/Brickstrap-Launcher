@@ -4,14 +4,14 @@
   import Bild from "../ui/Bild.svelte";
   import Icon from "../ui/Icon.svelte";
   import Hinweis from "../ui/Hinweis.svelte";
+  import Zeitstatistik from "../ui/Zeitstatistik.svelte";
   import { app, openGame, launch, starting, togglePin, prefetch, go } from "../lib/app.svelte.js";
   import { call } from "../lib/bridge.js";
-  import { dauer, seit } from "../lib/format.js";
 
   let zeit = $state(null);
 
   onMount(() => {
-    call("playtime_get").then((p) => (zeit = p)).catch(() => (zeit = { games: [], recent: [] }));
+    call("playtime_get").then((p) => (zeit = p)).catch(() => (zeit = { games: [], recent: [], month: [] }));
   });
 
   async function verschieben(i, d) {
@@ -22,8 +22,6 @@
     app.pinned = await call("pin_order", { order });
   }
 
-  const maxZeit = $derived(Math.max(1, ...(zeit?.games ?? []).map((g) => g.totalSecs)));
-  const gesamt = $derived((zeit?.games ?? []).reduce((s, g) => s + g.totalSecs, 0));
 </script>
 
 <div class="bib">
@@ -58,28 +56,11 @@
   </section>
 
   <section>
-    <div class="zeitkopf">
-      <h2>Spielzeit</h2>
-      {#if gesamt}<span class="leise zahl">{dauer(gesamt)} insgesamt</span>{/if}
-    </div>
     {#if zeit && zeit.games.length === 0}
+      <h2>Spielzeit</h2>
       <Hinweis icon="uhr" titel="Noch keine Spielzeit erfasst" text="Brickstrap liest beim Spielen die Logdatei von Roblox mit und zählt hier, wie lange du was spielst. Es bleibt alles auf deinem PC." />
     {:else if zeit}
-      <ol class="liste zeiten">
-        {#each zeit.games as g (g.universeId + "-" + g.placeId)}
-          <li class="eintrag">
-            <button class="bild" onclick={() => g.universeId && openGame(g)} aria-label="{g.name} öffnen" disabled={!g.universeId}><Bild universeId={g.universeId} name={g.name} /></button>
-            <div class="zeitinfo">
-              <div class="zeile1">
-                <span class="nm">{g.name || "Unbekanntes Spiel"}</span>
-                <span class="zahl">{dauer(g.totalSecs)}</span>
-              </div>
-              <span class="spur"><span class="fuellung" style="transform: scaleX({g.totalSecs / maxZeit})"></span></span>
-              <span class="leise klein zahl">{g.sessions} Sitzungen · zuletzt {seit(g.lastPlayed)}</span>
-            </div>
-          </li>
-        {/each}
-      </ol>
+      <Zeitstatistik {zeit} />
     {:else}
       <div class="skelett" style="height: 120px"></div>
     {/if}
@@ -90,7 +71,6 @@
   .bib { display: flex; flex-direction: column; gap: 36px; max-width: var(--inhalt-max); }
   section { display: flex; flex-direction: column; gap: 14px; }
   header { margin-bottom: 10px; }
-  .zeitkopf { display: flex; align-items: baseline; gap: 12px; }
   .liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-radius: var(--r-l); background: var(--s1); overflow: hidden; }
   .eintrag { display: flex; align-items: center; gap: 14px; padding: 10px 12px 10px 14px; border-top: 1px solid var(--linie); transition: background-color 100ms ease; }
   .eintrag:first-child { border-top: 0; }
@@ -102,11 +82,4 @@
   .werkzeuge { display: flex; align-items: center; gap: 4px; }
   .hoch { display: inline-flex; transform: rotate(-90deg); }
   .runter { display: inline-flex; transform: rotate(90deg); }
-  .zeitinfo { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .zeile1 { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; }
-  .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .spur { display: block; height: 4px; border-radius: 2px; background: var(--s3); overflow: hidden; }
-  .fuellung { display: block; height: 100%; background: var(--t2); transform-origin: left; animation: fuellen 480ms var(--ein) both; }
-  @keyframes fuellen { from { transform: scaleX(0); } }
-  .klein { font-size: 12.5px; }
 </style>

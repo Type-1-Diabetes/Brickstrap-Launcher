@@ -5,10 +5,11 @@
   import Hinweis from "../ui/Hinweis.svelte";
   import Serverliste from "../ui/Serverliste.svelte";
   import Diashow from "../ui/Diashow.svelte";
-  import { launch, starting, togglePin, isPinned, kopieren } from "../lib/app.svelte.js";
+  import Spielextras from "../ui/Spielextras.svelte";
+  import { launch, starting, togglePin, isPinned, kopieren, letzterServer } from "../lib/app.svelte.js";
   import { call, openExternal } from "../lib/bridge.js";
   import { fehlerText } from "../lib/errors.js";
-  import { zahl, dauer, seit } from "../lib/format.js";
+  import { zahl, dauer, seit, bewertung } from "../lib/format.js";
 
   /** @type {{ params: { universeId: number, placeId: number, name: string } }} */
   let { params } = $props();
@@ -17,6 +18,7 @@
   let fehler = $state(null);
   let mehrText = $state(false);
   let meineZeit = $state(null);
+  let stimmen = $state(null);
 
   const game = $derived({
     universeId: params.universeId,
@@ -39,6 +41,15 @@
       .then((p) => (meineZeit = p?.games?.find((g) => g.universeId === params.universeId) ?? null))
       .catch(() => {});
   });
+
+  onMount(() => {
+    call("game_votes", { universeIds: [params.universeId] })
+      .then((m) => (stimmen = m?.[params.universeId] ?? null))
+      .catch(() => {});
+  });
+
+  const quote = $derived(bewertung(stimmen?.upVotes, stimmen?.downVotes));
+  const zuletzt = $derived(letzterServer(params.universeId));
 
   async function linkKopieren() {
     const link = await call("invite_link", { placeId: game.placeId });
@@ -71,9 +82,12 @@
       </div>
 
       {#if detail}
-        <dl class="werte zahl">
+        <dl class="werte zahl" class:fuenf={quote !== null}>
           <div><dt>Online</dt><dd><span class="punkt" aria-hidden="true"></span>{zahl(detail.playing)}</dd></div>
           <div><dt>Besuche</dt><dd>{zahl(detail.visits)}</dd></div>
+          {#if quote !== null}
+            <div title="{zahl(stimmen.upVotes)} gefällt es, {zahl(stimmen.downVotes)} nicht"><dt>Bewertung</dt><dd>{quote} %</dd></div>
+          {/if}
           <div><dt>Favoriten</dt><dd>{zahl(detail.favorites)}</dd></div>
           <div><dt>Pro Server</dt><dd>{detail.maxPlayers}</dd></div>
         </dl>
@@ -86,6 +100,11 @@
         <button class="knopf gross" aria-pressed={pinned} onclick={() => togglePin(game)}>
           <Icon name={pinned ? "pinFill" : "pin"} size={16} />{pinned ? "Angepinnt" : "Anpinnen"}
         </button>
+        {#if zuletzt}
+          <button class="knopf gross" onclick={() => launch(game, zuletzt.jobId)} disabled={!!starting.key} title="Der Server, auf dem du {seit(zuletzt.end)} warst. Gibt es ihn nicht mehr, meldet Roblox das.">
+            <Icon name="neu" size={16} />Letzter Server
+          </button>
+        {/if}
         <button class="knopf flach gross rund" onclick={linkKopieren} aria-label="Link kopieren" title="Link zur Spielseite kopieren">
           <Icon name="kopieren" size={17} />
         </button>
@@ -113,6 +132,8 @@
   {#if game.placeId}
     <Serverliste {game} />
   {/if}
+
+  <Spielextras universeId={params.universeId} />
 </div>
 
 <style>
@@ -127,6 +148,11 @@
   .geprueft { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--t2); color: var(--s0); }
   .werte { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0; }
   .werte div { display: flex; flex-direction: column; gap: 2px; }
+  /* Fünf Werte brechen sauber in 3 + 2 um statt in 4 + 1. */
+  .werte.fuenf { display: grid; grid-template-columns: repeat(3, max-content); gap: 12px 28px; }
+  @media (min-width: 1560px) {
+    .werte.fuenf { grid-template-columns: repeat(5, max-content); }
+  }
   dt { font-size: 12px; color: var(--t3); }
   dd { margin: 0; font-size: 18px; font-weight: 700; font-stretch: 108%; display: flex; align-items: center; gap: 7px; }
   .punkt { width: 7px; height: 7px; border-radius: 50%; background: var(--live); }

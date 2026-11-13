@@ -21,6 +21,12 @@ export const app = $state({
   /** Bild-URLs je Universe: icons[id], banners[id] */
   icons: {},
   banners: {},
+  /** Bewertung je Universe: votes[id] = { upVotes, downVotes } (null = angefragt) */
+  votes: {},
+  /** Roblox-Update: { installed, latest, updateAvailable } */
+  update: null,
+  /** Letzte Sitzung aus dem Verlauf (für „Wieder beitreten“) */
+  last: null,
 });
 
 // ---------- Navigation ----------
@@ -136,6 +142,48 @@ async function flush() {
   }
 }
 
+// ---------- Bewertung (gebündelt laden) ----------
+
+const voteQueue = new Set();
+let voteTimer = null;
+
+/** Bewertung für ein Spiel anfordern, das keine mitbringt; landet in app.votes. */
+export function wantVotes(universeId) {
+  if (!universeId || universeId in app.votes) return;
+  app.votes[universeId] = null;
+  voteQueue.add(universeId);
+  voteTimer ??= setTimeout(async () => {
+    voteTimer = null;
+    const ids = [...voteQueue];
+    voteQueue.clear();
+    try {
+      const map = await call("game_votes", { universeIds: ids });
+      for (const id of ids) if (map[id]) app.votes[id] = map[id];
+    } catch {
+      // Nicht kritisch: die Karte zeigt dann keine Bewertung.
+    }
+  }, 30);
+}
+
+// ---------- Roblox-Update und letzter Server ----------
+
+export async function updatePruefen() {
+  app.update = await call("roblox_update").catch(() => app.update);
+}
+
+async function letzteLaden() {
+  const p = await call("playtime_get").catch(() => null);
+  app.last = p?.recent?.[0] ?? null;
+}
+
+/** Server der letzten Sitzung, solange er vermutlich noch läuft (3 Stunden). */
+export function letzterServer(universeId = null) {
+  const s = app.last;
+  if (!s?.jobId || !s.placeId) return null;
+  if (universeId && s.universeId !== universeId) return null;
+  return Date.now() / 1000 - s.end < 3 * 3600 ? s : null;
+}
+
 // ---------- Serverliste vorladen ----------
 
 const serverCache = new Map();
@@ -176,9 +224,19 @@ export async function init() {
   if (activity?.state) app.activity = activity;
   call("account_get").then((a) => (app.account = a)).catch(() => {});
   on("activity", (a) => {
+    const vorher = app.activity.state;
     app.activity = a;
     app.roblox.running = a.state !== "idle";
+    // Sitzung vorbei: Der Verlauf hat einen neuen letzten Server.
+    if (a.state === "idle" && vorher !== "idle") setTimeout(letzteLaden, 400);
   });
+  // Roblox hat sich aktualisiert: Stand neu lesen.
+  on("roblox-version", () => {
+    call("roblox_status").then((r) => (app.roblox = r)).catch(() => {});
+    updatePruefen();
+  });
+  updatePruefen();
+  letzteLaden();
 }
 
 export async function saveConfig(patch) {
@@ -197,7 +255,10 @@ export async function launch(game = null, jobId = null) {
   starting.key = key;
   try {
     await call("launch", { placeId: game?.placeId ?? null, jobId });
-    toast(game ? (jobId ? `Roblox startet ${game.name} auf dem gewählten Server` : `Roblox startet ${game.name}`) : "Roblox startet");
+    const text = game ? (jobId ? `Roblox startet ${game.name} auf dem gewählten Server` : `Roblox startet ${game.name}`) : "Roblox startet";
+    // Bei einem Update entsteht ein neuer Versionsordner. Brickstrap schreibt die Flags dort nach.
+    toast(text, "info", app.update?.updateAvailable ? "Roblox aktualisiert sich zuerst. Das dauert einen Moment." : "");
+    if (app.update?.updateAvailable) setTimeout(updatePruefen, 90_000);
   } catch (e) {
     const f = fehlerText(e);
     toast(f.titel, "fehler", f.hinweis);

@@ -159,7 +159,26 @@ fn card(v: &Value) -> Option<GameCard> {
     })
 }
 
-async fn get_json(state: &AppState, url: &str) -> ApiResult<Value> {
+/// Rohantworten ablegen, wenn es im Datenordner den Ordner `roh` gibt. Zum Prüfen der
+/// undokumentierten Endpunkte am echten PC: Ordner anlegen, App benutzen, Dateien ansehen.
+fn dump_raw(state: &AppState, url: &str, v: &Value) {
+    let dir = state.file("roh");
+    if !dir.is_dir() {
+        return;
+    }
+    let name: String = url
+        .trim_start_matches("https://")
+        .split('?')
+        .next()
+        .unwrap_or("antwort")
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() || c == '.' || c == '-' { c } else { '_' })
+        .take(120)
+        .collect();
+    let _ = write_json(&dir.join(format!("{name}.json")), v);
+}
+
+pub(crate) async fn get_json(state: &AppState, url: &str) -> ApiResult<Value> {
     let resp = state.http.get(url).send().await?;
     let status = resp.status();
     if status.as_u16() == 429 {
@@ -174,7 +193,9 @@ async fn get_json(state: &AppState, url: &str) -> ApiResult<Value> {
     if !status.is_success() {
         return Err(ApiError::new("HTTP", status.as_u16().to_string()));
     }
-    Ok(resp.json::<Value>().await?)
+    let v = resp.json::<Value>().await?;
+    dump_raw(state, url, &v);
+    Ok(v)
 }
 
 fn cache_path(state: &AppState, key: &str) -> PathBuf {
@@ -285,6 +306,30 @@ pub async fn search(state: State<'_, AppState>, query: String, page: Option<Stri
     Ok(SearchPage { games, next_page: next })
 }
 
+/// Vorschläge beim Tippen. Der Endpunkt ist undokumentiert: Jeder Fehler ergibt eine leere
+/// Liste, die Suche selbst hängt nicht davon ab.
+#[tauri::command]
+pub async fn search_suggest(state: State<'_, AppState>, query: String) -> Result<Vec<String>, ()> {
+    let q = query.trim();
+    if q.chars().count() < 2 || place_id_from_input(q).is_some() {
+        return Ok(Vec::new());
+    }
+    let url = format!("https://apis.roblox.com/games-autocomplete/v1/get-suggestion/{}", urlencode(q));
+    let Ok(v) = get_json(&state, &url).await else { return Ok(Vec::new()) };
+    let mut out: Vec<String> = Vec::new();
+    for e in v.get("entries").and_then(Value::as_array).into_iter().flatten() {
+        let s = text(e, &["searchQuery", "canonicalTitle", "query", "name"]);
+        let s = s.trim();
+        if !s.is_empty() && !out.iter().any(|o| o.eq_ignore_ascii_case(s)) {
+            out.push(s.to_string());
+        }
+        if out.len() >= 6 {
+            break;
+        }
+    }
+    Ok(out)
+}
+
 /// Erkennt `123456`, `roblox.com/games/123456/...` und `placeId=123456`.
 fn place_id_from_input(q: &str) -> Option<u64> {
     if q.chars().all(|c| c.is_ascii_digit()) && q.len() >= 3 {
@@ -334,6 +379,212 @@ pub async fn fetch_details(state: &AppState, universe_ids: &[u64]) -> ApiResult<
         out.extend(v.get("data").and_then(Value::as_array).into_iter().flatten().filter_map(detail_from));
     }
     Ok(out)
+}
+
+// ---------- Bewertung ----------
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Votes {
+    pub up_votes: u64,
+    pub down_votes: u64,
+}
+
+/// Daumen hoch und runter je Spiel (öffentlich, ohne Login).
+#[tauri::command]
+pub async fn game_votes(state: State<'_, AppState>, universe_ids: Vec<u64>) -> ApiResult<HashMap<u64, Votes>> {
+    let mut out = HashMap::new();
+    for chunk in universe_ids.chunks(50) {
+        let url = format!("https://games.roblox.com/v1/games/votes?universeIds={}", ids(chunk));
+        let v = get_json(&state, &url).await?;
+        for d in v.get("data").and_then(Value::as_array).into_iter().flatten() {
+            let id = num(d, &["id", "universeId"]);
+            if id != 0 {
+                out.insert(id, Votes { up_votes: num(d, &["upVotes"]), down_votes: num(d, &["downVotes"]) });
+            }
+        }
+    }
+    Ok(out)
+}
+
+// ---------- Abzeichen, Game-Pässe, Events ----------
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Badge {
+    pub id: u64,
+    pub name: String,
+    pub description: String,
+    pub icon_url: Option<String>,
+    /// Wie oft insgesamt vergeben
+    pub awarded: u64,
+    /// Anteil der Spieler von gestern, die es bekommen haben (0 bis 100)
+    pub win_rate: Option<f64>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GamePass {
+    pub id: u64,
+    pub name: String,
+    /// Preis in Robux; `None` = nicht im Verkauf
+    pub price: Option<u64>,
+    pub icon_url: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GameEvent {
+    pub id: String,
+    pub title: String,
+    pub subtitle: String,
+    /// ISO-Zeiten wie von Roblox geliefert (UTC)
+    pub start: String,
+    pub end: String,
+}
+
+#[derive(Clone, Debug, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GameExtras {
+    pub badges: Vec<Badge>,
+    pub passes: Vec<GamePass>,
+    pub events: Vec<GameEvent>,
+}
+
+/// Bild-URLs aus einer Thumbnail-Antwort (`targetId` → `imageUrl`). Fehler ergeben eine leere Karte.
+async fn thumb_map(state: &AppState, url: &str) -> HashMap<u64, String> {
+    let Ok(v) = get_json(state, url).await else { return HashMap::new() };
+    v.get("data")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter(|d| text(d, &["state"]) == "Completed")
+        .map(|d| (num(d, &["targetId"]), text(d, &["imageUrl"])))
+        .filter(|(id, u)| *id != 0 && !u.is_empty())
+        .collect()
+}
+
+async fn fetch_badges(state: &AppState, universe_id: u64) -> Vec<Badge> {
+    let url = format!("https://badges.roblox.com/v1/universes/{universe_id}/badges?limit=100&sortOrder=Asc");
+    let Ok(v) = get_json(state, &url).await else { return Vec::new() };
+    let mut out: Vec<Badge> = v
+        .get("data")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter(|b| b.get("enabled").and_then(Value::as_bool).unwrap_or(true))
+        .filter_map(|b| {
+            let id = num(b, &["id"]);
+            let stats = b.get("statistics").cloned().unwrap_or(Value::Null);
+            (id != 0).then(|| Badge {
+                id,
+                name: text(b, &["displayName", "name"]),
+                description: text(b, &["displayDescription", "description"]),
+                icon_url: None,
+                awarded: num(&stats, &["awardedCount"]),
+                // Roblox liefert einen Anteil von 0 bis 1.
+                win_rate: stats.get("winRatePercentage").and_then(Value::as_f64).map(|r| r * 100.0),
+            })
+        })
+        .collect();
+    if !out.is_empty() {
+        let list: Vec<u64> = out.iter().map(|b| b.id).collect();
+        let icons = thumb_map(
+            state,
+            &format!("https://thumbnails.roblox.com/v1/badges/icons?badgeIds={}&size=150x150&format=Png&isCircular=false", ids(&list)),
+        )
+        .await;
+        for b in &mut out {
+            b.icon_url = icons.get(&b.id).cloned();
+        }
+    }
+    out
+}
+
+/// Game-Pässe. Roblox hat 2026 alte Endpunkte abgeschaltet: zuerst der neue unter
+/// `apis.roblox.com`, dann der alte. Feldnamen unbestätigt, darum mehrere Namen.
+async fn fetch_passes(state: &AppState, universe_id: u64) -> Vec<GamePass> {
+    let urls = [
+        format!("https://apis.roblox.com/game-passes/v1/universes/{universe_id}/game-passes?passView=Full&pageSize=100"),
+        format!("https://games.roblox.com/v1/games/{universe_id}/game-passes?limit=100&sortOrder=Asc"),
+    ];
+    let mut list: Vec<Value> = Vec::new();
+    for url in &urls {
+        if let Ok(v) = get_json(state, url).await {
+            if let Some(a) = v.get("gamePasses").or_else(|| v.get("data")).and_then(Value::as_array) {
+                list = a.clone();
+                break;
+            }
+        }
+    }
+    let mut out: Vec<GamePass> = list
+        .iter()
+        .filter_map(|p| {
+            let id = num(p, &["id", "gamePassId"]);
+            let name = text(p, &["displayName", "name"]);
+            let for_sale = p.get("isForSale").and_then(Value::as_bool).unwrap_or(true);
+            let price = ["price", "priceInRobux"]
+                .iter()
+                .find_map(|k| p.get(*k).and_then(Value::as_u64))
+                .or_else(|| p.get("priceInformation")?.get("defaultPriceInRobux")?.as_u64());
+            (id != 0 && !name.is_empty()).then(|| GamePass { id, name, price: price.filter(|_| for_sale), icon_url: None })
+        })
+        .collect();
+    if !out.is_empty() {
+        let list: Vec<u64> = out.iter().map(|p| p.id).collect();
+        let icons = thumb_map(
+            state,
+            &format!("https://thumbnails.roblox.com/v1/game-passes?gamePassIds={}&size=150x150&format=Png&isCircular=false", ids(&list)),
+        )
+        .await;
+        for p in &mut out {
+            p.icon_url = icons.get(&p.id).cloned();
+        }
+    }
+    out
+}
+
+/// Events eines Spiels. Unbestätigt (Pfad und Felder), verlangt eventuell eine Anmeldung:
+/// dann bleibt die Liste leer.
+async fn fetch_events(state: &AppState, universe_id: u64) -> Vec<GameEvent> {
+    let url = format!("https://apis.roblox.com/virtual-events/v1/universes/{universe_id}/virtual-events");
+    let Ok(v) = get_json(state, &url).await else { return Vec::new() };
+    v.get("data")
+        .or_else(|| v.get("gameEvents"))
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter(|e| !matches!(text(e, &["eventStatus", "status"]).to_ascii_lowercase().as_str(), "cancelled" | "canceled" | "moderated"))
+        .filter_map(|e| {
+            let time = e.get("eventTime").cloned().unwrap_or(Value::Null);
+            let pick = |a: &str, b: &str| {
+                let t = text(&time, &[a]);
+                if t.is_empty() { text(e, &[b]) } else { t }
+            };
+            let title = text(e, &["displayTitle", "title"]);
+            let id = match e.get("id") {
+                Some(Value::String(s)) => s.clone(),
+                Some(Value::Number(n)) => n.to_string(),
+                _ => String::new(),
+            };
+            (!title.is_empty()).then(|| GameEvent {
+                id,
+                title,
+                subtitle: text(e, &["displaySubtitle", "subtitle"]),
+                start: pick("startUtc", "startTime"),
+                end: pick("endUtc", "endTime"),
+            })
+        })
+        .collect()
+}
+
+/// Abzeichen, Game-Pässe und Events für die Spielseite. Jeder Teil darf scheitern
+/// und ist dann leer; die Spielseite hängt nicht davon ab.
+#[tauri::command]
+pub async fn game_extras(state: State<'_, AppState>, universe_id: u64) -> Result<GameExtras, ()> {
+    let (badges, passes, events) =
+        tokio::join!(fetch_badges(&state, universe_id), fetch_passes(&state, universe_id), fetch_events(&state, universe_id));
+    Ok(GameExtras { badges, passes, events })
 }
 
 /// Universe-ID zu einer Place-ID.

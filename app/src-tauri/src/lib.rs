@@ -9,6 +9,7 @@ mod discord;
 mod fastflags;
 mod launch;
 mod paths;
+mod region;
 mod roblox_api;
 mod state;
 
@@ -32,6 +33,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let data_dir = app.path().app_data_dir()?;
+            region::init(&data_dir);
             app.manage(state::AppState::new(data_dir));
 
             // Symbol im Infobereich
@@ -92,12 +94,16 @@ pub fn run() {
             roblox_api::servers,
             roblox_api::game_media,
             roblox_api::server_avatars,
+            roblox_api::game_votes,
+            roblox_api::game_extras,
+            roblox_api::search_suggest,
             account::account_get,
             auth::auth_status,
             auth::auth_login,
             auth::auth_logout,
             launch::pin_cover_set,
             launch::roblox_status,
+            launch::roblox_update,
             launch::launch,
             launch::invite_link,
             launch::config_get,

@@ -16,7 +16,7 @@
   import { app, init, back, go, eingeklappt, leiste } from "./lib/app.svelte.js";
   import { ladeFlags } from "./lib/flags.svelte.js";
   import { suche } from "./lib/suche.svelte.js";
-  import { showWindow, isDemo } from "./lib/bridge.js";
+  import { showWindow, isDemo, call } from "./lib/bridge.js";
 
   let bereit = $state(false);
   let suchfeld = $state();
@@ -60,10 +60,71 @@
     }
   }
 
+  // Vorschläge unter dem Suchfeld. Der Endpunkt ist undokumentiert: bleibt die Liste leer, fehlt nichts.
+  let vorschlaege = $state([]);
+  let aktiv = $state(-1);
+  let vorschlagOffen = $state(false);
+  let vorschlagTimer;
+  let vorschlagLauf = 0;
+  const merker = new Map();
+
+  function vorschlagen(q) {
+    clearTimeout(vorschlagTimer);
+    const id = ++vorschlagLauf;
+    const key = q.trim().toLowerCase();
+    aktiv = -1;
+    if (key.length < 2) {
+      vorschlaege = [];
+      return;
+    }
+    if (merker.has(key)) {
+      vorschlaege = merker.get(key);
+      return;
+    }
+    vorschlagTimer = setTimeout(async () => {
+      const liste = await call("search_suggest", { query: key }).catch(() => []);
+      merker.set(key, liste);
+      if (id === vorschlagLauf) vorschlaege = liste;
+    }, 160);
+  }
+
   function sucheTippen(e) {
     suche.query = e.currentTarget.value;
+    vorschlagOffen = true;
+    vorschlagen(suche.query);
     if (app.route.name !== "suche") go("suche");
   }
+
+  function vorschlagNehmen(text) {
+    suche.query = text;
+    vorschlagOffen = false;
+    vorschlaege = [];
+    if (app.route.name !== "suche") go("suche");
+  }
+
+  function sucheTasten(e) {
+    const offen = vorschlagOffen && vorschlaege.length > 0;
+    if (e.key === "ArrowDown" && offen) {
+      e.preventDefault();
+      aktiv = (aktiv + 1) % vorschlaege.length;
+    } else if (e.key === "ArrowUp" && offen) {
+      e.preventDefault();
+      aktiv = aktiv <= 0 ? vorschlaege.length - 1 : aktiv - 1;
+    } else if (e.key === "Enter") {
+      if (offen && aktiv >= 0) {
+        e.preventDefault();
+        vorschlagNehmen(vorschlaege[aktiv]);
+      } else {
+        vorschlagOffen = false;
+      }
+    } else if (e.key === "Escape" && offen) {
+      // Erst die Liste schließen, das Feld behält den Fokus.
+      e.stopPropagation();
+      vorschlagOffen = false;
+    }
+  }
+
+  const zeigeVorschlaege = $derived(vorschlagOffen && vorschlaege.length > 0);
 </script>
 
 <svelte:window onkeydown={tasten} onmouseup={maus} />
@@ -87,11 +148,35 @@
             placeholder="Spiel suchen oder Place-ID / Link einfügen"
             value={suche.query}
             oninput={sucheTippen}
+            onkeydown={sucheTasten}
             onfocus={() => app.route.name !== "suche" && suche.query && go("suche")}
+            onblur={() => (vorschlagOffen = false)}
             spellcheck="false"
             autocomplete="off"
+            role="combobox"
+            aria-expanded={zeigeVorschlaege}
+            aria-controls="vorschlaege"
+            aria-autocomplete="list"
+            aria-activedescendant={zeigeVorschlaege && aktiv >= 0 ? `vorschlag-${aktiv}` : undefined}
           />
           <kbd>Strg K</kbd>
+          {#if zeigeVorschlaege}
+            <ul class="vorschlaege" id="vorschlaege" role="listbox" aria-label="Vorschläge">
+              {#each vorschlaege as v, i (v)}
+                <!-- pointerdown statt click: das Feld soll den Fokus nicht vorher verlieren -->
+                <li
+                  id="vorschlag-{i}"
+                  role="option"
+                  aria-selected={i === aktiv}
+                  class:aktiv={i === aktiv}
+                  onpointerdown={(e) => { e.preventDefault(); vorschlagNehmen(v); }}
+                  onpointerenter={() => (aktiv = i)}
+                >
+                  <Icon name="suche" size={14} /><span>{v}</span>
+                </li>
+              {/each}
+            </ul>
+          {/if}
         </label>
         {#if isDemo}<span class="marke warnung" title="Im Browser ohne Tauri: alle Daten sind erfunden">Demo-Daten</span>{/if}
       </header>
@@ -164,6 +249,33 @@
   }
   .suche input::placeholder { color: var(--t3); }
   .suche input::-webkit-search-cancel-button { display: none; }
+  .vorschlaege {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    left: -1px;
+    right: -1px;
+    margin: 0;
+    padding: 5px;
+    list-style: none;
+    border-radius: 10px;
+    background: var(--s2);
+    border: 1px solid var(--linie-stark);
+    box-shadow: 0 12px 28px #00000073;
+    animation: vorschlaege-rein 120ms var(--ein);
+  }
+  @keyframes vorschlaege-rein { from { opacity: 0; transform: translateY(-3px); } }
+  .vorschlaege li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 34px;
+    padding: 0 9px;
+    border-radius: var(--r-s);
+    color: var(--t3);
+  }
+  .vorschlaege li span { color: var(--t1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vorschlaege li.aktiv { background: var(--s4); color: var(--t2); }
   kbd {
     font: inherit;
     font-size: 11.5px;

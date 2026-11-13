@@ -2,7 +2,7 @@
   // Leiste unten: was Roblox gerade macht, aktives FastFlag-Preset, Roblox starten.
   import Icon from "./Icon.svelte";
   import Auswahl from "./Auswahl.svelte";
-  import { app, launch, starting, go, openGame, kopieren } from "../lib/app.svelte.js";
+  import { app, launch, starting, go, openGame, kopieren, letzterServer } from "../lib/app.svelte.js";
   import { flags, presetWaehlen, presetName } from "../lib/flags.svelte.js";
   import { call } from "../lib/bridge.js";
   import { dauer } from "../lib/format.js";
@@ -16,10 +16,12 @@
   const a = $derived(app.activity);
   const spielt = $derived(a.state === "playing" || a.state === "joining");
 
+  const zuletzt = $derived(letzterServer());
+
   async function einladen() {
     if (!a.placeId) return;
-    const link = await call("invite_link", { placeId: a.placeId });
-    await kopieren(link, "Link zur Spielseite kopiert");
+    const link = await call("invite_link", { placeId: a.placeId, jobId: a.jobId ?? null });
+    await kopieren(link, a.jobId ? "Link zu deinem Server kopiert" : "Link zur Spielseite kopiert");
   }
 </script>
 
@@ -33,13 +35,15 @@
         </span>
         <span class="unter zahl">
           {#if a.since}seit {dauer(jetzt - a.since)}{/if}
-          {#if a.serverIp} · Server {a.serverIp}{/if}
+          {#if a.region}<span title="Geschätzt aus der Adresse {a.serverIp}"> · Server in {a.region}</span>{:else if a.serverIp} · Server {a.serverIp}{/if}
         </span>
       </div>
       {#if a.universeId}
         <button class="knopf flach klein" onclick={() => openGame({ universeId: a.universeId, placeId: a.placeId, name: a.gameName ?? "" })}>Spielseite</button>
       {/if}
-      <button class="knopf flach klein" onclick={einladen}><Icon name="kopieren" size={14} />Link kopieren</button>
+      <button class="knopf flach klein" onclick={einladen} title={a.jobId ? "Wer den Link öffnet, landet auf deinem Server" : "Link zur Spielseite"}>
+        <Icon name="kopieren" size={14} />{a.jobId ? "Einladung kopieren" : "Link kopieren"}
+      </button>
     {:else if !app.roblox.installed}
       <span class="lampe warnung" aria-hidden="true"></span>
       <div class="zeilen">
@@ -50,8 +54,15 @@
       <span class="lampe" aria-hidden="true"></span>
       <div class="zeilen">
         <span class="titel">Bereit</span>
-        <span class="unter">Roblox ist geschlossen</span>
+        <span class="unter">
+          {#if app.update?.updateAvailable}Roblox aktualisiert sich beim nächsten Start{:else if zuletzt}Zuletzt {zuletzt.name}{:else}Roblox ist geschlossen{/if}
+        </span>
       </div>
+      {#if zuletzt}
+        <button class="knopf flach klein" onclick={() => launch(zuletzt, zuletzt.jobId)} disabled={!!starting.key} title="Zurück auf den Server von {zuletzt.name}">
+          <Icon name="neu" size={14} />Wieder beitreten
+        </button>
+      {/if}
     {/if}
   </div>
 
@@ -109,4 +120,9 @@
   .preset :global(.knopffeld) { height: 32px; }
   .start { height: 36px; padding: 0 16px; }
   .zeilen { flex-direction: row; align-items: baseline; gap: 10px; }
+  /* Schmales Fenster: Platz für den Spielnamen statt für die Beschriftung. */
+  @media (max-width: 1100px) {
+    .preset .leise { display: none; }
+    .titel { max-width: 220px; }
+  }
 </style>

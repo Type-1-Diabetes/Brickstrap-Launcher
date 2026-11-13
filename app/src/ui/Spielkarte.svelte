@@ -2,7 +2,7 @@
   // Spiel in einer Reihe oder im Raster: quadratisches Bild, Name, Spieler online.
   import Bild from "./Bild.svelte";
   import Icon from "./Icon.svelte";
-  import { openGame, prefetch, isPinned } from "../lib/app.svelte.js";
+  import { app, openGame, prefetch, isPinned, wantVotes } from "../lib/app.svelte.js";
   import { zahl, bewertung } from "../lib/format.js";
 
   /** @type {{ game: any }} */
@@ -16,7 +16,13 @@
   function leave() {
     clearTimeout(hoverTimer);
   }
-  const quote = $derived(bewertung(game.upVotes, game.downVotes));
+  // Karten ohne eigene Bewertung (Verlauf, Place-ID) holen sie gebündelt nach.
+  const eigene = $derived((game.upVotes ?? 0) + (game.downVotes ?? 0) > 0);
+  $effect(() => {
+    if (!eigene) wantVotes(game.universeId);
+  });
+  const stimmen = $derived(eigene ? game : app.votes[game.universeId]);
+  const quote = $derived(bewertung(stimmen?.upVotes, stimmen?.downVotes));
 </script>
 
 <button

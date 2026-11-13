@@ -4,6 +4,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
 use crate::paths;
+use crate::roblox_api::get_json;
 use crate::state::{now, AppState, Config, Pinned};
 
 #[derive(Serialize)]
@@ -23,6 +24,56 @@ pub fn roblox_status() -> RobloxStatus {
         running: paths::roblox_running(),
         version: dir.and_then(|d| d.file_name().map(|n| n.to_string_lossy().into_owned())),
     }
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateInfo {
+    /// Neuester installierter Versionsordner
+    pub installed: Option<String>,
+    /// Neueste Version laut Roblox (`version-…`), `None` wenn der Abruf scheitert
+    pub latest: Option<String>,
+    pub update_available: bool,
+}
+
+const UPDATE_CACHE_SECS: u64 = 600;
+
+/// Steht ein Roblox-Update an? Vergleicht die Versionsordner mit der Angabe von Roblox
+/// (dokumentierter Endpunkt, ohne Login). Das Ergebnis gilt 10 Minuten.
+/// Ohne Versionsordner (Store-Version) oder ohne Netz: kein Update gemeldet.
+#[tauri::command]
+pub async fn roblox_update(state: State<'_, AppState>) -> Result<UpdateInfo, String> {
+    let dirs: Vec<String> = paths::player_version_dirs()
+        .iter()
+        .filter_map(|d| d.file_name().map(|n| n.to_string_lossy().into_owned()))
+        .collect();
+    let installed = dirs.first().cloned();
+    if dirs.is_empty() {
+        return Ok(UpdateInfo { installed, latest: None, update_available: false });
+    }
+    let cached = state
+        .latest_version
+        .lock()
+        .ok()
+        .and_then(|c| c.clone())
+        .filter(|(t, _)| now().saturating_sub(*t) < UPDATE_CACHE_SECS)
+        .map(|(_, v)| v);
+    let latest = match cached {
+        Some(v) => Some(v),
+        None => {
+            let v = get_json(&state, "https://clientsettingscdn.roblox.com/v2/client-version/WindowsPlayer")
+                .await
+                .ok()
+                .and_then(|v| v.get("clientVersionUpload")?.as_str().map(String::from))
+                .filter(|v| v.starts_with("version-"));
+            if let (Some(v), Ok(mut c)) = (&v, state.latest_version.lock()) {
+                *c = Some((now(), v.clone()));
+            }
+            v
+        }
+    };
+    let update_available = latest.as_ref().is_some_and(|l| !dirs.iter().any(|d| d.eq_ignore_ascii_case(l)));
+    Ok(UpdateInfo { installed, latest, update_available })
 }
 
 /// Deeplink für einen öffentlichen Server oder einen beliebigen Server.
@@ -80,9 +131,13 @@ pub fn launch(app: AppHandle, state: State<'_, AppState>, place_id: Option<u64>,
 }
 
 /// Einladungslink, der auch ohne Brickstrap funktioniert (öffnet die Roblox-Webseite).
+/// Mit `job_id` führt er auf genau diesen Server (Format wie im Discord-Knopf, unbestätigt).
 #[tauri::command]
-pub fn invite_link(place_id: u64) -> String {
-    format!("https://www.roblox.com/games/{place_id}")
+pub fn invite_link(place_id: u64, job_id: Option<String>) -> String {
+    match job_id.as_deref().filter(|j| is_job_id(j)) {
+        Some(j) => format!("https://www.roblox.com/games/start?placeId={place_id}&gameInstanceId={j}"),
+        None => format!("https://www.roblox.com/games/{place_id}"),
+    }
 }
 
 // ---------- App-Einstellungen und Anpinnen ----------

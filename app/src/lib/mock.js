@@ -111,9 +111,27 @@ const playtime = {
     { universeId: 9002, placeId: 70014, name: "Neon-Rennen", totalSecs: 2 * 3600, sessions: 6, lastPlayed: jetzt() - 9 * 86400 },
   ],
   recent: [],
+  month: [],
 };
+// Sitzungen der letzten 30 Tage, gleichmäßig erfunden (kein Zufall, damit die Vorschau stabil bleibt).
+{
+  const heute = jetzt();
+  const wer = [playtime.games[0], playtime.games[1], playtime.games[0], playtime.games[2], playtime.games[3], playtime.games[0]];
+  for (let tag = 0; tag < 30; tag++) {
+    if (tag % 7 === 4) continue; // ein Tag Pause pro Woche
+    const n = 1 + ((tag * 5) % 3);
+    for (let k = 0; k < n; k++) {
+      const g = wer[(tag + k * 2) % wer.length];
+      const secs = 900 + ((tag * 37 + k * 211) % 80) * 60;
+      const end = heute - tag * 86400 - 1800 - k * 7200;
+      playtime.month.push({ universeId: g.universeId, placeId: g.placeId, name: g.name, start: end - secs, end, secs, jobId: "0a1b2c3d-0000-4444-8888-aabbccddeeff" });
+    }
+  }
+  playtime.month.sort((a, b) => b.start - a.start);
+  playtime.recent = playtime.month.slice(0, 30);
+}
 
-let activity = { state: "idle", placeId: null, jobId: null, universeId: null, serverIp: null, since: null, gameName: null, iconUrl: null };
+let activity = { state: "idle", placeId: null, jobId: null, universeId: null, serverIp: null, region: null, since: null, gameName: null, iconUrl: null };
 const listeners = new Map();
 
 function servers(placeId, cursor, order, excludeFull) {
@@ -197,11 +215,44 @@ const handlers = {
     await delay(300);
     const g = games.find((x) => x.placeId === placeId);
     if (!g) return null;
-    setTimeout(() => emit({ ...activity, state: "joining", placeId, jobId: jobId ?? null, universeId: g.universeId, since: jetzt() }), 400);
+    setTimeout(() => emit({ ...activity, state: "joining", placeId, jobId: jobId ?? "0a1b2c3d-0000-4444-8888-aabbccddeeff", universeId: g.universeId, serverIp: "128.116.44.33", region: "Frankfurt, DE", since: jetzt() }), 400);
     setTimeout(() => emit({ ...activity, state: "playing", gameName: g.name, iconUrl: bild(g, 256, 256) }), 1800);
     return null;
   },
-  async invite_link({ placeId }) { return `https://www.roblox.com/games/${placeId}`; },
+  async invite_link({ placeId, jobId }) {
+    return jobId ? `https://www.roblox.com/games/start?placeId=${placeId}&gameInstanceId=${jobId}` : `https://www.roblox.com/games/${placeId}`;
+  },
+  async roblox_update() {
+    return { installed: "version-demo", latest: modus.has("update") ? "version-neu" : "version-demo", updateAvailable: modus.has("update") };
+  },
+  async game_votes({ universeIds }) {
+    await delay(150);
+    return Object.fromEntries(universeIds.map((id) => games.find((g) => g.universeId === id)).filter(Boolean).map((g) => [g.universeId, { upVotes: g.upVotes, downVotes: g.downVotes }]));
+  },
+  async search_suggest({ query }) {
+    await delay(80);
+    const q = query.trim().toLowerCase();
+    if (q.length < 2 || modus.has("offline")) return [];
+    return games.filter((g) => g.name.toLowerCase().includes(q)).slice(0, 6).map((g) => g.name.toLowerCase());
+  },
+  async game_extras({ universeId }) {
+    await delay(400);
+    if (modus.has("offline") || modus.has("leer")) return { badges: [], passes: [], events: [] };
+    const g = games.find((x) => x.universeId === universeId) ?? games[0];
+    const mini = (k) => bild({ hue: (g.hue + k * 53) % 360, universeId: g.universeId + k * 11 }, 150, 150);
+    const namen = ["Willkommen", "Erste Runde", "10 Siege", "Sammler", "Nachtschicht", "Ohne Sturz", "Schnellster Lauf", "Entdecker", "Teamspieler", "100 Stunden", "Geheimer Raum", "Meister"];
+    return {
+      badges: namen.map((name, k) => ({
+        id: 500 + k, name, description: k % 3 === 0 ? "" : `Demo-Abzeichen Nummer ${k + 1}.`, iconUrl: mini(k),
+        awarded: Math.round(g.playing * 900 / (k + 1)), winRate: k === 11 ? 0.04 : Math.round(8000 / (k + 1)) / 100,
+      })),
+      passes: [["VIP", 399], ["Doppelte Münzen", 149], ["Großes Lager", 75], ["Altes Abo", null], ["Radio", 250]].map(([name, price], k) => ({ id: 800 + k, name, price, iconUrl: mini(k + 20) })),
+      events: g.universeId % 2 ? [] : [
+        { id: "e1", title: "Winter-Update", subtitle: "Neue Karte und Schneebälle", start: new Date(Date.now() - 3600e3).toISOString(), end: new Date(Date.now() + 2 * 86400e3).toISOString() },
+        { id: "e2", title: "Doppelte Punkte", subtitle: "", start: new Date(Date.now() + 3 * 86400e3).toISOString(), end: new Date(Date.now() + 4 * 86400e3).toISOString() },
+      ],
+    };
+  },
   async discord_builtin() { return true; },
   async auth_status() { return angemeldet ? { loggedIn: true, userId: 1, name: "DemoSpieler", displayName: "Demo" } : { loggedIn: false }; },
   async auth_login() {
@@ -261,7 +312,7 @@ const handlers = {
     return null;
   },
   async activity_get() { return { ...activity }; },
-  async playtime_get() { return modus.has("leer") ? { games: [], recent: [] } : structuredClone(playtime); },
+  async playtime_get() { return modus.has("leer") ? { games: [], recent: [], month: [] } : structuredClone(playtime); },
 };
 
 function emit(a) {
@@ -283,5 +334,5 @@ export function on(event, handler) {
 
 // Für Tests in der Konsole: demoBeenden() beendet das Demo-Spiel.
 if (typeof window !== "undefined") {
-  window.demoBeenden = () => emit({ state: "idle", placeId: null, jobId: null, universeId: null, serverIp: null, since: null, gameName: null, iconUrl: null });
+  window.demoBeenden = () => emit({ state: "idle", placeId: null, jobId: null, universeId: null, serverIp: null, region: null, since: null, gameName: null, iconUrl: null });
 }

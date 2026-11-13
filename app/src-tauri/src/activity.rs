@@ -18,12 +18,13 @@ use serde_json::Value;
 use tauri::{AppHandle, Emitter, Manager, State};
 
 use crate::discord::{self, RpcOverride};
-use crate::paths::{logs_dir, roblox_running};
+use crate::paths::{logs_dir, player_version_dirs, roblox_running};
 use crate::roblox_api::{game_brief, game_brief_by_place};
 use crate::state::{now, read_json, write_json, AppState};
 
 const HISTORY_FILE: &str = "history.json";
-const MAX_SESSIONS: usize = 500;
+const MAX_SESSIONS: usize = 2000;
+const MONTH_SECS: u64 = 30 * 86400;
 const MIN_SESSION_SECS: u64 = 10;
 const MAX_READ: u64 = 8 * 1024 * 1024;
 const NEW_FILE_WINDOW: Duration = Duration::from_secs(15);
@@ -39,6 +40,8 @@ pub struct Activity {
     pub job_id: Option<String>,
     pub universe_id: Option<u64>,
     pub server_ip: Option<String>,
+    /// Ungefährer Standort des Servers, z. B. „Frankfurt, DE“ (aus der IP, kann fehlen)
+    pub region: Option<String>,
     /// Unix-Zeit in Sekunden, ab wann das Spiel läuft
     pub since: Option<u64>,
     pub game_name: Option<String>,
@@ -54,6 +57,7 @@ impl Default for Activity {
             job_id: None,
             universe_id: None,
             server_ip: None,
+            region: None,
             since: None,
             game_name: None,
             icon_url: None,
@@ -71,6 +75,9 @@ pub struct Session {
     pub start: u64,
     pub end: u64,
     pub secs: u64,
+    /// Server der Sitzung, für „Wieder beitreten“ (fehlt bei alten Einträgen)
+    #[serde(default)]
+    pub job_id: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -89,6 +96,8 @@ pub struct GameTime {
 pub struct Playtime {
     pub games: Vec<GameTime>,
     pub recent: Vec<Session>,
+    /// Alle Sitzungen der letzten 30 Tage (für die Statistik nach Tag und Zeitraum)
+    pub month: Vec<Session>,
 }
 
 // ---------- Zeilen verstehen ----------
@@ -202,6 +211,7 @@ impl Tracker {
                     start,
                     end: now,
                     secs,
+                    job_id: a.job_id.clone(),
                 })
             }
             _ => None,
@@ -222,6 +232,7 @@ impl Tracker {
                 self.activity.state = "joining".into();
                 self.activity.place_id = Some(place_id);
                 self.activity.job_id = Some(job_id);
+                self.activity.region = crate::region::lookup(&ip);
                 self.activity.server_ip = Some(ip);
                 out.changed = true;
             }
@@ -230,6 +241,8 @@ impl Tracker {
                 out.changed = true;
             }
             LogEvent::Udmux(ip) if active => {
+                // Die UDMUX-Adresse ist die öffentliche; nur sie steht in der Regionstabelle.
+                self.activity.region = crate::region::lookup(&ip).or(self.activity.region.take());
                 self.activity.server_ip = Some(ip);
                 out.changed = true;
             }
@@ -259,6 +272,45 @@ impl Tracker {
         }
         out
     }
+}
+
+/// Zeitstempel am Zeilenanfang (`2025-01-01T12:00:00.123Z,…`, UTC) als Unix-Sekunden.
+pub fn line_time(line: &str) -> Option<u64> {
+    let b = line.as_bytes();
+    if b.len() < 19 || b[4] != b'-' || b[7] != b'-' || b[10] != b'T' || b[13] != b':' || b[16] != b':' {
+        return None;
+    }
+    let n = |from: usize, to: usize| line.get(from..to)?.parse::<i64>().ok();
+    let (mut y, m, d) = (n(0, 4)?, n(5, 7)?, n(8, 10)?);
+    let (h, mi, s) = (n(11, 13)?, n(14, 16)?, n(17, 19)?);
+    if !(1..=12).contains(&m) || !(1..=31).contains(&d) || h > 23 || mi > 59 || s > 60 {
+        return None;
+    }
+    // Tage seit 1970 (Kalenderrechnung nach Howard Hinnant).
+    if m <= 2 {
+        y -= 1;
+    }
+    let era = y.div_euclid(400);
+    let yoe = y - era * 400;
+    let doy = (153 * (if m > 2 { m - 3 } else { m + 9 }) + 2) / 5 + d - 1;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    let days = era * 146_097 + doe - 719_468;
+    u64::try_from(days * 86_400 + h * 3600 + mi * 60 + s).ok()
+}
+
+/// Stand aus schon geschriebenen Zeilen nachbauen: Roblox lief schon, als Brickstrap startete.
+/// Die Zeiten kommen aus den Zeilen selbst, damit „seit“ stimmt.
+fn replay(lines: &[String], fallback: u64) -> Tracker {
+    let mut t = Tracker::new();
+    for line in lines {
+        if let Some(ev) = parse_line(line) {
+            // Beim Nachlesen gilt die Bremse für BloxstrapRPC nicht.
+            t.last_rpc = None;
+            t.handle(ev, line_time(line).unwrap_or(fallback));
+        }
+    }
+    t.last_rpc = None;
+    t
 }
 
 fn tracker() -> &'static Mutex<Tracker> {
@@ -344,7 +396,7 @@ fn save_session(state: &AppState, s: Session) {
     }
 }
 
-fn summarize(all: Vec<Session>) -> Playtime {
+fn summarize(all: Vec<Session>, now: u64) -> Playtime {
     // Schlüssel: Universe-ID, ohne sie die Place-ID.
     let mut map: HashMap<(u64, u64), GameTime> = HashMap::new();
     for s in &all {
@@ -369,13 +421,15 @@ fn summarize(all: Vec<Session>) -> Playtime {
     games.sort_by(|a, b| b.total_secs.cmp(&a.total_secs).then(b.last_played.cmp(&a.last_played)));
     let mut recent = all;
     recent.sort_by_key(|s| std::cmp::Reverse(s.start));
+    let from = now.saturating_sub(MONTH_SECS);
+    let month: Vec<Session> = recent.iter().filter(|s| s.end >= from).cloned().collect();
     recent.truncate(30);
-    Playtime { games, recent }
+    Playtime { games, recent, month }
 }
 
 #[tauri::command]
 pub fn playtime_get(state: State<'_, AppState>) -> Playtime {
-    summarize(read_json(&state.file(HISTORY_FILE)).unwrap_or_default())
+    summarize(read_json(&state.file(HISTORY_FILE)).unwrap_or_default(), now())
 }
 
 // ---------- Logdatei lesen ----------
@@ -421,11 +475,13 @@ struct Watcher {
     gone_ticks: u8,
     /// Lief Roblox beim letzten Durchlauf?
     was_running: bool,
+    /// Namen der Versionsordner beim letzten Durchlauf
+    versions: Option<Vec<String>>,
 }
 
 impl Watcher {
     fn new() -> Self {
-        Self { started: SystemTime::now(), initialized: false, current: None, pos: 0, pending: Vec::new(), gone_ticks: 0, was_running: false }
+        Self { started: SystemTime::now(), initialized: false, current: None, pos: 0, pending: Vec::new(), gone_ticks: 0, was_running: false, versions: None }
     }
 
     /// Neue ganze Zeilen seit dem letzten Aufruf.
@@ -462,11 +518,19 @@ impl Watcher {
         let newest = newest_player_log(&dir);
 
         if !self.initialized {
-            // Beim Start die aktuellste Datei nehmen und ab ihrem Ende lesen.
+            // Beim Start die aktuellste Datei nehmen. Läuft Roblox schon, den Stand aus dem
+            // Ende der Datei nachbauen (höchstens MAX_READ), sonst ab dem Ende weiterlesen.
             self.initialized = true;
             if let Some((p, _)) = newest {
-                self.pos = std::fs::metadata(&p).map(|m| m.len()).unwrap_or(0);
+                let len = std::fs::metadata(&p).map(|m| m.len()).unwrap_or(0);
                 self.current = Some(p);
+                if roblox_running() {
+                    self.pos = len.saturating_sub(MAX_READ);
+                    let lines = self.read_lines();
+                    adopt(app, replay(&lines, now()));
+                } else {
+                    self.pos = len;
+                }
             }
         } else if let Some((p, created)) = newest {
             let fresh = created >= self.started.checked_sub(NEW_FILE_WINDOW).unwrap_or(SystemTime::UNIX_EPOCH);
@@ -484,6 +548,8 @@ impl Watcher {
         for line in self.read_lines() {
             process_line(app, &line);
         }
+
+        self.watch_versions(app);
 
         // Roblox wurde geschlossen: Brickstrap wieder zeigen (abschaltbar).
         let running = roblox_running();
@@ -507,6 +573,43 @@ impl Watcher {
             self.gone_ticks = 0;
         }
         true
+    }
+}
+
+impl Watcher {
+    /// Roblox hat sich aktualisiert: Der neue Versionsordner hat noch keine
+    /// `ClientAppSettings.json`. Sofort schreiben, damit die Flags möglichst schon bei
+    /// diesem Start greifen (nur eine Datei, kein Zugriff auf den Prozess).
+    fn watch_versions(&mut self, app: &AppHandle) {
+        let mut names: Vec<String> = player_version_dirs()
+            .iter()
+            .filter_map(|d| d.file_name().map(|n| n.to_string_lossy().into_owned()))
+            .collect();
+        names.sort();
+        let neu = self.versions.as_ref().is_some_and(|old| names.iter().any(|n| !old.contains(n)));
+        if neu {
+            if let Err(e) = crate::fastflags::apply_before_launch(&app.state::<AppState>()) {
+                eprintln!("FastFlags nach Update: {e}");
+            }
+            let _ = app.emit("roblox-version", names.clone());
+        }
+        self.versions = Some(names);
+    }
+}
+
+/// Nachgebauten Stand übernehmen und melden (nur wenn gerade gespielt oder beigetreten wird).
+fn adopt(app: &AppHandle, found: Tracker) {
+    if found.activity.state == "idle" {
+        return;
+    }
+    let (a, rpc) = {
+        let mut t = lock();
+        *t = found;
+        (t.activity.clone(), t.rpc.clone())
+    };
+    publish(app, &a, &rpc);
+    if a.state == "playing" {
+        spawn_brief(app.clone(), a.universe_id, a.place_id, a.job_id.clone());
     }
 }
 
@@ -592,11 +695,43 @@ mod tests {
 
     #[test]
     fn auswertung() {
-        let mk = |u, secs, end| Session { universe_id: u, place_id: u, name: format!("G{u}"), start: end - secs, end, secs };
-        let p = summarize(vec![mk(1, 100, 1000), mk(2, 500, 2000), mk(1, 100, 3000)]);
+        let mk = |u, secs, end| Session { universe_id: u, place_id: u, name: format!("G{u}"), start: end - secs, end, secs, job_id: None };
+        let p = summarize(vec![mk(1, 100, 1000), mk(2, 500, 2000), mk(1, 100, 3000)], 3000 + MONTH_SECS - 500);
         assert_eq!(p.games.len(), 2);
         assert_eq!(p.games[0].universe_id, 2);
         assert_eq!(p.games[1].sessions, 2);
         assert_eq!(p.recent[0].end, 3000);
+        // Nur die letzte Sitzung liegt in den 30 Tagen.
+        assert_eq!(p.month.len(), 1);
+    }
+
+    #[test]
+    fn zeitstempel() {
+        assert_eq!(line_time("1970-01-01T00:00:00.000Z,x"), Some(0));
+        assert_eq!(line_time("2025-01-01T12:00:00.123Z,1.0,abc,6 [FLog::Output] x"), Some(1_735_732_800));
+        assert_eq!(line_time("2024-02-29T23:59:59Z"), Some(1_709_251_199));
+        assert_eq!(line_time("irgendeine Zeile ohne Zeit"), None);
+        assert_eq!(line_time("2025-13-01T12:00:00.123Z"), None);
+    }
+
+    #[test]
+    fn nachlesen() {
+        let zeile = |t: &str, rest: &str| format!("2025-01-01T12:{t}.000Z,1.0,abc,6 {rest}");
+        let mut lines = vec![
+            zeile("00:00", "[FLog::Output] ! Joining game '0a1b2c3d-0000-4444-8888-aabbccddeeff' place 5 at 10.0.0.1"),
+            zeile("00:02", "[FLog::Network] UDMUX Address = 128.116.44.33, Port = 5 | RCC Server Address = 10.0.0.1, Port = 7"),
+            zeile("00:03", "[FLog::GameJoinLoadTime] Report game_join_loadtime: placeid:5, universeid:9, userid:1"),
+            zeile("00:05", "[FLog::Network] Replicator created: serverId: 1.2.3.4|5"),
+        ];
+        let t = replay(&lines, 1);
+        assert_eq!(t.activity.state, "playing");
+        assert_eq!(t.activity.since, Some(1_735_732_805));
+        assert_eq!(t.activity.universe_id, Some(9));
+        assert_eq!(t.activity.region.as_deref(), Some("Frankfurt, DE"));
+        assert!(t.brief_requested);
+
+        // Danach verlassen: nichts läuft mehr.
+        lines.push(zeile("30:00", "[FLog::SingleSurfaceApp] leaveUGCGameInternal"));
+        assert_eq!(replay(&lines, 1).activity.state, "idle");
     }
 }
