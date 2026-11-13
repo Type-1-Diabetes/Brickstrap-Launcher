@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "date": "2025-09-29",
+  "source": "https://devforum.roblox.com/t/allowlist-for-local-client-configuration-via-fast-flags/3966569",
+  "flags": [
+    { "name": "FFlagDebugGraphicsPreferD3D11", "kind": "bool", "group": "Grafik-API", "label": "Direct3D 11", "hint": "Erzwingt Direct3D 11. Oft die stabilste Wahl auf Windows. Nur eine Grafik-API gleichzeitig.", "exclusive": "grafik-api" },
+    { "name": "FFlagDebugGraphicsPreferVulkan", "kind": "bool", "group": "Grafik-API", "label": "Vulkan", "hint": "Erzwingt Vulkan. Auf manchen Geräten schneller, auf anderen langsamer oder instabil. Nur eine Grafik-API gleichzeitig.", "exclusive": "grafik-api" },
+    { "name": "FFlagDebugGraphicsPreferOpenGL", "kind": "bool", "group": "Grafik-API", "label": "OpenGL", "hint": "Erzwingt OpenGL. Meist langsamer, hilft nur bei Treiberproblemen. Nur eine Grafik-API gleichzeitig.", "exclusive": "grafik-api" },
+
+    { "name": "DFFlagTextureQualityOverrideEnabled", "kind": "bool", "group": "Qualität", "label": "Texturqualität überschreiben", "hint": "Schaltet die Texturstufe unten frei. Ohne diesen Schalter wirkt sie nicht." },
+    { "name": "DFIntTextureQualityOverride", "kind": "int", "group": "Qualität", "label": "Texturqualität", "hint": "Niedrigere Stufen sparen Grafikspeicher und bringen FPS, Texturen werden unschärfer.", "min": 0, "max": 3,
+      "options": [ { "value": "0", "label": "0 (niedrig)" }, { "value": "1", "label": "1" }, { "value": "2", "label": "2" }, { "value": "3", "label": "3 (hoch)" } ] },
+    { "name": "FIntDebugForceMSAASamples", "kind": "int", "group": "Qualität", "label": "Kantenglättung (MSAA)", "hint": "Glättet Kanten. Höhere Werte sehen besser aus und kosten Leistung.", "min": 0, "max": 8,
+      "options": [ { "value": "0", "label": "Aus" }, { "value": "1", "label": "1x" }, { "value": "2", "label": "2x" }, { "value": "4", "label": "4x" }, { "value": "8", "label": "8x" } ] },
+    { "name": "DFIntDebugFRMQualityLevelOverride", "kind": "int", "group": "Qualität", "label": "Grafikstufe (fein)", "hint": "Erzwingt eine Grafikstufe von 1 bis 21, feiner als der Regler im Spiel. 1 bis 6 sind niedrige Stufen. Mehr Stufe kostet FPS.", "min": 1, "max": 21 },
+    { "name": "DFIntDebugDynamicRenderKiloPixels", "kind": "int", "group": "Qualität", "label": "Renderauflösung senken", "hint": "Senkt die Auflösung, in der Roblox rendert. Kann auf schwachen Geräten viele FPS bringen, das Bild wird unschärfer. Roblox hat sie genehmigt, ob sie wirkt, ist unklar.", "min": 1, "max": 10000, "experimental": true },
+
+    { "name": "FFlagDebugSkyGray", "kind": "bool", "group": "Licht und Himmel", "label": "Grauer Himmel", "hint": "Zeigt einen grauen Himmel statt der Skybox. Spart etwas Leistung, sieht schlichter aus." },
+    { "name": "DFFlagDebugPauseVoxelizer", "kind": "bool", "group": "Licht und Himmel", "label": "Voxel-Licht pausieren", "hint": "Hält die Berechnung des Voxel-Lichts an. Mehr FPS, dafür bleiben Licht und Schatten statisch." },
+
+    { "name": "DFIntCSGLevelOfDetailSwitchingDistance", "kind": "int", "group": "Detailstufen", "label": "Detailwechsel (Basis)", "hint": "Entfernung, ab der Meshes eine niedrigere Detailstufe bekommen. Kleinere Werte bringen FPS und weniger Details.", "min": 0, "max": 10000 },
+    { "name": "DFIntCSGLevelOfDetailSwitchingDistanceL12", "kind": "int", "group": "Detailstufen", "label": "Detailwechsel Stufe 1 zu 2", "hint": "Entfernung für den Wechsel von Stufe 1 zu 2. Kleiner heißt mehr FPS und weniger Details.", "min": 0, "max": 10000 },
+    { "name": "DFIntCSGLevelOfDetailSwitchingDistanceL23", "kind": "int", "group": "Detailstufen", "label": "Detailwechsel Stufe 2 zu 3", "hint": "Entfernung für den Wechsel von Stufe 2 zu 3. Kleiner heißt mehr FPS und weniger Details.", "min": 0, "max": 10000 },
+    { "name": "DFIntCSGLevelOfDetailSwitchingDistanceL34", "kind": "int", "group": "Detailstufen", "label": "Detailwechsel Stufe 3 zu 4", "hint": "Entfernung für den Wechsel von Stufe 3 zu 4. Kleiner heißt mehr FPS und weniger Details.", "min": 0, "max": 10000 },
+
+    { "name": "FIntFRMMaxGrassDistance", "kind": "int", "group": "Gras", "label": "Grasweite (max.)", "hint": "Bis zu welcher Entfernung Gras erscheint. 0 schaltet Gras aus und spart Leistung.", "min": 0, "max": 2000 },
+    { "name": "FIntFRMMinGrassDistance", "kind": "int", "group": "Gras", "label": "Grasweite (min.)", "hint": "Untergrenze der Grasweite. Kleinere Werte sparen Leistung.", "min": 0, "max": 2000 },
+    { "name": "FIntGrassMovementReducedMotionFactor", "kind": "int", "group": "Gras", "label": "Grasbewegung", "hint": "Stärke der Grasbewegung, wenn Bewegung reduziert ist. Weniger Bewegung spart etwas Leistung.", "min": 0, "max": 100 },
+
+    { "name": "FFlagHandleAltEnterFullscreenManually", "kind": "bool", "group": "Oberfläche", "label": "Alt+Enter selbst behandeln", "hint": "False schaltet Alt+Enter auf exklusives Vollbild. Wirkt je nach System unterschiedlich." },
+    { "name": "DFFlagDisableDPIScale", "kind": "bool", "group": "Oberfläche", "label": "DPI-Skalierung aus", "hint": "Schaltet die Windows-Skalierung für Roblox ab. Auf Monitoren mit hoher Auflösung wird die Oberfläche kleiner und schärfer." }
+  ]
+}

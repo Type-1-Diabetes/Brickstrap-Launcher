@@ -1,0 +1,36 @@
+[package]
+name = "brickstrap"
+version = "0.1.0"
+description = "Brickstrap – Launcher für Roblox unter Windows"
+edition = "2021"
+publish = false
+
+[lib]
+name = "brickstrap_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+tauri-plugin-single-instance = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "gzip", "http2"] }
+tokio = { version = "1", features = ["sync", "time"] }
+quick-xml = "0.37"
+regex = "1"
+discord-rich-presence = "0.2"
+uuid = { version = "1", features = ["v4"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_System_Diagnostics_ToolHelp"] }
+
+[profile.release]
+codegen-units = 16
+lto = "thin"
+opt-level = 3
+strip = true
+panic = "abort"

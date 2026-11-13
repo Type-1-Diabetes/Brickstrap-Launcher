@@ -257,7 +257,7 @@ Ein Deeplink startet Roblox mit dem Konto, das in der Roblox-App schon angemelde
 - Suche: `https://apis.roblox.com/search-api/omni-search?searchQuery=…&sessionId=<zufällige GUID>`
 - Startseiten-Reihen: `https://apis.roblox.com/explore-api/v1/get-sorts?sessionId=…` und `…/get-sort-content?sessionId=…&sortId=…`
 - Autovervollständigung: `https://apis.roblox.com/games-autocomplete/v1/get-suggestion/<Text>`
-- Details zu vielen Spielen auf einmal: `https://games.roblox.com/v1/games?universeIds=…` (bis 100 pro Abruf)
+- Details zu vielen Spielen auf einmal: `https://games.roblox.com/v1/games?universeIds=…` (höchstens **50** pro Abruf, 100 ergibt HTTP 400; dazu ein Limit pro IP, siehe recherche-ui-api.md B3)
 - Place-ID → Universe-ID: `https://apis.roblox.com/universes/v1/places/<PlaceId>/universe`
 - Sammlung undokumentierter Endpunkte: [BTRoblox-README](https://github.com/AntiBoomz/BTRoblox)
 - Such- und Explore-API sind nicht offiziell dokumentiert und können jederzeit brechen. Zugriffe kapseln und Fehler abfangen.
@@ -327,7 +327,7 @@ Es gibt drei Ebenen: FastFlags (Abschnitt 5), die Einstellungsdatei von Roblox (
 
 ### 13.2 `GlobalBasicSettings_13.xml`: mehr als nur FPS
 - Bestätigt: `FramerateCap` (0 = ohne Limit).
-- Weitere Schlüssel dort (aus meiner Erinnerung, **vor dem Bau an einer echten Datei prüfen**): `GraphicsQualityLevel`, `SavedQualityLevel`, `Fullscreen`, `MouseSensitivity`, `MasterVolume`, `ReducedMotion`, `PreferredTransparency`.
+- Weitere Schlüssel dort (aus meiner Erinnerung, **vor dem Bau an einer echten Datei prüfen**; Nachtrag: in der Fishstrap-Vorlage heißt die Grafikstufe `SavedQualityLevel`, `GraphicsQualityLevel` ist nicht belegt): `SavedQualityLevel`, `Fullscreen`, `MouseSensitivity`, `MasterVolume`, `ReducedMotion`, `PreferredTransparency`.
 - Empfehlung: keinen festen Schlüsselkatalog einbauen. Der Launcher liest die Datei des Nutzers ein und zeigt alle gefundenen Werte als bearbeitbare Liste. So bleibt er robust, wenn Roblox Schlüssel ändert.
 
 ### 13.3 Windows-Ebene (vom Launcher setzbar)
@@ -402,7 +402,7 @@ Idee: ein **„Performance-Check“** im Launcher, der diese Punkte ausliest und
 ### 15.3 Laden der Daten
 - **Erst aus dem Cache zeigen, dann aktualisieren:** Die letzte Startseite, Spielnamen und Bilder lokal speichern (SQLite oder `redb`) und sofort anzeigen. Neue Daten im Hintergrund holen und austauschen. So steht die Oberfläche in Millisekunden, auch wenn die Roblox-API langsam ist.
 - **Bilder:** Thumbnails gebündelt abfragen (`thumbnails.roblox.com` erlaubt viele IDs pro Abruf), auf der Festplatte zwischenspeichern und erst beim Scrollen laden (`loading="lazy"`). Kleine Formate (WebP) wählen.
-- **Parallel und gebündelt:** Ein einziger `reqwest`-Client mit Verbindungspool (HTTP/2, Keep-Alive). Spieldetails bis 100 pro Abruf holen. Unabhängige Abfragen gleichzeitig starten.
+- **Parallel und gebündelt:** Ein einziger `reqwest`-Client mit Verbindungspool (HTTP/2, Keep-Alive). Spieldetails bis 50 pro Abruf holen (100 ergibt HTTP 400). Unabhängige Abfragen gleichzeitig starten.
 - **Vorladen:** Fährt die Maus über ein Spiel, schon die Serverliste anfragen. Der Klick fühlt sich dann sofort an.
 
 ### 15.4 Bedienung

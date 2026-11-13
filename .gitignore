@@ -18,3 +18,8 @@ dist/
 # System
 .DS_Store
 Thumbs.db
+
+# impeccable: Screenshots und lokale Abfragen nicht committen
+.impeccable/review/
+.impeccable/questions/
+.impeccable/config.local.json

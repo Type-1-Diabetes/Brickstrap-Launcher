@@ -4,7 +4,7 @@
 > **Vor jeder Änderung lesen:** [Regeln von Roblox](#regeln-von-roblox-nie-brechen) und [Vorsicht bei Änderungen](#vorsicht-bei-änderungen). Dort steht, was ein Konto sperren lässt oder still kaputtgeht.
 > Recherche und Plan: [docs/research/roblox-launcher-rust.md](docs/research/roblox-launcher-rust.md). Produkt: [PRODUCT.md](PRODUCT.md). Logo und Farben: [DESIGN.md](DESIGN.md).
 >
-> Stand: 13.11.2026 (Repo angelegt: Release-Workflow, Logo-Kit in `brand/`, Plan in `docs/research/`. Noch kein App-Code.)
+> Stand: 13.11.2026 (v0.1.0 gebaut, noch nicht released: Tauri 2 + Svelte 5 unter `app/`. Startseite mit Angepinnt, Zuletzt gespielt und Roblox-Reihen; Suche (auch Place-ID/Link); Spielseite mit Server-Picker (Sortierung, Volle ausblenden, „Kleinster Server“, „Bester Ping“, Beitreten per Deeplink); Bibliothek mit Anpinnen-Reihenfolge und Spielzeit; FastFlag-Editor (Allowlist, Presets, JSON teilen); Roblox-Einstellungen (GlobalBasicSettings); Discord-Status und Spielzeit aus der Logdatei; Leiste einklappbar (automatisch unter 1100 px); Infobereich, Einzelinstanz. Geprüft nur im Browser-Mock und mit `cargo check` für Windows, noch nie auf echtem Windows gestartet.)
 
 ## Was ist Brickstrap?
 
@@ -13,11 +13,12 @@ Ein eigener, quelloffener **Launcher für Roblox unter Windows**, gebaut mit Rus
 | | |
 |---|---|
 | Name | **Brickstrap**. Nie „Roblox“ oder „Blox“ im Namen, nichts, was an Logo oder Wortmarke von Roblox erinnert |
-| Technik | Tauri 2: Rust-Backend (`tokio`, `reqwest`, `serde`), Oberfläche im WebView2 (Frontend-Framework noch offen, Plan: Svelte oder SolidJS mit Vite) |
+| Technik | Tauri 2: Rust-Backend (`reqwest` mit rustls, `serde`, `quick-xml`, `regex`, `discord-rich-presence`), Oberfläche Svelte 5 (Runes) + Vite 7 im WebView2. Schrift Archivo (variabel, selbst gehostet) |
+| App-Kennung | `app.brickstrap.launcher` – **nie ändern**, sonst installiert Windows eine zweite App |
 | Plattform | nur Windows (x64). Kein Android, kein macOS, kein Linux |
 | Nutzer | Roblox-Spieler, die Bloxstrap/Fishstrap kennen und mehr Kontrolle wollen |
 | Dienste | nur die Web-APIs von Roblox und GitHub. Kein eigener Server. Das Roblox-Cookie geht an keinen fremden Server |
-| Sprache | Code-Kommentare, Commits und Doku auf Deutsch. Du-Form, kurze Sätze, korrekte Umlaute. UI-Sprache offen (Deutsch zuerst, Englisch geplant) |
+| Sprache | alles Deutsch: UI-Texte (nur Deutsch, Entscheidung vom 13.11.2026), Kommentare, Commits. Du-Form, kurze Sätze, korrekte Umlaute |
 | Repo | privat (`Type-1-Diabetes/Brickstrap-Launcher`). Veröffentlichung als Open Source (Lizenz vermutlich MIT) ist geplant |
 
 **Stufen** (Plan §12.9): 1. MVP ohne Login (Suche, Startseite, Server-Picker, Start per Deeplink) · 2. FastFlag- und Einstellungs-Editor, Discord-Status · 3. Login, Freunde, Region · 4. Mehrere Instanzen, Overlay-Fenster · 5. Eigener Bootstrapper + Mods · 6. Chat, Konto-Wechsel.
@@ -38,8 +39,10 @@ Ein eigener, quelloffener **Launcher für Roblox unter Windows**, gebaut mit Rus
 - **Das Cookie `.ROBLOSECURITY` ist ein Generalschlüssel:** nur im Rust-Teil, verschlüsselt im Windows-Anmeldeinformations-Manager (`keyring`). Nie an die Oberfläche, nie in Logdatei, Einstellungen, Export, Commit oder an einen anderen Host als `*.roblox.com`.
 - **Fremden Code prüfen:** Bloxstrap, Fishstrap, NexStrap (MIT) dürfen als Vorlage dienen, mit Hinweis auf die Herkunft. RoValra und Roblox Account Manager sind **GPL**: nur das Prinzip übernehmen, keinen Code kopieren.
 - **Undokumentierte APIs** (Suche, Explore, Chat, `gamejoin`) kapseln, Fehler abfangen, nie die ganze App davon abhängig machen. Sie können jederzeit brechen.
-- **UI-Arbeit** mit dem Skill `/impeccable` (Design-System in `DESIGN.md`, Produkt in `PRODUCT.md`). **Texte** nach dem Humanizer-Skill: kurz, informativ, aktiv, keine Floskeln, keine Gedankenstriche als Stilmittel.
-- **Farben:** nur Schwarz `#0B0B0D`, Grau `#8B9099`, Silber `#C3C7CD`, Weiß `#FFFFFF` für die Marke. Flach, ohne Verlauf und Schatten. **Dunkel ist Standard.** Weitere UI-Farben (Fehler, Erfolg) erst mit dem Projektinhaber festlegen und in `DESIGN.md` eintragen.
+- **UI-Arbeit** mit dem Skill `/impeccable` (Design-System in `DESIGN.md`, Produkt in `PRODUCT.md`, Richtung in `.impeccable/surfaces/app-src-app-svelte.md`). Bewegung nach `/ui-animation` (nur `transform`/`opacity`, 120–250 ms, keine Breiten-Animation). **Texte** nach dem Humanizer-Skill: kurz, informativ, aktiv, keine Floskeln, keine Gedankenstriche als Stilmittel.
+- **Look: der bewährte Launcher-Standard** (Wunsch des Projektinhabers: „Standard wie Bloxstrap“). Messlatte: Bloxstrap/Fishstrap, Windows-11-Einstellungen, Discord, Steam/Epic. Flaches Schwarz, kein Mica. Normale Bedienelemente, keine Spielereien.
+- **Seitenleiste** klappt unter 1100 px Fensterbreite automatisch ein (nur Symbole); der Knopf oben schaltet von Hand, bis das Fenster die Schwelle wieder kreuzt (Wunsch des Projektinhabers).
+- **Farben:** Schwarz `#0B0B0D`, Grau `#8B9099`, Silber `#C3C7CD`, Weiß `#FFFFFF`, dazu Flächenstufen `--s1`…`--s4` (Tokens in `app/src/app.css`). Primärknopf = weiße Fläche, schwarze Schrift. Flach, ohne Verlauf. Nur dunkel. **Statusfarben nur mit Bedeutung** (bestätigt vom Projektinhaber): Grün `--live` für online/spielt, Gelb `--warnung` für experimentell/Warnung, Rot `--fehler` für Fehler. Keine weiteren Farben ohne Rückfrage.
 - **Schnell starten** (Plan §15): Fenster erst nach dem ersten Zeichnen zeigen, Daten zuerst aus dem Cache, dann aktualisieren; schwere Arbeit im Rust-Backend (`tokio`); lange Listen virtualisieren; im Tray weiterlaufen statt beenden.
 - **Keine Geheimnisse im Repo.** Signierzertifikat nur als GitHub-Secret. Keine Cookies, Konto-Namen oder IDs echter Konten als Testdaten.
 - **Nicht raten.** Endpunkte, Registry-Formate und Schlüssel in `GlobalBasicSettings_13.xml` sind teils nur aus Erinnerung oder Foren belegt (im Plan markiert). Vor dem Einbau prüfen, bei Unklarheit nachfragen.
@@ -77,11 +80,44 @@ Brickstrap-Launcher/
 ├─ brand/                     Logo-Kit: logo/ (SVG, PNG 16–2048 px, brickstrap.ico), build_logo.py
 ├─ docs/research/
 │  └─ roblox-launcher-rust.md Recherche, Regeln, APIs, FastFlag-Allowlist, Roadmap
-└─ app/                       (geplant) Tauri-App
-   ├─ package.json            Version der App, Skripte (dev, build, lint)
-   ├─ src/                    Oberfläche
-   └─ src-tauri/              Rust-Kern, tauri.conf.json, capabilities/, icons/
+├─ .impeccable/surfaces/      Richtung der Oberfläche (Direction contract)
+└─ app/                       Tauri-App (Aufbau unten)
 ```
+
+```
+app/
+├─ index.html, vite.config.js (Port 1420, __APP_VERSION__ aus package.json), jsconfig.json, .oxlintrc.json
+├─ src/
+│  ├─ main.js, App.svelte      Rahmen: Leiste, Suchkopf (Strg+K, Alt+←, Maus-Zurück), Seiten, Dock, Hinweise
+│  ├─ app.css                  Tokens (:root), Schrift, Knöpfe, Felder, Schalter, Chips, Bildlaufleisten
+│  ├─ fonts/                   Archivo (OFL), latin + latin-ext
+│  ├─ lib/
+│  │  ├─ bridge.js             einziger Zugang zu Rust (`call`, `on`); im Browser lädt er mock.js
+│  │  ├─ mock.js               erfundene Demo-Daten für alle Befehle (Browser-Vorschau)
+│  │  ├─ app.svelte.js         Zustand: Route/Verlauf, Config, Angepinnt, Aktivität, Hinweise, Bilder-Bündelung,
+│  │  │                        Server-Vorladen (30 s), launch(), Leiste einklappen
+│  │  ├─ flags.svelte.js       FastFlag-Zustand für Editor und Dock (Preset, setzen, verzögert speichern)
+│  │  ├─ suche.svelte.js       Suchbegriff (Kopf ↔ Suchseite)
+│  │  ├─ errors.js, format.js  Fehlercodes → Text; Zahlen, Dauer, „vor X“
+│  ├─ ui/                      Leiste, Dock, Toasts, Icon (+icons.js), Bild, Spielkarte, Reihe, Hinweis, Serverliste
+│  └─ pages/                   Start, Suche, Spiel, Bibliothek, Flags, Roblox, Einstellungen
+└─ src-tauri/
+   ├─ tauri.conf.json          Fenster (unsichtbar bis gezeichnet), CSP, NSIS (currentUser, Deutsch)
+   ├─ capabilities/default.json
+   ├─ resources/allowlist.json FastFlag-Allowlist (eingebettet; `<AppData>/allowlist.json` überschreibt sie)
+   └─ src/
+      ├─ lib.rs                Plugins, Infobereich, Schließen = verstecken, Befehle registrieren
+      ├─ state.rs              AppState (Datenordner, Config, HTTP-Client, Session-ID), JSON lesen/schreiben, DISCORD_APP_ID
+      ├─ paths.rs              Roblox-Pfade, Versionsordner, läuft Roblox? (Toolhelp)
+      ├─ roblox_api.rs         Startseite (Cache), Suche, Details (50 je Abruf), Bilder (1 Tag Cache), Serverliste, game_brief
+      ├─ launch.rs             Start per Deeplink oder `--app`, Config, Anpinnen
+      ├─ fastflags.rs          Allowlist, Presets, ClientAppSettings.json vor jedem Start (nur bei Änderung)
+      ├─ basicsettings.rs      GlobalBasicSettings_13.xml lesen/schreiben (Rest der Datei bleibt byte-gleich, Sicherung)
+      ├─ activity.rs           Logdatei mitlesen → Ereignis `activity`, Spielzeit in history.json
+      └─ discord.rs            Rich Presence in eigenem Thread, BloxstrapRPC
+```
+
+Daten der App liegen in `%APPDATA%\app.brickstrap.launcher\`: `config.json`, `fastflags.json`, `history.json`, `cache/` (Startseite, Bilder-URLs, Kurzinfos).
 
 Der Workflow erwartet die App unter `app/` mit `app/package-lock.json` und `app/src-tauri/tauri.conf.json`. Wer die Struktur ändert, passt `release.yml` mit an.
 
@@ -93,8 +129,12 @@ Der Workflow erwartet die App unter `app/` mit `app/package-lock.json` und `app/
 | Pfade im Workflow | `release.yml` (`app/`, `app/src-tauri`, `bundle/nsis/*-setup.exe`) ↔ Ordnerstruktur ↔ `bundle.targets` in `tauri.conf.json` |
 | Farben, Logo | `brand/` ↔ `DESIGN.md` ↔ CSS-Tokens der App (`:root`) ↔ `src-tauri/icons/` (aus `brand/logo/png` und `brickstrap.ico`) |
 | FastFlag-Allowlist | eigene Datei (nicht im Code fest eingebaut) ↔ Editor ↔ Plan §5. Roblox ändert die Liste ohne Vorwarnung |
-| Rust-Befehle | `#[tauri::command]` ↔ `generate_handler!` ↔ `invoke("…")` in der Oberfläche (Namen gleich halten) |
-| Externe Hosts | `capabilities/*.json` (HTTP-Scope) ↔ CSP in `tauri.conf.json` ↔ tatsächlich genutzte Endpunkte |
+| Rust-Befehle | `#[tauri::command]` ↔ `generate_handler!` in `lib.rs` ↔ `call("…")` in der Oberfläche ↔ **Handler in `mock.js`** (Namen, Argumente in camelCase und JSON-Form gleich halten) |
+| JSON-Formen | Rust-Structs mit `rename_all = "camelCase"` ↔ `mock.js` ↔ Seiten. Neues Feld = in allen dreien |
+| Fehlercodes | `ApiError.code` bzw. `"CODE|Text"` in Rust ↔ `TEXTE` in `errors.js` (`NETZ`, `TIMEOUT`, `RATE_LIMIT`, `HTTP`, `FORMAT`, `NICHT_INSTALLIERT`, `START`, `LAEUFT`, `SCHREIBGESCHUETZT`, `DATEI`, `UNBEKANNT`) |
+| Ereignis `activity` | `activity.rs` (`Activity`) ↔ `app.svelte.js` (`init`) ↔ Dock ↔ `discord.rs` |
+| Discord-ID | `DISCORD_APP_ID` in `state.rs` (eingebaut) ↔ `discordAppId` in den Einstellungen (eigene, optional) ↔ `Config::discord_id()` |
+| Externe Hosts | Alle Web-Abrufe laufen in Rust (`reqwest`), nicht im WebView. Bilder lädt das WebView direkt: CSP `img-src https://*.rbxcdn.com`. Neue Bildquelle = CSP ergänzen |
 
 ## Vorsicht bei Änderungen
 
@@ -105,7 +145,11 @@ Der Workflow erwartet die App unter `app/` mit `app/package-lock.json` und `app/
 - **Mehrere Instanzen:** Mutex `ROBLOX_singletonEvent` bzw. `ROBLOX_singletonMutex` vor Roblox anlegen und halten. Nicht offiziell unterstützt, Teleports können scheitern. Nur als Option, standardmäßig aus.
 - **Serverliste** (`games.roblox.com/v1/games/{placeId}/servers/Public`): Seiten über `cursor`, nach etwa 700 Servern ist Schluss. Abfragen drosseln und zwischenspeichern (Rate-Limit).
 - **Konto-Wechsel und mehrere Cookies** sind ein Ziel für Schadsoftware. Erst nach dem MVP und nur mit sicherem Speicher.
-- **HTTP aus der App** nur zu Hosts im Scope der Capabilities. Neue API → Scope und CSP ergänzen, sonst schlägt die Anfrage still fehl.
+- **HTTP nur im Rust-Teil.** Die Oberfläche spricht nie selbst mit Roblox (CSP `connect-src` lässt nur IPC zu).
+- **Rate-Limits:** `games?universeIds=` höchstens 50 IDs und ein verstecktes Limit pro IP (~430 IDs/min), Suche ~4/s, Explore 50–120/min. Bilder gebündelt (`wantImage` sammelt 30 ms), Details und Bilder gecacht, Server-Vorladen erst nach 180 ms Hover.
+- **Feldnamen der undokumentierten APIs** (omni-search, explore-api, servers) stammen aus Quelltext anderer Launcher, nicht aus eigenem Abruf (Roblox ist aus der Cloud gesperrt). `roblox_api.rs` liest darum mehrere mögliche Namen. Erster echter Test unter Windows: Rohantworten ansehen und anpassen.
+- **Discord-Knöpfe** brauchen http(s): „Server beitreten“ zeigt auf `https://www.roblox.com/games/start?placeId=…&gameInstanceId=…` (Format unbestätigt).
+- **Neuer Befehl:** Rust-Funktion → `generate_handler!` → Handler in `mock.js` → Aufruf über `call()`. Ohne Mock bricht die Browser-Vorschau.
 - **Overlay-Fenster** nur als eigenes transparentes Tauri-Fenster (`always_on_top`, Klick-Durchlass). Es zeigt nur, was der Launcher von außen weiß.
 - **Rust lokal in Claude-Cloud-Sessions:** Tauri braucht unter Linux GTK/WebKit. Für den Windows-Teil `cargo check --target x86_64-pc-windows-gnu` (braucht `mingw-w64`). Den echten Windows-Build gibt es nur in GitHub Actions.
 - **Workflow:** Kein Schritt darf ohne Grund dazukommen. Jede Minute zählt doppelt (Windows).
@@ -114,14 +158,15 @@ Der Workflow erwartet die App unter `app/` mit `app/package-lock.json` und `app/
 
 ```bash
 cd app && npm install
-npm run lint                 # Lint der Oberfläche – muss 0 Befunde haben
-npm run dev                  # Oberfläche im Browser
+npm run lint                 # oxlint – muss 0 Befunde haben
+npm run check                # svelte-check – 0 Fehler, 0 Warnungen
+npm run build                # Vite-Build nach dist/ (braucht cargo check, weil Tauri dist/ einbettet)
+npm run dev                  # Browser-Vorschau mit Demo-Daten: http://localhost:1420
 npx tauri dev                # als Windows-Programm (nur unter Windows)
-cd src-tauri && cargo check  # Rust; in der Cloud: cargo check --target x86_64-pc-windows-gnu
-cargo clippy                 # Rust-Lint, keine Warnungen
+cd src-tauri && cargo clippy --target x86_64-pc-windows-gnu   # Rust für Windows prüfen, keine Warnungen
 ```
 
-Die genauen Skripte stehen fest, sobald `app/` angelegt ist. Dann diesen Abschnitt anpassen.
+In der Cloud: `rustup target add x86_64-pc-windows-gnu` und `apt-get install mingw-w64` einmal pro Sitzung. Oberfläche nach Änderungen bei 1440, 1180 und 940 px Breite ansehen (Playwright), `scrollWidth` darf nicht größer als die Fensterbreite sein. Die reine Logik in `basicsettings.rs` und `activity.rs` hat `#[cfg(test)]`-Tests; unter Linux laufen sie nur in einem Wegwerf-Crate (Tauri braucht GTK).
 
 Nicht in der Cloud prüfbar: Start von Roblox, Registry, Mutex, WebView2, Tray, echter Installer.
 
@@ -135,9 +180,13 @@ Nicht in der Cloud prüfbar: Start von Roblox, Registry, Mutex, WebView2, Tray, 
 
 ## Offene Punkte
 
-- Frontend-Framework (Svelte oder SolidJS), Lizenz (MIT?), Umfang von v1.
-- `app/` anlegen (Tauri 2, Identifier festlegen, Icons aus `brand/`).
+- **Noch nie auf Windows gelaufen.** Erster Testbuild (Run workflow ohne Version) und Test am PC: Start, Infobereich, Deeplink-Beitritt, FastFlags im Versionsordner, XML schreiben, Logdatei, Discord.
+- **Discord-Anwendung:** Der Projektinhaber legt sie an und schickt die ID; dann `DISCORD_APP_ID` in `state.rs` setzen. Bis dahin Status nur mit eigener ID aus den Einstellungen.
+- Echte Antworten von omni-search, explore-api und servers/Public prüfen (Feldnamen, `sortDisplayName`, `contentType`).
+- Läuft Roblox schon beim Start von Brickstrap, erkennt `activity.rs` das laufende Spiel nicht (liest die Logdatei ab dem Ende).
+- Lizenz (MIT?).
+- Region der Server (braucht Login) und Mod-Manager folgen in späteren Stufen.
 - Repo öffentlich machen: dann kosten Actions nichts mehr. Vorher prüfen, dass keine Geheimnisse in der Historie liegen.
 - Code-Signatur-Zertifikat (sonst warnen SmartScreen und Defender).
 - `brand/build_logo.py` trägt noch Kommentare und Pixel-Tabellen der älteren Noppen-Fassung. Die PNGs sind die schlichte finale Fassung.
-- Unbestätigt (Plan §13): Registry-Formate, Schlüssel in `GlobalBasicSettings_13.xml`, Wirkung von `DFIntDebugDynamicRenderKiloPixels`.
+- Unbestätigt (Plan §13): Registry-Formate, Schlüssel in `GlobalBasicSettings_13.xml` (die Grafikstufe heißt laut Fishstrap-Vorlage `SavedQualityLevel`), Wirkung von `DFIntDebugDynamicRenderKiloPixels`, Werte der Presets „Qualität“ und „Schwacher Laptop“.

@@ -1,0 +1,26 @@
+<script>
+  import { ICONS } from "./icons.js";
+  /** @type {{ name: keyof typeof ICONS, size?: number, label?: string }} */
+  let { name, size = 18, label = "" } = $props();
+</script>
+
+<svg
+  class="icon"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.75"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  role={label ? "img" : undefined}
+  aria-label={label || undefined}
+  aria-hidden={label ? undefined : "true"}
+>
+  {@html ICONS[name] ?? ""}
+</svg>
+
+<style>
+  .icon { flex: none; display: block; }
+</style>

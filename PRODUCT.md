@@ -31,13 +31,16 @@ The combination: fast and lightweight (Rust/Tauri, instant start, low RAM), the 
 - Name: **Brickstrap**. Must never contain "Roblox" or "Blox"; must not imitate Roblox's logo, wordmark or tilted-square mark (trademark).
 - Not affiliated with Roblox Corporation.
 - No code injection, no memory access to the client.
-- Undecided: licence (MIT likely), final feature scope of v1.
+- Undecided: licence (MIT likely).
+- v0.1 scope (user decision 2026-11-13): no-login MVP (home, search, game page, server picker, deeplink launch), pin/favourite games, FastFlag editor (allowlist only, presets), GlobalBasicSettings editor, Discord status and playtime from the log file.
 
 ## Brand Commitments
 
 - Name: Brickstrap (confirmed 2026-11-13).
 - Logo palette (user-pinned 2026-11-13): black, gray, silver, white only.
 - Logo subject (user-pinned 2026-11-13): a debug/coding icon, a plain code sign </> (silver brackets, white slash, black tile); final 2026-11-13.
+- UI direction (user-pinned 2026-11-13): the category standard, played straight ("Standard wie Bloxstrap"). Craft bar: Bloxstrap/Fishstrap, Windows 11 Settings, Discord, Steam/Epic. Flat black window, no Mica.
+- UI language: German only (user decision 2026-11-13).
 
 ## Evidence on Hand
 

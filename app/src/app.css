@@ -1,0 +1,206 @@
+/* Brickstrap – Tokens und Grundstil. Flaches Schwarz, vier Neutrale aus dem Logo.
+   Hierarchie über Helligkeit der Flächen, nicht über Schatten oder Verläufe. */
+
+@font-face {
+  font-family: "Archivo";
+  src: url("./fonts/archivo-latin-standard-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: block;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Archivo";
+  src: url("./fonts/archivo-latin-ext-standard-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: block;
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  /* Flächen: Grund → Leiste → Karte → Hover → aktiv */
+  --s0: #0b0b0d;
+  --s1: #121215;
+  --s2: #18191d;
+  --s3: #212227;
+  --s4: #2b2c33;
+  --linie: #24252b;
+  --linie-stark: #34353d;
+
+  /* Text */
+  --t1: #f3f4f6;
+  --t2: #c3c7cd; /* Silber */
+  --t3: #8b9099; /* Grau */
+  --t4: #62666f; /* nur für Deko, nie für lesbaren Text */
+
+  /* Primär: weiße Fläche, schwarze Schrift */
+  --primaer: #ffffff;
+  --primaer-hover: #e4e6ea;
+  --auf-primaer: #0b0b0d;
+
+  /* Zustände (sparsam, nur wo sie Bedeutung tragen) */
+  --fehler: #f0525a;
+  --fehler-flaeche: #2a1416;
+  --warnung: #e2b34a;
+  --warnung-flaeche: #29220f;
+  --live: #5ad08b;
+
+  --r-s: 6px;
+  --r: 8px;
+  --r-l: 12px;
+
+  --leiste: 232px;
+  --dock: 52px;
+
+  --font: "Archivo", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "Consolas", ui-monospace, monospace;
+
+  --ein: cubic-bezier(0.22, 1, 0.36, 1);
+  --bewegen: cubic-bezier(0.25, 1, 0.5, 1);
+
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--s0);
+  color: var(--t1);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.45;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#app { height: 100%; }
+
+h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+h1 { font-size: 26px; line-height: 1.15; font-stretch: 112%; font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: 17px; line-height: 1.25; font-stretch: 106%; }
+h3 { font-size: 14px; line-height: 1.3; }
+p { margin: 0; }
+
+a { color: var(--t1); text-underline-offset: 3px; text-decoration-color: var(--t4); }
+a:hover { text-decoration-color: var(--t2); }
+
+::selection { background: #ffffff33; color: #fff; }
+input, textarea { user-select: text; -webkit-user-select: text; }
+.waehlbar { user-select: text; -webkit-user-select: text; }
+
+:focus-visible { outline: 2px solid var(--t1); outline-offset: 2px; border-radius: var(--r-s); }
+
+/* Bildlaufleisten im Stil der Flächen */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--s3); border: 3px solid var(--s0); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--s4); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+.zahl { font-variant-numeric: tabular-nums; }
+.leise { color: var(--t3); }
+.silber { color: var(--t2); }
+
+/* ---------- Knöpfe ---------- */
+
+.knopf {
+  --bg: var(--s3);
+  --bg-h: var(--s4);
+  --fg: var(--t1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--r);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: default;
+  transition: background-color 120ms ease, transform 140ms var(--ein), opacity 120ms ease;
+}
+.knopf:hover:not(:disabled) { background: var(--bg-h); }
+.knopf:active:not(:disabled) { transform: scale(0.97); }
+.knopf:disabled { opacity: 0.45; }
+.knopf.primaer { --bg: var(--primaer); --bg-h: var(--primaer-hover); --fg: var(--auf-primaer); }
+.knopf.flach { --bg: transparent; --bg-h: var(--s3); --fg: var(--t2); }
+.knopf.flach:hover:not(:disabled) { color: var(--t1); }
+.knopf.gross { height: 42px; padding: 0 20px; font-size: 15px; border-radius: 10px; }
+.knopf.klein { height: 28px; padding: 0 10px; font-size: 13px; gap: 6px; }
+.knopf.rund { width: 34px; padding: 0; }
+.knopf.klein.rund { width: 28px; }
+.knopf[aria-pressed="true"] { --bg: var(--s4); --fg: var(--t1); }
+
+/* ---------- Eingaben ---------- */
+
+.feld {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--r);
+  background: var(--s1);
+  color: var(--t1);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.feld::placeholder { color: var(--t3); }
+.feld:hover { border-color: #43444d; }
+.feld:focus { outline: none; border-color: var(--t2); background: var(--s2); }
+select.feld { padding-right: 32px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c3c7cd' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; }
+select.feld option { background: var(--s2); color: var(--t1); }
+
+/* Schalter */
+.schalter { position: relative; width: 40px; height: 22px; flex: none; }
+.schalter input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: default; }
+.schalter span {
+  position: absolute; inset: 0; border-radius: 11px;
+  background: var(--s0); border: 1px solid #4a4b54;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+.schalter span::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px;
+  border-radius: 50%; background: var(--t2);
+  transition: transform 180ms var(--ein), background-color 160ms ease;
+}
+.schalter input:checked + span { background: var(--primaer); border-color: var(--primaer); }
+.schalter input:checked + span::after { transform: translateX(18px); background: var(--auf-primaer); }
+.schalter input:focus-visible + span { outline: 2px solid var(--t1); outline-offset: 2px; }
+.schalter input:disabled + span { opacity: 0.4; }
+
+/* Chips zum Filtern */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 12px; border-radius: 15px;
+  border: 1px solid var(--linie-stark); background: transparent; color: var(--t2);
+  font: inherit; font-size: 13px; font-weight: 500; cursor: default;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.chip:hover { background: var(--s2); color: var(--t1); }
+.chip[aria-pressed="true"], .chip[aria-checked="true"] { background: var(--t1); border-color: var(--t1); color: var(--auf-primaer); }
+
+.marke {
+  display: inline-flex; align-items: center; height: 20px; padding: 0 7px;
+  border-radius: 4px; background: var(--s3); color: var(--t2);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap;
+}
+.marke.warnung { background: var(--warnung-flaeche); color: var(--warnung); }
+
+/* Platzhalter beim Laden */
+.skelett { background: var(--s2); border-radius: var(--r); animation: pulsieren 1.6s ease-in-out infinite; }
+@keyframes pulsieren { 50% { opacity: 0.55; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+}
