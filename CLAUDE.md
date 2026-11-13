@@ -187,7 +187,7 @@ Nicht in der Cloud prüfbar: Start von Roblox, Registry, Mutex, WebView2, Tray, 
 ## Offene Punkte
 
 - **Noch nie auf Windows gelaufen.** Erster Testbuild (Run workflow ohne Version) und Test am PC: Start, Infobereich, Deeplink-Beitritt, FastFlags im Versionsordner, XML schreiben, Logdatei, Discord.
-- **Discord-Anwendung:** Der Projektinhaber legt sie an und schickt die ID; dann `DISCORD_APP_ID` in `state.rs` setzen. Bis dahin Status nur mit eigener ID aus den Einstellungen.
+- **Discord-Anwendung** „Brickstrap“ ist eingebaut (`DISCORD_APP_ID` = 1570919112279072948, öffentliche ID). Eigene ID in den Einstellungen bleibt optional.
 - Echte Antworten von omni-search, explore-api und servers/Public prüfen (Feldnamen, `sortDisplayName`, `contentType`).
 - Läuft Roblox schon beim Start von Brickstrap, erkennt `activity.rs` das laufende Spiel nicht (liest die Logdatei ab dem Ende).
 - Lizenz (MIT?).

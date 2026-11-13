@@ -42,7 +42,7 @@ pub struct Config {
 
 /// Discord-Anwendung von Brickstrap (öffentliche ID, kein Geheimnis).
 /// Leer, bis der Projektinhaber die App im Discord Developer Portal angelegt hat.
-pub const DISCORD_APP_ID: &str = "";
+pub const DISCORD_APP_ID: &str = "1570919112279072948";
 
 impl Config {
     /// Eigene ID aus den Einstellungen, sonst die von Brickstrap.

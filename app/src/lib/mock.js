@@ -202,7 +202,7 @@ const handlers = {
     return null;
   },
   async invite_link({ placeId }) { return `https://www.roblox.com/games/${placeId}`; },
-  async discord_builtin() { return false; },
+  async discord_builtin() { return true; },
   async auth_status() { return angemeldet ? { loggedIn: true, userId: 1, name: "DemoSpieler", displayName: "Demo" } : { loggedIn: false }; },
   async auth_login() {
     setTimeout(() => { angemeldet = true; for (const h of listeners.get("auth") ?? []) h({ loggedIn: true, userId: 1, name: "DemoSpieler", displayName: "Demo" }); }, 1200);
