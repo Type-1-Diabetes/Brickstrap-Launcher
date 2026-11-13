@@ -1,6 +1,6 @@
 [package]
 name = "brickstrap"
-version = "0.1.0"
+version = "0.0.4"
 description = "Brickstrap – Launcher für Roblox unter Windows"
 edition = "2021"
 publish = false
