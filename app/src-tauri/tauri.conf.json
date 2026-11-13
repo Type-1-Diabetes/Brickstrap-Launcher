@@ -54,7 +54,9 @@
           "German"
         ],
         "displayLanguageSelector": false,
-        "installerIcon": "icons/icon.ico"
+        "installerIcon": "icons/icon.ico",
+        "sidebarImage": "icons/installer-seite.bmp",
+        "headerImage": "icons/installer-kopf.bmp"
       }
     }
   }

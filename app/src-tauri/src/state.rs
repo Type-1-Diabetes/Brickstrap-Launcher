@@ -14,6 +14,9 @@ pub struct Pinned {
     pub name: String,
     /// Unix-Zeit in Sekunden
     pub pinned_at: u64,
+    /// Eigenes Titelbild: https-Adresse eines Roblox-Bilds oder eigenes Bild als data:-URL
+    #[serde(default)]
+    pub cover: Option<String>,
 }
 
 /// Einstellungen der App (nicht die von Roblox).

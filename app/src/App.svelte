@@ -3,6 +3,7 @@
   import Leiste from "./ui/Leiste.svelte";
   import Dock from "./ui/Dock.svelte";
   import Toasts from "./ui/Toasts.svelte";
+  import RechteSpalte from "./ui/RechteSpalte.svelte";
   import Icon from "./ui/Icon.svelte";
   import Start from "./pages/Start.svelte";
   import Suche from "./pages/Suche.svelte";
@@ -11,7 +12,7 @@
   import Flags from "./pages/Flags.svelte";
   import Roblox from "./pages/Roblox.svelte";
   import Einstellungen from "./pages/Einstellungen.svelte";
-  import { app, init, back, go, eingeklappt } from "./lib/app.svelte.js";
+  import { app, init, back, go, eingeklappt, leiste } from "./lib/app.svelte.js";
   import { ladeFlags } from "./lib/flags.svelte.js";
   import { suche } from "./lib/suche.svelte.js";
   import { showWindow, isDemo } from "./lib/bridge.js";
@@ -67,7 +68,7 @@
 <svelte:window onkeydown={tasten} onmouseup={maus} />
 
 {#if bereit}
-  <div class="shell" class:zu={eingeklappt()}>
+  <div class="shell" class:zu={eingeklappt()} class:breit={leiste.breite >= 1360}>
     <Leiste />
     <div class="haupt">
       <header class="kopf">
@@ -105,6 +106,7 @@
         {/key}
       </main>
     </div>
+    {#if leiste.breite >= 1360}<RechteSpalte />{/if}
     <Dock />
   </div>
   <Toasts />
@@ -119,6 +121,7 @@
     height: 100vh;
   }
   .shell.zu { --leiste: 68px; }
+  .shell.breit { grid-template-columns: var(--leiste) 1fr auto; }
   .haupt { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .kopf {
     display: flex;
@@ -170,7 +173,7 @@
   .seite {
     --seite-rand: 28px;
     padding: 8px var(--seite-rand) 40px;
-    max-width: 1400px;
+    max-width: 1600px;
     animation: seite-rein 180ms var(--ein);
   }
   @keyframes seite-rein { from { opacity: 0; transform: translateY(4px); } }

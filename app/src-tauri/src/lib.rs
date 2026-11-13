@@ -1,6 +1,7 @@
 //! Brickstrap: startet den offiziellen Roblox-Client nur von außen.
 //! Keine Injection, kein Speicherzugriff, keine Änderung an der Client-Datei.
 
+mod account;
 mod activity;
 mod basicsettings;
 mod discord;
@@ -88,6 +89,9 @@ pub fn run() {
             roblox_api::universe_of_place,
             roblox_api::thumbnails,
             roblox_api::servers,
+            roblox_api::game_media,
+            account::account_get,
+            launch::pin_cover_set,
             launch::roblox_status,
             launch::launch,
             launch::invite_link,

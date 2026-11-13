@@ -407,6 +407,25 @@ pub async fn thumbnails(state: State<'_, AppState>, universe_ids: Vec<u64>, kind
         .collect())
 }
 
+/// Alle Vorschaubilder eines Spiels (16:9), in der Reihenfolge von Roblox.
+#[tauri::command]
+pub async fn game_media(state: State<'_, AppState>, universe_id: u64) -> ApiResult<Vec<String>> {
+    let url = format!(
+        "https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds={universe_id}&countPerUniverse=25&defaults=false&size=768x432&format=Webp&isCircular=false"
+    );
+    let v = get_json(&state, &url).await?;
+    Ok(v.get("data")
+        .and_then(Value::as_array)
+        .and_then(|d| d.first())
+        .and_then(|d| d.get("thumbnails")?.as_array().cloned())
+        .unwrap_or_default()
+        .iter()
+        .filter(|t| text(t, &["state"]) == "Completed")
+        .map(|t| text(t, &["imageUrl"]))
+        .filter(|u| !u.is_empty())
+        .collect())
+}
+
 // ---------- Serverliste ----------
 
 /// Eine Seite öffentlicher Server. `order`: "Asc" (wenige Spieler zuerst) oder "Desc".

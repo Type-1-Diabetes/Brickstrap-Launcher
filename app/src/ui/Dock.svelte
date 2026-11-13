@@ -1,6 +1,7 @@
 <script>
   // Leiste unten: was Roblox gerade macht, aktives FastFlag-Preset, Roblox starten.
   import Icon from "./Icon.svelte";
+  import Auswahl from "./Auswahl.svelte";
   import { app, launch, starting, go, openGame, kopieren } from "../lib/app.svelte.js";
   import { flags, presetWaehlen, presetName } from "../lib/flags.svelte.js";
   import { call } from "../lib/bridge.js";
@@ -56,14 +57,17 @@
 
   <div class="rechts">
     {#if flags.geladen}
-      <label class="preset">
+      <div class="preset">
         <span class="leise">FastFlags</span>
-        <select class="feld" value={flags.preset} onchange={(e) => presetWaehlen(e.currentTarget.value)} aria-label="FastFlag-Preset">
-          <option value="aus">Aus</option>
-          {#each flags.presets as p (p.id)}<option value={p.id}>{p.name}</option>{/each}
-          {#if flags.preset === "eigene"}<option value="eigene">Eigene</option>{/if}
-        </select>
-      </label>
+        <Auswahl
+          label="FastFlag-Preset"
+          oben
+          breite="160px"
+          value={flags.preset}
+          onchange={presetWaehlen}
+          options={[{ value: "aus", label: "Aus" }, ...flags.presets.map((p) => ({ value: p.id, label: p.name })), ...(flags.preset === "eigene" ? [{ value: "eigene", label: "Eigene" }] : [])]}
+        />
+      </div>
       <button class="knopf flach klein rund" onclick={() => go("flags")} aria-label="FastFlags bearbeiten" title="{presetName(flags.preset)} bearbeiten">
         <Icon name="flags" size={16} />
       </button>
@@ -102,7 +106,7 @@
   .unter { font-size: 12.5px; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .rechts { display: flex; align-items: center; gap: 8px; flex: none; }
   .preset { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-  .preset .feld { height: 32px; min-width: 140px; }
+  .preset :global(.knopffeld) { height: 32px; }
   .start { height: 36px; padding: 0 16px; }
   .zeilen { flex-direction: row; align-items: baseline; gap: 10px; }
 </style>

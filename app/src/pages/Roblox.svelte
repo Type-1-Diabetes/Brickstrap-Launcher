@@ -4,6 +4,7 @@
   import { onMount } from "svelte";
   import Icon from "../ui/Icon.svelte";
   import Hinweis from "../ui/Hinweis.svelte";
+  import Auswahl from "../ui/Auswahl.svelte";
   import { app, toast } from "../lib/app.svelte.js";
   import { call } from "../lib/bridge.js";
   import { fehlerText } from "../lib/errors.js";
@@ -104,13 +105,16 @@
                 <span></span>
               </span>
             {:else if e.name === "FramerateCap"}
-              <select class="feld" aria-label={e.label} disabled={laeuft} value={String(wert(e))} onchange={(ev) => setze(e, ev.currentTarget.value)}>
-                {#each ["30", "60", "75", "120", "144", "165", "240", "0"] as o (o)}<option value={o}>{fpsText(o)}</option>{/each}
-                {#if !["30", "60", "75", "120", "144", "165", "240", "0"].includes(String(wert(e)))}<option value={String(wert(e))}>{fpsText(wert(e))}</option>{/if}
-              </select>
+              <Auswahl
+                label={e.label}
+                disabled={laeuft}
+                value={String(wert(e))}
+                onchange={(v) => setze(e, v)}
+                options={[...new Set(["30", "60", "75", "120", "144", "165", "240", "0", String(wert(e))])].map((o) => ({ value: o, label: fpsText(o) }))}
+              />
             {:else if e.min !== null && e.max !== null && e.max - e.min <= 10}
               <input class="regler" type="range" aria-label={e.label} disabled={laeuft} min={e.min} max={e.max} step={e.step ?? 1} value={wert(e)} oninput={(ev) => setze(e, ev.currentTarget.value)} />
-              <span class="wert zahl">{e.kind === "token" && Number(wert(e)) === 0 && e.name === "SavedQualityLevel" ? "Auto" : wert(e)}</span>
+              <span class="wert zahl">{e.name === "SavedQualityLevel" && Number(wert(e)) === 0 ? "Auto" : e.kind === "float" ? Number(wert(e)).toLocaleString("de-DE", { maximumFractionDigits: 2 }) : wert(e)}</span>
             {:else}
               <input class="feld zahlfeld" type="number" aria-label={e.label} disabled={laeuft} min={e.min ?? undefined} max={e.max ?? undefined} step={e.step ?? (e.kind === "float" ? 0.01 : 1)} value={wert(e)} onchange={(ev) => setze(e, ev.currentTarget.value)} />
             {/if}
@@ -168,7 +172,6 @@
   .label { font-weight: 600; }
   .hint { color: var(--t3); font-size: 13px; }
   .steuer { display: flex; align-items: center; gap: 12px; flex: none; }
-  .steuer select { min-width: 150px; }
   .zahlfeld { width: 120px; text-align: right; }
   .wert { min-width: 36px; text-align: right; font-weight: 600; }
   .regler { width: 180px; height: 24px; accent-color: var(--primaer); }

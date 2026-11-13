@@ -14,6 +14,8 @@ export const app = $state({
   activity: { state: "idle" },
   roblox: { installed: true, running: false, version: null },
   toasts: [],
+  /** angemeldetes Roblox-Konto (aus Dateien von Roblox, ohne Login) */
+  account: null,
   /** Bild-URLs je Universe: icons[id], banners[id] */
   icons: {},
   banners: {},
@@ -70,6 +72,34 @@ export async function togglePin(game) {
   const pinned = !isPinned(game.universeId);
   app.pinned = await call("pin_set", { universeId: game.universeId, placeId: game.placeId, name: game.name, pinned });
   toast(pinned ? `„${game.name}“ angepinnt` : `„${game.name}“ nicht mehr angepinnt`);
+}
+
+/** Eigenes Titelbild eines angepinnten Spiels setzen oder entfernen (null). */
+export async function setCover(universeId, cover) {
+  app.pinned = await call("pin_cover_set", { universeId, cover });
+  toast(cover ? "Titelbild geändert" : "Standard-Titelbild wiederhergestellt");
+}
+
+export const coverOf = (universeId) => app.pinned.find((p) => p.universeId === universeId)?.cover ?? null;
+
+/** Bilddatei auf 1280×720 zuschneiden und als WebP-data:-URL liefern (passt in die Einstellungen). */
+export function bildVorbereiten(datei) {
+  return new Promise((ok, fehler) => {
+    const img = new Image();
+    img.addEventListener("load", () => {
+      const w = 1280, h = 720;
+      const c = document.createElement("canvas");
+      c.width = w;
+      c.height = h;
+      const s = Math.max(w / img.width, h / img.height);
+      const dw = img.width * s, dh = img.height * s;
+      c.getContext("2d").drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      URL.revokeObjectURL(img.src);
+      ok(c.toDataURL("image/webp", 0.85));
+    });
+    img.addEventListener("error", () => fehler(new Error("Bild nicht lesbar")));
+    img.src = URL.createObjectURL(datei);
+  });
 }
 
 // ---------- Bilder (gebündelt laden) ----------
@@ -137,6 +167,7 @@ export async function init() {
   app.pinned = config.pinned;
   app.roblox = roblox;
   if (activity?.state) app.activity = activity;
+  call("account_get").then((a) => (app.account = a)).catch(() => {});
   on("activity", (a) => {
     app.activity = a;
     app.roblox.running = a.state !== "idle";

@@ -114,8 +114,26 @@ pub fn pin_set(state: State<'_, AppState>, universe_id: u64, place_id: u64, name
     let mut cfg = state.config();
     cfg.pinned.retain(|p| p.universe_id != universe_id);
     if pinned {
-        cfg.pinned.insert(0, Pinned { universe_id, place_id, name, pinned_at: now() });
+        cfg.pinned.insert(0, Pinned { universe_id, place_id, name, pinned_at: now(), cover: None });
     }
+    state.save_config(cfg.clone())?;
+    Ok(cfg.pinned)
+}
+
+/// Titelbild eines angepinnten Spiels setzen (`None` = Standardbild von Roblox).
+/// Erlaubt sind Roblox-Bilder (https://…rbxcdn.com) und eigene Bilder als data:image/…
+#[tauri::command]
+pub fn pin_cover_set(state: State<'_, AppState>, universe_id: u64, cover: Option<String>) -> Result<Vec<Pinned>, String> {
+    if let Some(c) = &cover {
+        let roblox = c.starts_with("https://") && c.split('/').nth(2).is_some_and(|h| h.ends_with(".rbxcdn.com"));
+        let eigen = c.starts_with("data:image/") && c.len() < 3_000_000;
+        if !roblox && !eigen {
+            return Err("BILD|Dieses Bild lässt sich nicht verwenden.".into());
+        }
+    }
+    let mut cfg = state.config();
+    let p = cfg.pinned.iter_mut().find(|p| p.universe_id == universe_id).ok_or("Spiel ist nicht angepinnt.")?;
+    p.cover = cover;
     state.save_config(cfg.clone())?;
     Ok(cfg.pinned)
 }

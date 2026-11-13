@@ -1,12 +1,13 @@
 <script>
   // Spielbild mit ruhigem Platzhalter (Anfangsbuchstaben), bis die URL da ist.
-  import { app, wantImage } from "../lib/app.svelte.js";
+  import { app, wantImage, coverOf } from "../lib/app.svelte.js";
 
   /** @type {{ universeId: number, name: string, kind?: "icon"|"banner", eager?: boolean }} */
   let { universeId, name, kind = "icon", eager = false } = $props();
 
   const store = $derived(kind === "banner" ? app.banners : app.icons);
-  const url = $derived(store[universeId]);
+  // Banner angepinnter Spiele: eigenes Titelbild, falls gesetzt
+  const url = $derived((kind === "banner" && coverOf(universeId)) || store[universeId]);
   let geladen = $state(false);
 
   $effect(() => {

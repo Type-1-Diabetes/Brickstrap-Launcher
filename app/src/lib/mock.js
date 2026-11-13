@@ -199,6 +199,17 @@ const handlers = {
   },
   async invite_link({ placeId }) { return `https://www.roblox.com/games/${placeId}`; },
   async discord_builtin() { return false; },
+  async account_get() { return modus.has("ohne-roblox") ? null : { userId: 1, name: "DemoSpieler", displayName: "Demo", avatarUrl: null }; },
+  async game_media({ universeId }) {
+    await delay(200);
+    const g = games.find((x) => x.universeId === universeId) ?? games[0];
+    return [0, 40, 90, 150, 210, 280].map((d) => bild({ ...g, hue: (g.hue + d) % 360, universeId: g.universeId + d }, 768, 432));
+  },
+  async pin_cover_set({ universeId, cover }) {
+    const p = config.pinned.find((x) => x.universeId === universeId);
+    if (p) p.cover = cover ?? null;
+    return structuredClone(config.pinned);
+  },
   async config_get() { return structuredClone(config); },
   async config_set({ config: c }) { config = { ...c, pinned: config.pinned, discordAppId: String(c.discordAppId ?? "").replace(/\D/g, "") }; return structuredClone(config); },
   async pin_set({ universeId, placeId, name, pinned }) {

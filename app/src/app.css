@@ -56,7 +56,7 @@
 
   --leiste: 232px;
   --dock: 52px;
-  --inhalt-max: 920px; /* Breite der Einstellungs- und Listenseiten */
+  --inhalt-max: 1180px; /* Breite der Einstellungs- und Listenseiten */
 
   --font: "Archivo", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --mono: "Cascadia Mono", "Consolas", ui-monospace, monospace;

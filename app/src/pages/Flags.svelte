@@ -2,6 +2,7 @@
   // FastFlag-Editor: nur Flags der Allowlist, Presets, Werte gelten beim nächsten Start.
   import Icon from "../ui/Icon.svelte";
   import Hinweis from "../ui/Hinweis.svelte";
+  import Auswahl from "../ui/Auswahl.svelte";
   import { flags, ladeFlags, presetWaehlen, setzen, speichern } from "../lib/flags.svelte.js";
   import { toast, kopieren } from "../lib/app.svelte.js";
   import { seit } from "../lib/format.js";
@@ -135,10 +136,7 @@
                     <span></span>
                   </span>
                 {:else if f.options}
-                  <select class="feld" aria-label={f.label} value={wert ?? ""} onchange={(e) => setzen(f.name, e.currentTarget.value || null)}>
-                    <option value="">Standard</option>
-                    {#each f.options as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
-                  </select>
+                  <Auswahl label={f.label} value={wert ?? ""} onchange={(v) => setzen(f.name, v || null)} options={[{ value: "", label: "Standard" }, ...f.options]} />
                 {:else}
                   <input
                     class="feld zahlfeld"
@@ -241,7 +239,6 @@
   .hint { color: var(--t3); font-size: 13px; max-width: 64ch; }
   .name { font-family: var(--mono); font-size: 11.5px; color: var(--t3); overflow-wrap: anywhere; }
   .steuer { display: flex; align-items: center; gap: 6px; flex: none; }
-  .steuer select { min-width: 150px; }
   .zahlfeld { width: 120px; text-align: right; }
   .platzhalter { width: 28px; }
   .standard { font-size: 12.5px; color: var(--t3); padding: 0 6px; }

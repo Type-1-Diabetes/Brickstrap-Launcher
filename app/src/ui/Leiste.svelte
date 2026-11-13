@@ -3,8 +3,9 @@
   import Icon from "./Icon.svelte";
   import Bild from "./Bild.svelte";
   import zeichen from "./zeichen.svg";
+  import Konto from "./Konto.svelte";
   import wortmarke from "./wortmarke.svg";
-  import { app, go, openGame, prefetch, eingeklappt, leisteUmschalten } from "../lib/app.svelte.js";
+  import { app, go, openGame, prefetch, eingeklappt, leisteUmschalten, leiste } from "../lib/app.svelte.js";
 
   const zu = $derived(eingeklappt());
 
@@ -66,6 +67,7 @@
   </div>
 
   <div class="unten">
+    {#if leiste.breite < 1360 && !zu}<div class="konto"><Konto kompakt /></div>{/if}
     <button class="eintrag" class:aktiv={aktiv("einstellungen")} aria-current={aktiv("einstellungen") ? "page" : undefined} onclick={() => go("einstellungen")} title={zu ? "Einstellungen" : undefined}>
       <Icon name="zahnrad" size={18} />
       <span class="lbl">Einstellungen</span>
@@ -140,5 +142,6 @@
   .mini { width: 26px; height: 26px; border-radius: 6px; overflow: hidden; flex: none; }
   .mini :global(.platz) { font-size: 10px; }
   .pinname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .unten { border-top: 1px solid var(--linie); padding-top: 10px; }
+  .unten { border-top: 1px solid var(--linie); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .konto { padding: 4px 8px 6px; }
 </style>
