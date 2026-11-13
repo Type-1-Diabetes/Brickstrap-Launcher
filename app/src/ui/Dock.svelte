@@ -69,10 +69,16 @@
         <Icon name="flags" size={16} />
       </button>
     {/if}
-    <button class="knopf primaer start" onclick={() => launch()} disabled={starting.key === "app" || !app.roblox.installed}>
-      <Icon name="spielen" size={16} />
-      Roblox starten
-    </button>
+    {#if spielt}
+      <button class="knopf start" disabled title="Roblox läuft schon. Beende es, um neu zu starten.">
+        Roblox läuft
+      </button>
+    {:else}
+      <button class="knopf primaer start" onclick={() => launch()} disabled={starting.key === "app" || !app.roblox.installed}>
+        <Icon name="spielen" size={16} />
+        {starting.key ? "Startet …" : "Roblox starten"}
+      </button>
+    {/if}
   </div>
 </footer>
 
@@ -90,7 +96,7 @@
   }
   .status { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .lampe { width: 8px; height: 8px; border-radius: 50%; background: var(--t4); flex: none; }
-  .lampe.an { background: var(--live); box-shadow: 0 0 0 4px #5ad08b22; }
+  .lampe.an { background: var(--live); }
   .lampe.warnung { background: var(--warnung); }
   .zeilen { display: flex; flex-direction: column; min-width: 0; margin-right: 4px; }
   .titel { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; }

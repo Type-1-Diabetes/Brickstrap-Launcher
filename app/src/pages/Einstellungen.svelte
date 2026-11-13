@@ -102,7 +102,7 @@
 </div>
 
 <style>
-  .einst { display: flex; flex-direction: column; gap: 28px; max-width: 860px; }
+  .einst { display: flex; flex-direction: column; gap: 28px; max-width: var(--inhalt-max); }
   section { display: flex; flex-direction: column; gap: 10px; }
   .karte { border-radius: var(--r-l); background: var(--s1); overflow: hidden; }
   .zeile { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 14px 16px 14px 18px; border-top: 1px solid var(--linie); }

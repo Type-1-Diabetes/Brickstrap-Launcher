@@ -99,7 +99,6 @@
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 2.6em;
   }
   .meta {
     display: flex;

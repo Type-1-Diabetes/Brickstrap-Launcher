@@ -157,7 +157,7 @@
 </div>
 
 <style>
-  .roblox { display: flex; flex-direction: column; gap: 20px; max-width: 920px; padding-bottom: 60px; }
+  .roblox { display: flex; flex-direction: column; gap: 20px; max-width: var(--inhalt-max); padding-bottom: 60px; }
   header { display: flex; flex-direction: column; gap: 8px; }
   .lead { color: var(--t3); max-width: 68ch; }
   .karte { border-radius: var(--r-l); background: var(--s1); overflow: hidden; }

@@ -28,12 +28,14 @@
     <h2>{titel}</h2>
     <div class="steuer">
       {@render aktion?.()}
-      <button class="knopf flach klein rund" onclick={() => blaettern(-1)} disabled={!links} aria-label="Zurückblättern">
-        <Icon name="zurueck" size={16} />
-      </button>
-      <button class="knopf flach klein rund" onclick={() => blaettern(1)} disabled={!rechts} aria-label="Weiterblättern">
-        <Icon name="rechts" size={16} />
-      </button>
+      {#if links || rechts}
+        <button class="knopf flach klein rund" onclick={() => blaettern(-1)} disabled={!links} aria-label="Zurückblättern">
+          <Icon name="zurueck" size={16} />
+        </button>
+        <button class="knopf flach klein rund" onclick={() => blaettern(1)} disabled={!rechts} aria-label="Weiterblättern">
+          <Icon name="rechts" size={16} />
+        </button>
+      {/if}
     </div>
   </header>
   <div class="spur" bind:this={spur} onscroll={messen}>

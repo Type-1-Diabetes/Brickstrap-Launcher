@@ -2,6 +2,7 @@
 
 import { call, on } from "./bridge.js";
 import { fehlerText } from "./errors.js";
+import { suche } from "./suche.svelte.js";
 
 export const app = $state({
   /** aktuelle Seite: { name, params } */
@@ -22,6 +23,8 @@ export const app = $state({
 
 export function go(name, params = {}) {
   if (app.route.name === name && JSON.stringify(app.route.params) === JSON.stringify(params)) return;
+  // Suchfeld leeren, wenn die Suche verlassen wird (außer zum geöffneten Treffer und zurück).
+  if (app.route.name === "suche" && name !== "spiel") suche.query = "";
   app.history.push($state.snapshot(app.route));
   if (app.history.length > 30) app.history.shift();
   app.route = { name, params };

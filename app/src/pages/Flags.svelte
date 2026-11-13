@@ -200,13 +200,14 @@
 </div>
 
 <style>
-  .flags { display: flex; flex-direction: column; gap: 28px; max-width: 920px; }
+  .flags { display: flex; flex-direction: column; gap: 28px; max-width: var(--inhalt-max); }
   .kopf { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
   .kopf > div { display: flex; flex-direction: column; gap: 8px; }
   .lead { color: var(--t3); max-width: 68ch; }
   .status { font-size: 12.5px; white-space: nowrap; padding-top: 8px; }
 
-  .presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+  .presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  @media (max-width: 1050px) { .presets { grid-template-columns: repeat(3, 1fr); } }
   .preset {
     display: flex; flex-direction: column; gap: 4px; align-items: flex-start;
     padding: 14px; border: 0; border-radius: var(--r-l);

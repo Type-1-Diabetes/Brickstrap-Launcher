@@ -136,7 +136,7 @@ function servers(placeId, cursor, order, excludeFull) {
     const r = ((i + 1) * 7919 + g.universeId) % 997;
     const r2 = (((i + 3) * 104729 + g.universeId * 13) % 1000) / 1000;
     // grob: viele volle, viele halbvolle, einige fast leere Server
-    const anteil = r2 < 0.35 ? 1 : r2 < 0.8 ? 0.45 + r2 * 0.6 : 0.05 + (r2 - 0.8) * 2;
+    const anteil = r2 < 0.3 ? 1 : r2 < 0.85 ? 0.2 + (r2 - 0.3) * 1.3 : 0.04 + (r2 - 0.85) * 2;
     const playing = Math.max(1, Math.round(max * Math.min(1, anteil)));
     list.push({
       id: `${(r * 104729).toString(16).padStart(8, "0").slice(0, 8)}-${(i + 4096).toString(16)}-4c1a-9e2f-${(r * 31337 + i).toString(16).padStart(12, "0").slice(-12)}`,

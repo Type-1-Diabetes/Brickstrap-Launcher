@@ -58,7 +58,7 @@
 <div class="suche">
   <header>
     <h1>{suche.query.trim() ? `Ergebnisse für „${suche.query.trim()}“` : "Suchen"}</h1>
-    {#if ergebnis && !laedt}<span class="leise zahl">{ergebnis.games.length} Spiele</span>{/if}
+    {#if ergebnis && !laedt}<span class="leise zahl">{ergebnis.games.length} {ergebnis.games.length === 1 ? "Spiel" : "Spiele"}</span>{/if}
   </header>
 
   {#if !suche.query.trim()}

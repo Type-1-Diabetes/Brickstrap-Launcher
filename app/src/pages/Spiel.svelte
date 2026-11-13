@@ -8,7 +8,7 @@
   import { launch, starting, togglePin, isPinned, toast } from "../lib/app.svelte.js";
   import { call, openExternal } from "../lib/bridge.js";
   import { fehlerText } from "../lib/errors.js";
-  import { zahl } from "../lib/format.js";
+  import { zahl, dauer, seit } from "../lib/format.js";
 
   /** @type {{ params: { universeId: number, placeId: number, name: string } }} */
   let { params } = $props();
@@ -16,6 +16,7 @@
   let detail = $state(null);
   let fehler = $state(null);
   let mehrText = $state(false);
+  let meineZeit = $state(null);
 
   const game = $derived({
     universeId: params.universeId,
@@ -31,6 +32,12 @@
     } catch (e) {
       fehler = e;
     }
+  });
+
+  onMount(() => {
+    call("playtime_get")
+      .then((p) => (meineZeit = p?.games?.find((g) => g.universeId === params.universeId) ?? null))
+      .catch(() => {});
   });
 
   async function linkKopieren() {
@@ -58,6 +65,9 @@
           </p>
         {:else if !fehler}
           <div class="skelett" style="width: 140px; height: 16px"></div>
+        {/if}
+        {#if meineZeit}
+          <p class="meinezeit zahl"><Icon name="uhr" size={14} />Du hast {dauer(meineZeit.totalSecs)} gespielt · zuletzt {seit(meineZeit.lastPlayed)}</p>
         {/if}
       </div>
 
@@ -113,6 +123,7 @@
   .info { display: flex; flex-direction: column; gap: 18px; min-width: 0; padding-top: 2px; }
   .titel { display: flex; flex-direction: column; gap: 6px; }
   h1 { font-size: 30px; overflow-wrap: anywhere; }
+  .meinezeit { display: flex; align-items: center; gap: 7px; color: var(--t2); font-size: 13px; }
   .ersteller { color: var(--t3); display: flex; align-items: center; gap: 6px; }
   .geprueft { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--t2); color: var(--s0); }
   .werte { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0; }

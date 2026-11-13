@@ -49,7 +49,7 @@
                 <span class="runter"><Icon name="rechts" size={15} /></span>
               </button>
               <button class="knopf flach klein" onclick={() => togglePin(p)}>Lösen</button>
-              <button class="knopf primaer klein" onclick={() => launch(p)} disabled={starting.key === `${p.placeId}|`}><Icon name="spielen" size={13} />Spielen</button>
+              <button class="knopf klein" onclick={() => launch(p)} disabled={starting.key === `${p.placeId}|`}><Icon name="spielen" size={13} />Spielen</button>
             </div>
           </li>
         {/each}
@@ -87,7 +87,7 @@
 </div>
 
 <style>
-  .bib { display: flex; flex-direction: column; gap: 36px; max-width: 900px; }
+  .bib { display: flex; flex-direction: column; gap: 36px; max-width: var(--inhalt-max); }
   section { display: flex; flex-direction: column; gap: 14px; }
   header { margin-bottom: 10px; }
   .zeitkopf { display: flex; align-items: baseline; gap: 12px; }

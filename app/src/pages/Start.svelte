@@ -9,12 +9,13 @@
   import { app, openGame, prefetch, launch, starting, go } from "../lib/app.svelte.js";
   import { call } from "../lib/bridge.js";
   import { fehlerText } from "../lib/errors.js";
-  import { seit } from "../lib/format.js";
+  import { seit, zahl } from "../lib/format.js";
 
   let feed = $state(null);
   let fehler = $state(null);
   let laedt = $state(true);
   let zuletzt = $state([]);
+  let online = $state({});
 
   async function laden() {
     laedt = true;
@@ -36,6 +37,11 @@
       // Ohne Cache einfach frisch laden.
     }
     laden();
+    if (app.pinned.length) {
+      call("game_details", { universeIds: app.pinned.slice(0, 6).map((p) => p.universeId) })
+        .then((list) => (online = Object.fromEntries(list.map((d) => [d.universeId, d.playing]))))
+        .catch(() => {});
+    }
     call("playtime_get")
       .then((p) => (zuletzt = (p?.games ?? []).toSorted((a, b) => b.lastPlayed - a.lastPlayed).slice(0, 12)))
       .catch(() => {});
@@ -64,9 +70,14 @@
               <Bild universeId={p.universeId} name={p.name} kind="banner" eager />
             </button>
             <div class="fuss">
-              <button class="name" onclick={() => openGame(p)}>{p.name}</button>
+              <button class="name" onclick={() => openGame(p)}>
+                <span class="nm">{p.name}</span>
+                <span class="online zahl">
+                  {#if online[p.universeId] != null}<span class="punkt" aria-hidden="true"></span>{zahl(online[p.universeId])} online{:else}&nbsp;{/if}
+                </span>
+              </button>
               <button
-                class="knopf primaer klein"
+                class="knopf klein"
                 onclick={() => launch(p)}
                 disabled={starting.key === `${p.placeId}|`}
                 aria-label="{p.name} spielen"
@@ -113,7 +124,7 @@
   .angepinnt header { display: flex; align-items: center; justify-content: space-between; }
   .kacheln {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
     gap: 16px;
   }
   .kachel {
@@ -130,10 +141,12 @@
   .flaeche:focus-visible { outline-offset: -2px; border-radius: var(--r-l) var(--r-l) 0 0; }
   .fuss { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 12px 12px 14px; }
   .name {
-    padding: 0; border: 0; background: none; color: var(--t1); font: inherit; font-weight: 700;
-    font-size: 15px; text-align: left; cursor: default;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    display: flex; flex-direction: column; gap: 2px; min-width: 0;
+    padding: 0; border: 0; background: none; color: var(--t1); font: inherit; text-align: left; cursor: default;
   }
+  .nm { font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .online { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--t3); }
+  .punkt { width: 6px; height: 6px; border-radius: 50%; background: var(--live); }
   .klein { font-size: 12.5px; }
   .stand { font-size: 13px; }
   .link { padding: 0; border: 0; background: none; color: var(--t1); font: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--t4); cursor: default; }
