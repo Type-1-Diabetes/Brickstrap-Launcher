@@ -1,9 +1,8 @@
-# Release: baut den Windows-Installer (NSIS) und hängt ihn an ein GitHub-Release.
-# Auslöser: "Run workflow" mit Version (empfohlen, nutzt den Cache von main) oder Tag v*.
-# Normale Pushes lösen nichts aus. Keine Tests, kein Linting: geprüft wird lokal (siehe CLAUDE.md).
-# Kein Testbuild vor dem Release nötig: schlägt der Build fehl, entsteht kein Release.
-# Kosten: Repo privat → GitHub Free hat 2.000 Minuten/Monat, Windows-Minuten zählen doppelt.
-# Ein Lauf mit warmem Cache braucht etwa 6–10 Min. Release-Dateien kosten keinen Speicher.
+# Release: baut nur die Windows-exe (kein Installer) und hängt sie an ein GitHub-Release.
+# Gebaut wird auf Linux per Cross-Compile (cargo-xwin, MSVC-Ziel, offizieller Tauri-Weg):
+# Linux-Minuten zählen einfach, Windows-Minuten doppelt. Linux startet und kompiliert zudem schneller.
+# Auslöser: "Run workflow" mit Version (nutzt den Cache von main) oder Tag v*. Normale Pushes lösen nichts aus.
+# Keine Tests, kein Linting: geprüft wird lokal (siehe CLAUDE.md).
 name: Release
 
 on:
@@ -19,98 +18,63 @@ on:
 permissions:
   contents: write
 
-# Neuer Start bricht einen laufenden Build ab, spart Minuten bei schnellen Bugfixes.
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  windows:
-    runs-on: windows-latest
-    # Hängt etwas, bricht der Lauf ab statt Minuten zu verbrauchen.
-    timeout-minutes: 30
+  exe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
     defaults: { run: { working-directory: app } }
     env:
       VERSION_TAG: ${{ inputs.version || github.ref_name }}
       RELEASE: ${{ startsWith(github.ref, 'refs/tags/') || inputs.version != '' }}
+      TARGET: x86_64-pc-windows-msvc
       CARGO_INCREMENTAL: 0
       CARGO_TERM_COLOR: never
-      # Optional: Code-Signatur (Secrets WINDOWS_CERTIFICATE = base64 einer .pfx, WINDOWS_CERTIFICATE_PASSWORD).
-      # Ohne Secrets wird unsigniert gebaut, Windows SmartScreen warnt dann beim Setup.
-      WIN_CERT: ${{ secrets.WINDOWS_CERTIFICATE }}
-      WIN_CERT_PASS: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
     steps:
-      # Defender-Echtzeitscan aus: spart auf dem Runner spürbar Zeit beim Kompilieren und npm ci.
-      - name: Virenscan aus (nur Runner)
-        working-directory: .
-        shell: pwsh
-        run: Set-MpPreference -DisableRealtimeMonitoring $true
-
       - uses: actions/checkout@v5
-
-      - name: Projekt vorhanden?
-        working-directory: .
-        shell: pwsh
-        run: |
-          if (-not (Test-Path app/src-tauri/tauri.conf.json)) {
-            echo "::error::app/src-tauri/tauri.conf.json fehlt. Die App ist noch nicht angelegt."
-            exit 1
-          }
 
       - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm, cache-dependency-path: app/package-lock.json }
 
       - uses: dtolnay/rust-toolchain@stable
+        with: { targets: x86_64-pc-windows-msvc }
 
-      # Cache wird nur auf main gespeichert. Tag-Läufe sehen nur ihren eigenen Cache,
-      # darum Releases per "Run workflow" auf main starten (siehe CLAUDE.md).
+      # Fertige Binärdatei statt cargo install (spart Minuten).
+      - uses: taiki-e/install-action@v2
+        with: { tool: cargo-xwin }
+
+      # Cache nur auf main speichern. Enthält auch die Windows-SDK-Dateien von cargo-xwin.
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: app/src-tauri
+          cache-directories: ~/.cache/cargo-xwin
           cache-on-failure: true
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - run: npm ci --no-audit --no-fund
 
-      - name: Signierzertifikat (optional)
-        if: env.WIN_CERT != ''
-        shell: pwsh
-        run: |
-          $pfx = Join-Path $env:RUNNER_TEMP "cert.pfx"
-          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WIN_CERT))
-          $pass = ConvertTo-SecureString $env:WIN_CERT_PASS -AsPlainText -Force
-          $cert = Import-PfxCertificate -FilePath $pfx -CertStoreLocation Cert:\CurrentUser\My -Password $pass
-          Remove-Item $pfx
-          @{ bundle = @{ windows = @{ certificateThumbprint = $cert.Thumbprint; digestAlgorithm = "sha256"; timestampUrl = "http://timestamp.digicert.com" } } } | ConvertTo-Json -Depth 5 | Set-Content src-tauri/signing.json
-
       - name: Bauen
-        shell: pwsh
-        run: |
-          if (Test-Path src-tauri/signing.json) { npx tauri build --bundles nsis --config src-tauri/signing.json }
-          else { npx tauri build --bundles nsis }
+        run: npx tauri build --runner cargo-xwin --target $TARGET --no-bundle
 
-      # Prüfsumme je Installer (<datei>.sha256), für Nutzer und ein späteres Update in der App.
-      - name: Prüfsumme
-        shell: pwsh
+      - name: exe und Prüfsumme
         run: |
-          $exe = Get-ChildItem src-tauri/target/release/bundle/nsis/*-setup.exe
-          if (-not $exe) { echo "::error::Kein Installer gefunden"; exit 1 }
-          $exe | ForEach-Object {
-            "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $($_.Name)" | Set-Content -NoNewline "$($_.FullName).sha256"
-          }
-          Get-ChildItem src-tauri/target/release/bundle/nsis
+          set -e
+          V="${VERSION_TAG#v}"; [ -n "$V" ] && [ "$RELEASE" = true ] || V="test-${{ github.run_number }}"
+          mkdir -p out
+          src=$(ls src-tauri/target/$TARGET/release/*.exe | head -1)
+          cp "$src" "out/Brickstrap_${V}_x64.exe"
+          cd out && sha256sum *.exe > "Brickstrap_${V}_x64.exe.sha256" && ls -l
 
-      # Artefakt nur beim Testbuild und nur 1 Tag (zählt zum Speicher-Kontingent).
       - uses: actions/upload-artifact@v7
         if: env.RELEASE != 'true'
         with:
           name: Brickstrap-test-${{ github.run_number }}
           retention-days: 1
-          path: |
-            app/src-tauri/target/release/bundle/nsis/*-setup.exe
-            app/src-tauri/target/release/bundle/nsis/*-setup.exe.sha256
+          path: app/out/*
 
-      # Release direkt aus diesem Job: kein zweiter Runner, kein Artefakt-Umweg.
       - name: Release veröffentlichen
         if: env.RELEASE == 'true'
         uses: softprops/action-gh-release@v3
@@ -119,10 +83,9 @@ jobs:
           name: Brickstrap ${{ env.VERSION_TAG }}
           target_commitish: ${{ github.sha }}
           generate_release_notes: true
-          files: |
-            app/src-tauri/target/release/bundle/nsis/*-setup.exe
-            app/src-tauri/target/release/bundle/nsis/*-setup.exe.sha256
+          files: app/out/*
           body: |
             Inoffizieller Launcher für Roblox unter Windows. Kein Produkt von Roblox Corporation.
-            Installation: `Brickstrap_<version>_x64-setup.exe` laden und starten. Ohne Code-Signatur warnt SmartScreen: „Weitere Informationen“ → „Trotzdem ausführen“.
-            Prüfsumme: `.sha256` neben dem Installer.
+            `Brickstrap_<version>_x64.exe` laden und starten, keine Installation nötig. Braucht WebView2 (bei Windows 10/11 meist vorhanden).
+            Ohne Code-Signatur warnt SmartScreen: „Weitere Informationen“ → „Trotzdem ausführen“.
+            Prüfsumme: `.sha256` neben der exe.

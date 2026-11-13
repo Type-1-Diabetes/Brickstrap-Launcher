@@ -32,7 +32,7 @@ Ein eigener, quelloffener **Launcher für Roblox unter Windows**, gebaut mit Rus
 ## Arbeitsweise & Regeln
 
 - **Grundsätze aus PRODUCT.md:** Tempo ist eine Funktion (alles soll sofort reagieren). Kontrolle ohne Unordnung. Sauber von Anfang an. Offen und nachvollziehbar.
-- **Workflows kurz und schnell** (Wunsch des Projektinhabers): ein einziger Workflow `release.yml`, nur ein Windows-Job. Keine Tests, kein Linting, keine Prüfschritte in GitHub Actions. Normale Pushes bauen nichts.
+- **Workflows kurz und schnell** (Wunsch des Projektinhabers): ein einziger Workflow `release.yml`, ein Linux-Job, der die Windows-exe per `cargo-xwin` cross-kompiliert (Linux-Minuten zählen einfach). Nur die exe, kein Installer. Keine Tests, kein Linting, keine Prüfschritte in GitHub Actions. Normale Pushes bauen nichts.
 - **Keine Kosten bei GitHub** (Wunsch des Projektinhabers): siehe [Testbuilds und Kosten](#testbuilds-und-kosten). Keine neuen Workflows, keine Zeitpläne (`schedule`), keine Läufe bei Push oder Pull Request, kein Dependabot-Build.
 - **Prüfen passiert lokal** (siehe [Prüfen](#prüfen-lokal-nicht-in-ci)).
 - **Login ist Pflicht** (Entscheidung des Projektinhabers vom 13.11.2026): Ohne Anmeldung zeigt die App nur `pages/Anmelden.svelte`. Die Anmeldung läuft über die echte Login-Seite von roblox.com in einem privaten Tauri-Fenster (`auth.rs`, Fenster `login`, ohne Capabilities). Danach liest Rust das Cookie aus diesem Fenster (nie auf dem Hauptthread, sonst Verklemmung unter Windows). OAuth („Mit Roblox anmelden“) bräuchte eine von Roblox geprüfte App und kommt eventuell später. Die Web-Abrufe selbst schicken das Cookie noch nicht mit.
@@ -49,7 +49,7 @@ Ein eigener, quelloffener **Launcher für Roblox unter Windows**, gebaut mit Rus
 
 ## Testbuilds und Kosten
 
-Das Repo ist **privat**. GitHub Free: 2.000 Actions-Minuten im Monat und 500 MB Speicher für Artefakte. **Windows-Minuten zählen doppelt.** Ein Release-Lauf mit warmem Cache braucht etwa 6–10 Minuten (also 12–20 abgerechnete), der erste Lauf ohne Cache deutlich länger. Release-Dateien kosten nichts. Ohne hinterlegte Zahlungsart entstehen keine Kosten, Läufe stoppen dann nur, wenn das Kontingent leer ist. Sobald das Repo öffentlich ist, sind Actions komplett kostenlos.
+Das Repo ist **privat**. GitHub Free: 2.000 Actions-Minuten im Monat und 500 MB Speicher für Artefakte. Der Build läuft auf Linux (zählt einfach, Windows würde doppelt zählen). Der alte Windows-Build mit NSIS brauchte kalt 15 Minuten (30 abgerechnete). Release-Dateien kosten nichts. Ohne hinterlegte Zahlungsart entstehen keine Kosten, Läufe stoppen dann nur, wenn das Kontingent leer ist. Sobald das Repo öffentlich ist, sind Actions komplett kostenlos.
 
 - **Kein Testbuild vor einem Release.** Ein Release baut selbst; schlägt der Build fehl, entsteht kein Release.
 - **Kein Testbuild bei normalen Änderungen** an Rust, Oberfläche oder Doku. Die laufen lokal (`cargo check`, Lint, `npm run build`).
@@ -63,7 +63,7 @@ Das Repo ist **privat**. GitHub Free: 2.000 Actions-Minuten im Monat und 500 MB 
 2. Lokal prüfen (siehe [Prüfen](#prüfen-lokal-nicht-in-ci)).
 3. Committen und auf `main` pushen.
 4. Release starten: GitHub → *Actions → Release → Run workflow*, Branch `main`, Feld **Version = `v0.1.0`** (mit `v`, gleich wie in `package.json`). Aus einer Claude-Session geht kein Tag-Push (HTTP 403): stattdessen `mcp__github__actions_run_trigger` mit `method: run_workflow`, `workflow_id: release.yml`, `ref: main`, `inputs: {version: "v0.1.0"}`. Leeres Feld = nur Testbuild als Artefakt, kein Release.
-5. Ergebnis prüfen: Release enthält `Brickstrap_<version>_x64-setup.exe` und `.sha256`. Bei Fehlern das Log ansehen (`mcp__github__get_job_logs`).
+5. Ergebnis prüfen: Release enthält `Brickstrap_<version>_x64.exe` und `.sha256`. Bei Fehlern das Log ansehen (`mcp__github__get_job_logs`).
 
 **Nie ändern, sobald es Nutzer gibt:** `identifier` in `tauri.conf.json` (sonst installiert Windows eine zweite App neben der alten) und die Asset-Namen (`*-setup.exe`, `<datei>.sha256`), falls ein Update in der App darauf aufbaut.
 
@@ -76,7 +76,7 @@ Brickstrap-Launcher/
 ├─ CLAUDE.md                  Diese Datei (für Entwicklung)
 ├─ PRODUCT.md, DESIGN.md      Produkt und Design-System (impeccable)
 ├─ .github/workflows/
-│  └─ release.yml             Windows-Installer (NSIS) bauen und releasen, nur auf Anstoß
+│  └─ release.yml             Windows-exe auf Linux bauen (cargo-xwin) und releasen, nur auf Anstoß
 ├─ brand/                     Logo-Kit: logo/ (SVG, PNG 16–2048 px, brickstrap.ico), build_logo.py
 ├─ docs/research/
 │  └─ roblox-launcher-rust.md Recherche, Regeln, APIs, FastFlag-Allowlist, Roadmap
@@ -169,7 +169,7 @@ Der Workflow erwartet die App unter `app/` mit `app/package-lock.json` und `app/
 - **Neuer Befehl:** Rust-Funktion → `generate_handler!` → Handler in `mock.js` → Aufruf über `call()`. Ohne Mock bricht die Browser-Vorschau.
 - **Overlay-Fenster** nur als eigenes transparentes Tauri-Fenster (`always_on_top`, Klick-Durchlass). Es zeigt nur, was der Launcher von außen weiß.
 - **Rust lokal in Claude-Cloud-Sessions:** Tauri braucht unter Linux GTK/WebKit. Für den Windows-Teil `cargo check --target x86_64-pc-windows-gnu` (braucht `mingw-w64`). Den echten Windows-Build gibt es nur in GitHub Actions.
-- **Workflow:** Kein Schritt darf ohne Grund dazukommen. Jede Minute zählt doppelt (Windows).
+- **Workflow:** Kein Schritt darf ohne Grund dazukommen. Gebaut wird `--no-bundle` mit `cargo-xwin` (MSVC-Ziel). Die exe braucht WebView2 auf dem PC. Lokal nicht testbar, weil die Cloud-Session die Microsoft-SDK-Downloads sperrt.
 
 ## Prüfen (lokal, nicht in CI)
 
