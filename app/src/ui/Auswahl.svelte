@@ -92,7 +92,7 @@
     position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 40;
     margin: 0; padding: 4px; list-style: none;
     background: var(--s3); border: 1px solid var(--linie-stark); border-radius: 10px;
-    max-height: 280px; overflow-y: auto;
+    max-height: 280px; overflow-y: auto; overscroll-behavior: contain; /* Scrollen in der Liste scrollt nicht die Seite */
     transform-origin: top center;
     animation: auf 150ms var(--ein);
   }
