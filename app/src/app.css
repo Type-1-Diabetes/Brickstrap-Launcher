@@ -132,6 +132,9 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   font: inherit;
   font-weight: 600;
   white-space: nowrap;
+  line-height: 1;
+  text-align: center;
+  vertical-align: middle;
   cursor: default;
   transition: background-color 120ms ease, transform 140ms var(--ein), opacity 120ms ease;
 }
@@ -211,3 +214,11 @@ select.feld option { background: var(--s2); color: var(--t1); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
+
+/* Symbole in Knöpfen: auf die Schrift-Mitte ausrichten; Dreieck „Spielen“ optisch zentrieren */
+.knopf :global(.icon), .knopf .icon { display: block; flex: none; }
+.knopf.rund { gap: 0; }
+.chip { line-height: 1; justify-content: center; }
+
+/* Einstellungszeilen als einzelne Flächen mit Abstand (wie Windows-11-Einstellungen) */
+.zeilen-gruppe { display: flex; flex-direction: column; gap: 4px; }

@@ -104,13 +104,13 @@
 <style>
   .einst { display: flex; flex-direction: column; gap: 28px; max-width: var(--inhalt-max); }
   section { display: flex; flex-direction: column; gap: 10px; }
-  .karte { border-radius: var(--r-l); background: var(--s1); overflow: hidden; }
-  .zeile { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 14px 16px 14px 18px; border-top: 1px solid var(--linie); }
-  .zeile:first-child { border-top: 0; }
+  .karte { display: flex; flex-direction: column; gap: 4px; }
+  .zeile { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 14px 16px 14px 18px; border-radius: 10px; background: var(--s1); transition: background-color 120ms ease; }
+  .zeile:hover { background: var(--s2); }
   .text { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-width: 0; }
   .label { font-weight: 600; }
   .hint { color: var(--t3); font-size: 13px; max-width: 64ch; }
   .steuer { display: flex; align-items: center; gap: 6px; flex: none; }
   .idfeld { width: 200px; }
-  .ueber { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; }
+  .ueber { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; border-radius: 10px; background: var(--s1); }
 </style>

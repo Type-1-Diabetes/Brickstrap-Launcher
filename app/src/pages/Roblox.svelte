@@ -160,10 +160,10 @@
   .roblox { display: flex; flex-direction: column; gap: 20px; max-width: var(--inhalt-max); padding-bottom: 60px; }
   header { display: flex; flex-direction: column; gap: 8px; }
   .lead { color: var(--t3); max-width: 68ch; }
-  .karte { border-radius: var(--r-l); background: var(--s1); overflow: hidden; }
+  .karte { display: flex; flex-direction: column; gap: 4px; }
   .karte.gesperrt { opacity: 0.6; }
-  .zeile { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 14px 16px 14px 18px; border-top: 1px solid var(--linie); min-height: 64px; }
-  .zeile:first-child { border-top: 0; }
+  .zeile { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 14px 16px 14px 18px; border-radius: 10px; background: var(--s1); transition: background-color 120ms ease; min-height: 64px; }
+  .zeile:hover { background: var(--s2); }
   .text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
   .label { font-weight: 600; }
   .hint { color: var(--t3); font-size: 13px; }
