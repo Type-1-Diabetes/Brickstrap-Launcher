@@ -53,7 +53,8 @@
         "languages": [
           "German"
         ],
-        "displayLanguageSelector": false
+        "displayLanguageSelector": false,
+        "installerIcon": "icons/icon.ico"
       }
     }
   }
