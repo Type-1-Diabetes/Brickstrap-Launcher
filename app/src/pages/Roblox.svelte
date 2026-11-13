@@ -78,7 +78,7 @@
   </header>
 
   {#if laeuft}
-    <Hinweis art="fehler" kompakt titel="Roblox läuft" text="Schließ Roblox, bevor du hier etwas änderst. Sonst überschreibt Roblox deine Änderungen beim Beenden." />
+    <Hinweis art="warnung" kompakt titel="Roblox läuft" text="Schließ Roblox, bevor du hier etwas änderst. Sonst überschreibt Roblox deine Änderungen beim Beenden." />
   {/if}
 
   {#if fehler}

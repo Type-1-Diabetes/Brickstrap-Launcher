@@ -1,0 +1,583 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-13T20:47:11+00:00",
+  "title": "Design System: Brickstrap",
+  "extensions": {
+    "colorMeta": {
+      "black": {
+        "role": "neutral",
+        "displayName": "Black",
+        "canonical": "#0B0B0D",
+        "source": "--s0, --auf-primaer: ground and text on primary",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "gray": {
+        "role": "neutral",
+        "displayName": "Gray",
+        "canonical": "#8B9099",
+        "source": "--t3: hints, captions, placeholders",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "silver": {
+        "role": "neutral",
+        "displayName": "Silver",
+        "canonical": "#C3C7CD",
+        "source": "--t2: secondary text, icons, fill bars",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "white": {
+        "role": "primary",
+        "displayName": "White",
+        "canonical": "#FFFFFF",
+        "source": "--primaer: primary button fill; slash and wordmark on dark",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "surface-1": {
+        "role": "neutral",
+        "displayName": "Rail Grey",
+        "canonical": "#121215",
+        "source": "--s1",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Card Hover",
+        "canonical": "#18191D",
+        "source": "--s2",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "surface-3": {
+        "role": "neutral",
+        "displayName": "Raised Grey",
+        "canonical": "#212227",
+        "source": "--s3",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "surface-4": {
+        "role": "neutral",
+        "displayName": "Top Grey",
+        "canonical": "#2B2C33",
+        "source": "--s4",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#24252B",
+        "source": "--linie",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline",
+        "canonical": "#34353D",
+        "source": "--linie-stark",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "line-hover": {
+        "role": "neutral",
+        "displayName": "Hover Hairline",
+        "canonical": "#43444D",
+        "source": "literal #43444d in field and search hover",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "text-1": {
+        "role": "neutral",
+        "displayName": "Near White",
+        "canonical": "#F3F4F6",
+        "source": "--t1",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "text-4": {
+        "role": "neutral",
+        "displayName": "Ash",
+        "canonical": "#62666F",
+        "source": "--t4: decoration only",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Pressed White",
+        "canonical": "#E4E6EA",
+        "source": "--primaer-hover",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#18191D",
+          "#2B2C33",
+          "#62666F",
+          "#8B9099",
+          "#C3C7CD",
+          "#F3F4F6",
+          "#FFFFFF"
+        ]
+      },
+      "live": {
+        "role": "signal",
+        "displayName": "Live Green",
+        "canonical": "#5AD08B",
+        "source": "--live: online and playing only",
+        "tonalRamp": [
+          "#15281D",
+          "#234D35",
+          "#2F794E",
+          "#37AF69",
+          "#59C988",
+          "#8ED2AA",
+          "#BEDFCC",
+          "#E8F2EC"
+        ]
+      },
+      "warning": {
+        "role": "signal",
+        "displayName": "Warning Amber",
+        "canonical": "#E2B34A",
+        "source": "--warnung: experimental and warning only",
+        "tonalRamp": [
+          "#2B2313",
+          "#53421D",
+          "#856724",
+          "#C19125",
+          "#DAAD49",
+          "#DCC184",
+          "#E5D7B9",
+          "#F3F0E7"
+        ]
+      },
+      "warning-surface": {
+        "role": "signal",
+        "displayName": "Warning Surface",
+        "canonical": "#29220F",
+        "source": "--warnung-flaeche",
+        "tonalRamp": [
+          "#262217",
+          "#494027",
+          "#736335",
+          "#A58A41",
+          "#C0A763",
+          "#CCBD94",
+          "#DDD5C0",
+          "#F1EFE9"
+        ]
+      },
+      "error": {
+        "role": "signal",
+        "displayName": "Error Red",
+        "canonical": "#F0525A",
+        "source": "--fehler: errors only",
+        "tonalRamp": [
+          "#2D1112",
+          "#57191C",
+          "#8C1C22",
+          "#CD1821",
+          "#E63D45",
+          "#E37D82",
+          "#E8B5B8",
+          "#F4E6E7"
+        ]
+      },
+      "error-surface": {
+        "role": "signal",
+        "displayName": "Error Surface",
+        "canonical": "#2A1416",
+        "source": "--fehler-flaeche",
+        "tonalRamp": [
+          "#25191A",
+          "#452B2D",
+          "#6C3C41",
+          "#994C53",
+          "#B56E74",
+          "#C69A9E",
+          "#D9C4C6",
+          "#F0EAEB"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "Outlined logo wordmark only; never live text."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles (h1); game page raises to 30 px, 24 px below 1100 px."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings (h2) above cards and rows."
+      },
+      "subtitle": {
+        "displayName": "Subtitle",
+        "purpose": "Small headings (h3) inside notices."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Base size for all UI text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, setting labels, game names."
+      },
+      "hint": {
+        "displayName": "Hint",
+        "purpose": "Gray explanations under labels; meta lines at 12.5 px."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Table headers, rail group title, value labels. Sentence case."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "Counts, pings, times, number fields: tabular numerals."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Server IDs, flag names, setting keys, file paths only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "hairline-inset",
+        "value": "inset 0 0 0 1px #ffffff12",
+        "purpose": "Border-like ring on images and preset cards; 2px in --t2 on hover, --t1 when selected or focused. Not elevation."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 2px solid var(--t1); outline-offset: 2px",
+        "purpose": "Keyboard focus on every control."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ein",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Enter curve for arrivals, presses and moves."
+      },
+      {
+        "name": "bewegen",
+        "value": "cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "Defined for movement."
+      },
+      {
+        "name": "hover",
+        "value": "100-160ms ease",
+        "purpose": "Colour changes on hover and focus."
+      },
+      {
+        "name": "enter",
+        "value": "180-250ms var(--ein)",
+        "purpose": "Page (180ms), toast (220ms), save bar (200ms): opacity plus small translate."
+      },
+      {
+        "name": "press",
+        "value": "scale(0.97) 140ms var(--ein)",
+        "purpose": "Button press; cards scale to 0.98."
+      },
+      {
+        "name": "fill",
+        "value": "scaleX 420ms var(--ein), +18ms per row",
+        "purpose": "Server fill bars grow; never width."
+      },
+      {
+        "name": "skeleton",
+        "value": "opacity to 0.55, 1.6s ease-in-out infinite",
+        "purpose": "Loading placeholders."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation and transition durations 1ms",
+        "purpose": "prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "rail-collapse",
+        "value": "1100px"
+      },
+      {
+        "name": "presets-3col",
+        "value": "1050px"
+      }
+    ],
+    "layout": {
+      "rail": "232px",
+      "railCollapsed": "68px",
+      "dock": "52px",
+      "header": "60px",
+      "searchMax": "620px",
+      "contentMax": "920px",
+      "pageMax": "1400px"
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "White fill, black text. One per view: Spielen, Roblox starten, Speichern.",
+      "html": "<button class=\"ds-btn ds-btn-primary ds-btn-gross\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 4.8v14.4a.8.8 0 0 0 1.2.7l11.3-7.2a.8.8 0 0 0 0-1.4L8.2 4.1a.8.8 0 0 0-1.2.7z\"/></svg>Spielen</button>",
+      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-btn{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:34px;padding:0 14px;border:0;border-radius:var(--r);background:var(--s3);color:var(--t1);font-size:14px;font-weight:600;transition:background-color 120ms ease,transform 140ms var(--ein)}.ds-btn:hover{background:var(--s4)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:2px solid var(--t1);outline-offset:2px}.ds-btn-primary{background:var(--primaer);color:var(--auf-primaer)}.ds-btn-primary:hover{background:var(--primaer-hover)}.ds-btn-gross{height:42px;padding:0 20px;font-size:15px;border-radius:10px}"
+    },
+    {
+      "name": "Default Button",
+      "kind": "button",
+      "refersTo": "button-default",
+      "description": "Raised grey; every secondary action.",
+      "html": "<button class=\"ds-btn\">Erneut laden</button> <button class=\"ds-btn ds-btn-klein\">Spielen</button>",
+      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-btn{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:34px;padding:0 14px;border:0;border-radius:var(--r);background:var(--s3);color:var(--t1);font-size:14px;font-weight:600;transition:background-color 120ms ease,transform 140ms var(--ein)}.ds-btn:hover{background:var(--s4)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:2px solid var(--t1);outline-offset:2px}.ds-btn-klein{height:28px;padding:0 10px;font-size:13px;gap:6px}"
+    },
+    {
+      "name": "Flat Button",
+      "kind": "button",
+      "refersTo": "button-flach",
+      "description": "Transparent, silver text; toolbar and row actions.",
+      "html": "<button class=\"ds-btn ds-btn-flach\">Verwerfen</button>",
+      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-btn{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:34px;padding:0 14px;border:0;border-radius:var(--r);background:var(--s3);color:var(--t1);font-size:14px;font-weight:600;transition:background-color 120ms ease,transform 140ms var(--ein)}.ds-btn:hover{background:var(--s4)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:2px solid var(--t1);outline-offset:2px}.ds-btn-flach{background:transparent;color:var(--t2)}.ds-btn-flach:hover{background:var(--s3);color:var(--t1)}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Text, number and select field; silver border on focus, no glow.",
+      "html": "<input class=\"ds-feld\" placeholder=\"Place-ID\" />",
+      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-feld{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;height:34px;padding:0 12px;border:1px solid var(--linie-stark);border-radius:var(--r);background:var(--s1);color:var(--t1);font-size:14px;font-variant-numeric:tabular-nums;transition:border-color 120ms ease,background-color 120ms ease}.ds-feld::placeholder{color:var(--t3)}.ds-feld:hover{border-color:#43444d}.ds-feld:focus{outline:none;border-color:var(--t2);background:var(--s2)}"
+    },
+    {
+      "name": "Switch",
+      "kind": "custom",
+      "refersTo": "switch-on",
+      "description": "Schalter: white track with black knob when on; knob moves by transform.",
+      "html": "<label class=\"ds-schalter\"><input type=\"checkbox\" checked /><span></span></label>",
+      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-schalter{position:relative;display:inline-block;width:40px;height:22px}.ds-schalter input{position:absolute;inset:0;margin:0;opacity:0}.ds-schalter span{position:absolute;inset:0;border-radius:11px;background:var(--s0);border:1px solid #4a4b54;transition:background-color 160ms ease,border-color 160ms ease}.ds-schalter span::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--t2);transition:transform 180ms var(--ein),background-color 160ms ease}.ds-schalter input:checked+span{background:var(--primaer);border-color:var(--primaer)}.ds-schalter input:checked+span::after{transform:translateX(18px);background:var(--auf-primaer)}.ds-schalter input:focus-visible+span{outline:2px solid var(--t1);outline-offset:2px}"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Sort and filter choice; selected is near-white with black text.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"true\">Meiste Spieler</button> <button class=\"ds-chip\">Bester Ping</button>",
+      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-chip{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:15px;border:1px solid var(--linie-stark);background:transparent;color:var(--t2);font-size:13px;font-weight:500;transition:background-color 120ms ease,color 120ms ease}.ds-chip:hover{background:var(--s2);color:var(--t1)}.ds-chip[aria-pressed=true]{background:var(--t1);border-color:var(--t1);color:var(--auf-primaer)}.ds-chip:focus-visible{outline:2px solid var(--t1);outline-offset:2px}"
+    },
+    {
+      "name": "Settings Card",
+      "kind": "card",
+      "refersTo": "settings-card",
+      "description": "Rail-grey card with hairline-split rows: label and hint left, control right.",
+      "html": "<div class=\"ds-karte\"><div class=\"ds-zeile\"><div><div class=\"ds-label\">Discord-Status</div><div class=\"ds-hint\">Zeigt in Discord, was du spielst.</div></div><span class=\"ds-marke\">Aktiv</span></div><div class=\"ds-zeile\"><div><div class=\"ds-label\">Schatten <span class=\"ds-marke ds-warn\">Experimentell</span></div><code class=\"ds-name\">FFlagDebugSkyGray</code></div><span class=\"ds-hint\">Aus</span></div></div>",
+      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-karte{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;border-radius:var(--r-l);background:var(--s1);overflow:hidden;color:var(--t1);font-size:14px;max-width:520px}.ds-zeile{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px 16px 14px 18px;border-top:1px solid var(--linie);transition:background-color 100ms ease}.ds-zeile:first-child{border-top:0}.ds-label{font-weight:600;display:flex;gap:8px;align-items:center}.ds-hint{color:var(--t3);font-size:13px}.ds-name{font-family:'Cascadia Mono',Consolas,monospace;font-size:11.5px;color:var(--t3)}.ds-marke{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:4px;background:var(--s3);color:var(--t2);font-size:11px;font-weight:600}.ds-warn{background:var(--warnung-flaeche);color:var(--warnung)}"
+    },
+    {
+      "name": "Server Row",
+      "kind": "custom",
+      "refersTo": "server-row",
+      "description": "Server table row: tabular count, scaleX fill bar, signal bars; Beitreten turns white on row hover.",
+      "html": "<div class=\"ds-tab\"><div class=\"ds-z\"><strong>18/20</strong><span class=\"ds-spur\"><i style=\"transform:scaleX(.9)\"></i></span><span class=\"ds-sig\"><i class=\"an\"></i><i class=\"an\"></i><i></i></span><button class=\"ds-join\">Beitreten</button></div></div>",
+      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-tab{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;border-radius:var(--r-l);background:var(--s1);color:var(--t1);font-size:14px;font-variant-numeric:tabular-nums;max-width:560px;overflow:clip}.ds-z{display:grid;grid-template-columns:64px 1fr 40px 112px;align-items:center;gap:16px;min-height:48px;padding:0 12px 0 18px;transition:background-color 100ms ease}.ds-z:hover{background:var(--s2)}.ds-z strong{font-size:15px}.ds-spur{display:block;height:6px;border-radius:3px;background:var(--s3);overflow:hidden}.ds-spur i{display:block;height:100%;background:var(--t2);transform-origin:left center}.ds-sig{display:inline-flex;align-items:flex-end;gap:2px;height:12px}.ds-sig i{width:3px;border-radius:1px;background:var(--s4)}.ds-sig i:nth-child(1){height:5px}.ds-sig i:nth-child(2){height:8px}.ds-sig i:nth-child(3){height:12px}.ds-sig i.an{background:var(--t1)}.ds-join{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;height:28px;padding:0 10px;border:0;border-radius:var(--r);background:var(--s3);color:var(--t1);font-size:13px;font-weight:600;justify-self:end;min-width:96px;transition:background-color 120ms ease}.ds-z:hover .ds-join{background:var(--primaer);color:var(--auf-primaer)}.ds-z:hover .ds-join:hover{background:var(--primaer-hover)}.ds-join:focus-visible{outline:2px solid var(--t1);outline-offset:2px}"
+    },
+    {
+      "name": "Rail Item",
+      "kind": "nav",
+      "refersTo": "rail-item-active",
+      "description": "Rail destinations; active item on raised grey with a 3 px near-white edge bar.",
+      "html": "<nav class=\"ds-rail\"><button class=\"ds-ein aktiv\">Start</button><button class=\"ds-ein\">Suchen</button><button class=\"ds-ein\">Bibliothek</button></nav>",
+      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-rail{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column;gap:2px;width:232px;padding:18px 12px;background:var(--s1);border-right:1px solid var(--linie)}.ds-ein{position:relative;display:flex;align-items:center;height:38px;padding:0 10px;border:0;border-radius:var(--r);background:transparent;color:var(--t2);font-size:14px;font-weight:500;text-align:left;transition:background-color 120ms ease,color 120ms ease}.ds-ein:hover{background:var(--s2);color:var(--t1)}.ds-ein.aktiv{background:var(--s3);color:var(--t1);font-weight:600}.ds-ein.aktiv::before{content:'';position:absolute;left:-12px;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--t1)}.ds-ein:focus-visible{outline:2px solid var(--t1);outline-offset:2px}"
+    },
+    {
+      "name": "Notice",
+      "kind": "card",
+      "refersTo": "hinweis",
+      "description": "Hinweis: empty and error state with icon square, subtitle, gray text, optional button.",
+      "html": "<div class=\"ds-hinweis ds-fehler\"><div class=\"ds-sym\">!</div><div><h3>Keine Verbindung</h3><p>Prüf deine Internetverbindung. Angepinnte Spiele funktionieren trotzdem.</p></div></div>",
+      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-hinweis{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;display:flex;gap:14px;align-items:flex-start;padding:20px;border-radius:var(--r-l);background:var(--s1);max-width:560px;color:var(--t1);font-size:14px}.ds-hinweis h3{margin:0;font-size:14px;font-weight:700}.ds-hinweis p{margin:4px 0 0;color:var(--t3)}.ds-sym{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--s3);color:var(--t2);flex:none;font-weight:700}.ds-fehler .ds-sym{background:var(--fehler-flaeche);color:var(--fehler)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Launcher Standard, Played Straight",
+    "overview": "The mark is a plain code sign, `</>`: silver chevrons and a white slash on a black rounded tile. It says \"tool for people who tinker\" at a glance. The identity is achromatic and flat: neutrals only, no hue, no gradients, glow or shadow. It is pure vector and scales cleanly to any size.\n\nThe launcher UI keeps the category's proven layout without irony: a navigation rail on the left, a game page with one big play button, settings in grouped cards with switches, a status dock at the bottom. It sits at the level of Windows 11 Settings, Discord and Steam, built from the four logo neutrals stretched into a short ladder of greys. Hierarchy comes from surface brightness, never from shadow or gradient. The page is dense, quiet and dark, so the white primary button and the few signal colours carry all the emphasis.",
+    "keyCharacteristics": [
+      "Flat black ground (#0B0B0D) with four tonal steps above it.",
+      "One white primary with black text per view; everything else is grey.",
+      "Signal colours appear only where they carry meaning: online, warning, error.",
+      "One family, Archivo, self-hosted; headings slightly wide, body at normal width.",
+      "Short, transform-only motion that respects reduced motion."
+    ],
+    "rules": [
+      {
+        "name": "The Four Neutrals Rule",
+        "body": "The identity uses black, gray, silver and white only. Fills are flat. No gradients, glow or shadow.",
+        "section": "colors"
+      },
+      {
+        "name": "The Black Ground Rule",
+        "body": "The two-tone mark (silver plus white) sits only on black, inside the tile or on a black ground. On light grounds, use the single-ink black mark.",
+        "section": "colors"
+      },
+      {
+        "name": "The Outlined Wordmark Rule",
+        "body": "The wordmark ships as outlines. Never retype it in a live font, uppercase it, or change its tracking.",
+        "section": "colors"
+      },
+      {
+        "name": "The Meaning-Only Signal Rule",
+        "body": "Green, amber and red appear only where a state needs them: green for online or playing, amber for experimental or warning, red for errors. Never as decoration, accent or brand colour.",
+        "section": "colors"
+      },
+      {
+        "name": "The Brightness Ladder Rule",
+        "body": "Depth is one step up the surface ladder (s0 → s1 → s2 → s3 → s4). A hovered or raised element moves one step brighter; it does not gain a shadow.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Data Rule",
+        "body": "Numbers that sit in lists or change live use tabular numerals, so columns do not jitter.",
+        "section": "typography"
+      },
+      {
+        "name": "The Mono-For-Identifiers Rule",
+        "body": "Monospace marks machine identifiers only: server IDs, flag names, setting keys, file paths. Never for headings, labels or prose.",
+        "section": "typography"
+      },
+      {
+        "name": "The No-Shadow Rule",
+        "body": "Surfaces do not cast shadows. Separation comes from a brighter surface step or a hairline.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** keep the slash white and the chevrons silver on the two-tone mark.",
+      "**Do** use the black mark on light grounds.",
+      "**Do** use one white primary button per view; every other action is default or flach.",
+      "**Do** step one surface brighter for hover and raised states (s1 → s2 → s3 → s4).",
+      "**Do** use Live Green only for online or playing, Warning Amber only for experimental or warning, Error Red only for errors.",
+      "**Do** set counts, pings and times in tabular numerals, and identifiers (server IDs, flag names, keys, paths) in mono.",
+      "**Do** animate only `transform` and `opacity`, 120–250 ms on the enter curve, and grow bars with `scaleX`.",
+      "**Do** write UI copy in German, du form, short active sentences, with correct umlauts and no dashes as a stylistic device.",
+      "**Do** give every empty or failed list a notice that says what happened and what to do."
+    ],
+    "donts": [
+      "**Don't** imitate Roblox's logo, or use \"Roblox\" or \"Blox\" in any name.",
+      "**Don't** add colour, gradients, glow or shadow.",
+      "**Don't** tilt the mark or change its stroke weight.",
+      "**Don't** use glass, blur, Mica or neon effects.",
+      "**Don't** use Ash (#62666F) for readable text.",
+      "**Don't** animate width, height or layout; the rail switches between two fixed widths.",
+      "**Don't** use signal colours as decoration or to make a screen livelier."
+    ]
+  }
+}

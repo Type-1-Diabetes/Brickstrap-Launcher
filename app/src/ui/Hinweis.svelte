@@ -2,12 +2,12 @@
   // Leerer Zustand oder Fehler mit Erklärung und optionaler Aktion.
   import Icon from "./Icon.svelte";
 
-  /** @type {{ icon?: string, titel: string, text?: string, art?: "leer"|"fehler", kompakt?: boolean, children?: import('svelte').Snippet }} */
+  /** @type {{ icon?: string, titel: string, text?: string, art?: "leer"|"fehler"|"warnung", kompakt?: boolean, children?: import('svelte').Snippet }} */
   let { icon = "info", titel, text = "", art = "leer", kompakt = false, children } = $props();
 </script>
 
 <div class="hinweis {art}" class:kompakt role={art === "fehler" ? "alert" : undefined}>
-  <span class="symbol"><Icon name={art === "fehler" ? "warnung" : icon} size={20} /></span>
+  <span class="symbol"><Icon name={art === "leer" ? icon : "warnung"} size={20} /></span>
   <div class="text">
     <h3>{titel}</h3>
     {#if text}<p>{text}</p>{/if}
@@ -37,6 +37,7 @@
     flex: none;
   }
   .fehler .symbol { background: var(--fehler-flaeche); color: var(--fehler); }
+  .warnung .symbol { background: var(--warnung-flaeche); color: var(--warnung); }
   .text { display: flex; flex-direction: column; gap: 4px; padding-top: 2px; }
   p { color: var(--t3); max-width: 60ch; }
   .aktion { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }

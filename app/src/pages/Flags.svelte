@@ -227,8 +227,7 @@
   .text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
   .label { display: flex; align-items: center; gap: 8px; font-weight: 600; }
   .hint { color: var(--t3); font-size: 13px; max-width: 64ch; }
-  .name { font-family: var(--mono); font-size: 11.5px; color: var(--t4); overflow-wrap: anywhere; }
-  .zeile:hover .name { color: var(--t3); }
+  .name { font-family: var(--mono); font-size: 11.5px; color: var(--t3); overflow-wrap: anywhere; }
   .steuer { display: flex; align-items: center; gap: 6px; flex: none; }
   .steuer select { min-width: 150px; }
   .zahlfeld { width: 120px; text-align: right; }
