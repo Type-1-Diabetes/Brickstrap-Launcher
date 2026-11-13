@@ -87,6 +87,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             vollbild,
+            discord::discord_seite,
             roblox_api::home_feed,
             roblox_api::search,
             roblox_api::game_details,

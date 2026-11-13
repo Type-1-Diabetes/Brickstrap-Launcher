@@ -90,7 +90,7 @@
     <div class="skelett" style="height: 120px"></div>
   {:else}
     <section class="presets" aria-label="Presets">
-      {#each [PRESET_AUS, ...flags.presets] as p (p.id)}
+      {#each [...flags.presets, PRESET_AUS] as p (p.id)}
         <button class="preset" aria-pressed={flags.preset === p.id} onclick={() => presetWaehlen(p.id)}>
           <span class="pname">
             {p.name}

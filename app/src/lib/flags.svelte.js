@@ -20,7 +20,8 @@ export async function ladeFlags() {
   const [view, presets] = await Promise.all([call("flags_get"), call("flags_presets")]);
   flags.allowlist = view?.allowlist ?? [];
   flags.values = view?.values ?? {};
-  flags.preset = view?.preset || "aus";
+  // Altes Preset „Schwacher Laptop“ ist in „Max FPS“ aufgegangen (gleiche Werte).
+  flags.preset = view?.preset === "schwacher-laptop" ? "max-fps" : view?.preset || "aus";
   flags.allowlistDate = view?.allowlistDate ?? "";
   flags.appliedTo = view?.appliedTo ?? [];
   flags.lastApplied = view?.lastApplied ?? null;

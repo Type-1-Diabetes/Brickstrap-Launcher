@@ -78,10 +78,9 @@ const MAX_FPS = {
   DFFlagDebugPauseVoxelizer: "True", ...Object.fromEntries(LOD.map((n) => [n, "0"])),
 };
 const PRESETS = [
-  { id: "max-fps", name: "Max FPS", description: "Niedrigste Stufen, kein Gras, statisches Licht. Das Bild wird schlichter, die FPS steigen.", values: MAX_FPS },
+  { id: "max-fps", name: "Max FPS", description: "Niedrigste Stufen, kein Gras, statisches Licht, kleinere Renderauflösung. Für schwache PCs und Laptops.", values: { ...MAX_FPS, DFIntDebugDynamicRenderKiloPixels: "720" } },
   { id: "ausgewogen", name: "Ausgewogen", description: "Hohe Texturen und 2× Kantenglättung. Ein guter Start für die meisten PCs.", values: { DFFlagTextureQualityOverrideEnabled: "True", DFIntTextureQualityOverride: "2", FIntDebugForceMSAASamples: "2" } },
-  { id: "qualitaet", name: "Qualität", description: "Beste Texturen, 4× Kantenglättung, höchste Grafikstufe und weites Gras. Kostet viel Leistung.", values: { DFFlagTextureQualityOverrideEnabled: "True", DFIntTextureQualityOverride: "3", FIntDebugForceMSAASamples: "4", DFIntDebugFRMQualityLevelOverride: "21", FIntFRMMaxGrassDistance: "400" } },
-  { id: "schwacher-laptop", name: "Schwacher Laptop", description: "Wie Max FPS, dazu eine niedrigere Renderauflösung (experimentell, Wirkung unklar).", values: { ...MAX_FPS, DFIntDebugDynamicRenderKiloPixels: "720" } },
+  { id: "qualitaet", name: "Hohe Qualität", description: "Beste Texturen, 4× Kantenglättung, höchste Grafikstufe und weites Gras. Kostet viel Leistung.", values: { DFFlagTextureQualityOverrideEnabled: "True", DFIntTextureQualityOverride: "3", FIntDebugForceMSAASamples: "4", DFIntDebugFRMQualityLevelOverride: "21", FIntFRMMaxGrassDistance: "400" } },
 ];
 
 let flags = { values: { ...PRESETS[1].values }, preset: "ausgewogen" };
@@ -163,6 +162,7 @@ function servers(placeId, cursor, order, excludeFull) {
 
 let vollbildAn = false;
 const handlers = {
+  discord_seite: () => null,
   vollbild: () => (vollbildAn = !vollbildAn),
   async home_feed({ fresh }) {
     await delay(fresh ? 600 : 5);

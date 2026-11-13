@@ -76,7 +76,7 @@
           breite="160px"
           value={flags.preset}
           onchange={presetWaehlen}
-          options={[{ value: "aus", label: "Aus" }, ...flags.presets.map((p) => ({ value: p.id, label: p.name })), ...(flags.preset === "eigene" ? [{ value: "eigene", label: "Eigene" }] : [])]}
+          options={[...flags.presets.map((p) => ({ value: p.id, label: p.name })), { value: "aus", label: "Aus" }, ...(flags.preset === "eigene" ? [{ value: "eigene", label: "Eigene" }] : [])]}
         />
       </div>
       <button class="knopf flach klein rund" onclick={() => go("flags")} aria-label="FastFlags bearbeiten" title="{presetName(flags.preset)} bearbeiten">

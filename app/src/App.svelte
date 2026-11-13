@@ -22,6 +22,18 @@
   let suchfeld = $state();
   let inhalt = $state();
 
+  // Discord-Status im Launcher: welche Seite gerade offen ist.
+  const SEITEN = { start: "Startseite", suche: "Sucht ein Spiel", bibliothek: "Bibliothek", flags: "FastFlags konfigurieren", roblox: "Roblox-Einstellungen", einstellungen: "Einstellungen" };
+  $effect(() => {
+    const r = app.route;
+    const spiel = r.name === "spiel";
+    call("discord_seite", {
+      details: spiel ? "Sieht sich ein Spiel an" : (SEITEN[r.name] ?? "Im Launcher"),
+      stateText: spiel ? (r.params?.name ?? null) : "In Brickstrap",
+      placeId: spiel ? (r.params?.placeId ?? null) : null,
+    }).catch(() => {});
+  });
+
   // Neue Seite beginnt oben.
   $effect(() => {
     if (app.route && inhalt) inhalt.scrollTop = 0;

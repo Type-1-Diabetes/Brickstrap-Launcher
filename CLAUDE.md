@@ -206,4 +206,4 @@ Nicht in der Cloud prüfbar: Start von Roblox, Registry, Mutex, WebView2, Tray, 
 - Repo öffentlich machen: dann kosten Actions nichts mehr. Vorher prüfen, dass keine Geheimnisse in der Historie liegen.
 - Code-Signatur-Zertifikat (sonst warnen SmartScreen und Defender).
 - `brand/build_logo.py` trägt noch Kommentare und Pixel-Tabellen der älteren Noppen-Fassung. Die PNGs sind die schlichte finale Fassung.
-- Unbestätigt (Plan §13): Registry-Formate, Schlüssel in `GlobalBasicSettings_13.xml` (die Grafikstufe heißt laut Fishstrap-Vorlage `SavedQualityLevel`), Wirkung von `DFIntDebugDynamicRenderKiloPixels`, Werte der Presets „Qualität“ und „Schwacher Laptop“.
+- Unbestätigt (Plan §13): Registry-Formate, Schlüssel in `GlobalBasicSettings_13.xml` (die Grafikstufe heißt laut Fishstrap-Vorlage `SavedQualityLevel`), Wirkung von `DFIntDebugDynamicRenderKiloPixels`, Werte der Presets „Hohe Qualität“ und „Max FPS“ (Renderauflösung 720).

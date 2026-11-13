@@ -87,7 +87,16 @@ impl RpcOverride {
 
 // ---------- Nachrichten an den Thread ----------
 
+/// Was der Nutzer gerade im Launcher ansieht (solange kein Spiel läuft).
+#[derive(Clone, Debug, Default)]
+pub struct Seite {
+    pub details: Option<String>,
+    pub state: Option<String>,
+    pub place_id: Option<u64>,
+}
+
 enum Msg {
+    Seite(Box<Seite>, Box<Config>),
     Update { activity: Box<Activity>, rpc: Option<RpcOverride>, cfg: Box<Config> },
     Config(Box<Config>),
 }
@@ -116,6 +125,13 @@ pub fn update(app: &AppHandle, activity: &Activity, rpc: Option<&RpcOverride>) {
     send(Msg::Update { activity: Box::new(activity.clone()), rpc: rpc.cloned(), cfg: Box::new(cfg) });
 }
 
+/// Die Oberfläche meldet die offene Seite.
+#[tauri::command]
+pub fn discord_seite(state: tauri::State<'_, AppState>, details: Option<String>, state_text: Option<String>, place_id: Option<u64>) {
+    let seite = Seite { details: details.as_deref().and_then(clip), state: state_text.as_deref().and_then(clip), place_id };
+    send(Msg::Seite(Box::new(seite), Box::new(state.config())));
+}
+
 /// Einstellungen haben sich geändert: Status neu setzen oder löschen.
 pub fn config_changed(state: &AppState) {
     // Läuft der Thread noch nicht, gibt es nichts anzupassen: das erste `update` liest die Einstellungen.
@@ -141,6 +157,23 @@ struct Payload {
 
 fn is_job_id(s: &str) -> bool {
     s.len() == 36 && s.chars().all(|c| c.is_ascii_hexdigit() || c == '-')
+}
+
+/// Status, solange Brickstrap offen ist und kein Spiel läuft.
+fn launcher_payload(s: &Seite, since: i64) -> Payload {
+    let mut buttons = Vec::new();
+    if let Some(place) = s.place_id {
+        buttons.push(("Spielseite".into(), format!("https://www.roblox.com/games/{place}")));
+    }
+    Payload {
+        details: s.details.clone().or_else(|| clip("Im Launcher")),
+        state: s.state.clone(),
+        large_image: None,
+        large_text: None,
+        start: Some(since),
+        end: None,
+        buttons,
+    }
 }
 
 fn build_payload(cfg: &Config, a: &Activity, rpc: Option<&RpcOverride>) -> Option<Payload> {
@@ -227,6 +260,9 @@ struct Worker {
     activity: Activity,
     rpc: Option<RpcOverride>,
     last_try: Option<Instant>,
+    /// Offene Seite im Launcher und seit wann Brickstrap läuft
+    seite: Option<Seite>,
+    since: i64,
     /// Zuletzt gesendeter Inhalt; `None` = nichts angezeigt
     shown: Option<Payload>,
 }
@@ -264,7 +300,14 @@ impl Worker {
             self.close();
             return;
         }
-        let want = build_payload(&self.cfg, &self.activity, self.rpc.as_ref());
+        let want = build_payload(&self.cfg, &self.activity, self.rpc.as_ref()).or_else(|| {
+            // Während des Beitritts nichts zeigen, sonst die offene Seite des Launchers.
+            if self.activity.state == "idle" {
+                self.seite.as_ref().map(|s| launcher_payload(s, self.since))
+            } else {
+                None
+            }
+        });
         match want {
             None => {
                 // Idle oder Beitritt: Status löschen, Verbindung bleibt für den nächsten Start.
@@ -309,6 +352,8 @@ fn run(rx: mpsc::Receiver<Msg>) {
         activity: Activity::default(),
         rpc: None,
         last_try: None,
+        seite: None,
+        since: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0),
         shown: None,
     };
     loop {
@@ -319,6 +364,10 @@ fn run(rx: mpsc::Receiver<Msg>) {
                 w.cfg = *cfg;
             }
             Ok(Msg::Config(cfg)) => w.cfg = *cfg,
+            Ok(Msg::Seite(seite, cfg)) => {
+                w.seite = Some(*seite);
+                w.cfg = *cfg;
+            }
             Err(RecvTimeoutError::Timeout) => {}
             Err(RecvTimeoutError::Disconnected) => break,
         }

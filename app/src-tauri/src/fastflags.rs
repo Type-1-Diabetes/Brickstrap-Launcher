@@ -216,17 +216,18 @@ fn max_fps_values() -> BTreeMap<String, String> {
 }
 
 /// Presets nach Plan §13.6, nur der FastFlag-Teil (FPS-Limit gehört zur XML).
+/// Reihenfolge in der Oberfläche: Max FPS, Ausgewogen, Hohe Qualität, dann Aus und Eigene.
 #[tauri::command]
 pub fn flags_presets() -> Vec<Preset> {
-    let mut laptop = max_fps_values();
+    let mut max_fps = max_fps_values();
     // Experimentell: Wirkung nicht bestätigt (Forum: Wert ist die gewünschte Auflösung).
-    laptop.insert("DFIntDebugDynamicRenderKiloPixels".into(), "720".into());
+    max_fps.insert("DFIntDebugDynamicRenderKiloPixels".into(), "720".into());
     vec![
         Preset {
             id: "max-fps".into(),
             name: "Max FPS".into(),
-            description: "Niedrigste Stufen, kein Gras, statisches Licht. Das Bild wird schlichter, die FPS steigen.".into(),
-            values: max_fps_values(),
+            description: "Niedrigste Stufen, kein Gras, statisches Licht, kleinere Renderauflösung. Für schwache PCs und Laptops.".into(),
+            values: max_fps,
         },
         Preset {
             id: "ausgewogen".into(),
@@ -240,7 +241,7 @@ pub fn flags_presets() -> Vec<Preset> {
         },
         Preset {
             id: "qualitaet".into(),
-            name: "Qualität".into(),
+            name: "Hohe Qualität".into(),
             description: "Beste Texturen, 4× Kantenglättung, höchste Grafikstufe und weites Gras. Kostet viel Leistung.".into(),
             values: map(&[
                 ("DFFlagTextureQualityOverrideEnabled", "True"),
@@ -249,12 +250,6 @@ pub fn flags_presets() -> Vec<Preset> {
                 ("DFIntDebugFRMQualityLevelOverride", "21"),
                 ("FIntFRMMaxGrassDistance", "400"),
             ]),
-        },
-        Preset {
-            id: "schwacher-laptop".into(),
-            name: "Schwacher Laptop".into(),
-            description: "Wie Max FPS, dazu eine niedrigere Renderauflösung (experimentell, Wirkung unklar).".into(),
-            values: laptop,
         },
     ]
 }

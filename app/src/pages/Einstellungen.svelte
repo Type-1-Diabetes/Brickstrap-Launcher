@@ -43,7 +43,7 @@
         <div class="zeile">
           <div class="text">
             <span class="label">Spiel als Discord-Status zeigen</span>
-            <p class="hint">Deine Freunde sehen, was du spielst und seit wann. Discord muss dafür am PC laufen.</p>
+            <p class="hint">Deine Freunde sehen, was du spielst. Ist Brickstrap offen, sehen sie auch, welche Seite du dir ansiehst. Discord muss dafür am PC laufen.</p>
           </div>
           <span class="schalter"><input type="checkbox" aria-label="Discord-Status" checked={app.config.discord} onchange={(e) => setze({ discord: e.currentTarget.checked })} /><span></span></span>
         </div>
