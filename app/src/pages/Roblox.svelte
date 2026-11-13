@@ -112,11 +112,12 @@
                 onchange={(v) => setze(e, v)}
                 options={[...new Set(["30", "60", "75", "120", "144", "165", "240", "0", String(wert(e))])].map((o) => ({ value: o, label: fpsText(o) }))}
               />
-            {:else if e.min !== null && e.max !== null && e.max - e.min <= 10}
+            {:else if e.min !== null && e.max !== null}
               <input class="regler" type="range" aria-label={e.label} disabled={laeuft} min={e.min} max={e.max} step={e.step ?? 1} value={wert(e)} oninput={(ev) => setze(e, ev.currentTarget.value)} />
               <span class="wert zahl">{e.name === "SavedQualityLevel" && Number(wert(e)) === 0 ? "Auto" : e.kind === "float" ? Number(wert(e)).toLocaleString("de-DE", { maximumFractionDigits: 2 }) : wert(e)}</span>
             {:else}
-              <input class="feld zahlfeld" type="number" aria-label={e.label} disabled={laeuft} min={e.min ?? undefined} max={e.max ?? undefined} step={e.step ?? (e.kind === "float" ? 0.01 : 1)} value={wert(e)} onchange={(ev) => setze(e, ev.currentTarget.value)} />
+              <!-- Ohne bekannten gültigen Bereich nur anzeigen, keine freie Eingabe. -->
+              <span class="leise zahl waehlbar">{e.value}</span>
             {/if}
           </div>
         </div>
@@ -135,8 +136,11 @@
               <div class="zeile">
                 <div class="text"><code class="waehlbar">{e.name}</code><span class="hint">{e.kind}</span></div>
                 <div class="steuer">
-                  {#if e.editable}
-                    <input class="feld zahlfeld" aria-label={e.name} disabled={laeuft} value={wert(e)} onchange={(ev) => setze(e, ev.currentTarget.value)} />
+                  {#if e.kind === "bool"}
+                    <span class="schalter">
+                      <input type="checkbox" aria-label={e.name} disabled={laeuft} checked={wert(e) === "true"} onchange={(ev) => setze(e, ev.currentTarget.checked ? "true" : "false")} />
+                      <span></span>
+                    </span>
                   {:else}
                     <span class="leise zahl waehlbar">{e.value}</span>
                   {/if}
