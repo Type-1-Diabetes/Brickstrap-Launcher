@@ -419,11 +419,13 @@ struct Watcher {
     pos: u64,
     pending: Vec<u8>,
     gone_ticks: u8,
+    /// Lief Roblox beim letzten Durchlauf?
+    was_running: bool,
 }
 
 impl Watcher {
     fn new() -> Self {
-        Self { started: SystemTime::now(), initialized: false, current: None, pos: 0, pending: Vec::new(), gone_ticks: 0 }
+        Self { started: SystemTime::now(), initialized: false, current: None, pos: 0, pending: Vec::new(), gone_ticks: 0, was_running: false }
     }
 
     /// Neue ganze Zeilen seit dem letzten Aufruf.
@@ -482,6 +484,17 @@ impl Watcher {
         for line in self.read_lines() {
             process_line(app, &line);
         }
+
+        // Roblox wurde geschlossen: Brickstrap wieder zeigen (abschaltbar).
+        let running = roblox_running();
+        if self.was_running && !running && app.state::<AppState>().config().show_on_exit {
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.unminimize();
+                let _ = w.show();
+                let _ = w.set_focus();
+            }
+        }
+        self.was_running = running;
 
         // Roblox abgestürzt oder beendet, ohne dass eine Abschlusszeile kam.
         if lock().activity.state != "idle" && !roblox_running() {

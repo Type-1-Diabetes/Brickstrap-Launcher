@@ -94,6 +94,8 @@ pub struct Server {
     /// Server-Ping laut Roblox (nicht der eigene Ping)
     pub ping: Option<u64>,
     pub fps: Option<f64>,
+    /// Verschleierte Kennungen der Spieler (nur für Avatar-Bilder nutzbar)
+    pub player_tokens: Vec<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -426,6 +428,46 @@ pub async fn game_media(state: State<'_, AppState>, universe_id: u64) -> ApiResu
         .collect())
 }
 
+/// Avatar-Köpfe zu den Spieler-Kennungen eines Servers (ohne Login).
+/// Roblox verrät dabei keine Namen; die Bilder kommen über den Sammel-Endpunkt `thumbnails/v1/batch`.
+#[tauri::command]
+pub async fn server_avatars(state: State<'_, AppState>, tokens: Vec<String>) -> ApiResult<Vec<String>> {
+    let mut out = Vec::new();
+    for chunk in tokens.chunks(100).take(2) {
+        let body: Vec<Value> = chunk
+            .iter()
+            .map(|t| {
+                serde_json::json!({
+                    "requestId": format!("0:{t}:AvatarHeadshot:150x150:png:regular"),
+                    "type": "AvatarHeadShot",
+                    "targetId": 0,
+                    "token": t,
+                    "format": "png",
+                    "size": "150x150"
+                })
+            })
+            .collect();
+        let resp = state.http.post("https://thumbnails.roblox.com/v1/batch").json(&body).send().await?;
+        if resp.status().as_u16() == 429 {
+            return Err(ApiError::new("RATE_LIMIT", "30"));
+        }
+        if !resp.status().is_success() {
+            return Err(ApiError::new("HTTP", resp.status().as_u16().to_string()));
+        }
+        let v: Value = resp.json().await?;
+        out.extend(
+            v.get("data")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter(|d| text(d, &["state"]) == "Completed")
+                .map(|d| text(d, &["imageUrl"]))
+                .filter(|u| !u.is_empty()),
+        );
+    }
+    Ok(out)
+}
+
 // ---------- Serverliste ----------
 
 /// Eine Seite öffentlicher Server. `order`: "Asc" (wenige Spieler zuerst) oder "Desc".
@@ -465,6 +507,11 @@ pub async fn servers(
                 max_players: num(s, &["maxPlayers"]),
                 ping: s.get("ping").and_then(Value::as_u64),
                 fps: s.get("fps").and_then(Value::as_f64),
+                player_tokens: s
+                    .get("playerTokens")
+                    .and_then(Value::as_array)
+                    .map(|a| a.iter().filter_map(|t| t.as_str().map(String::from)).collect())
+                    .unwrap_or_default(),
             })
         })
         .collect();

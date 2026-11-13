@@ -90,6 +90,7 @@ pub fn run() {
             roblox_api::thumbnails,
             roblox_api::servers,
             roblox_api::game_media,
+            roblox_api::server_avatars,
             account::account_get,
             launch::pin_cover_set,
             launch::roblox_status,

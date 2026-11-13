@@ -61,7 +61,8 @@ let config = {
   discordJoinButton: true,
   closeToTray: true,
   hideOnLaunch: true,
-  hideFullServers: true,
+  hideFullServers: false,
+  showOnExit: true,
 };
 
 // Gleiche Allowlist wie im Rust-Teil (eingebettete Datei)
@@ -131,6 +132,7 @@ function servers(placeId, cursor, order, excludeFull) {
       maxPlayers: max,
       ping: 18 + (r % 160),
       fps: 59.5 + (r % 10) / 20,
+      playerTokens: Array.from({ length: Math.min(max, playing) }, (_, k) => `T${g.universeId}-${i}-${k}`),
     });
   }
   if (excludeFull) list = list.filter((s) => s.playing < s.maxPlayers);
@@ -199,6 +201,10 @@ const handlers = {
   },
   async invite_link({ placeId }) { return `https://www.roblox.com/games/${placeId}`; },
   async discord_builtin() { return false; },
+  async server_avatars({ tokens }) {
+    await delay(300);
+    return tokens.map((t, k) => bild({ hue: (k * 47) % 360, universeId: 300 + k }, 150, 150));
+  },
   async account_get() { return modus.has("ohne-roblox") ? null : { userId: 1, name: "DemoSpieler", displayName: "Demo", avatarUrl: null }; },
   async game_media({ universeId }) {
     await delay(200);

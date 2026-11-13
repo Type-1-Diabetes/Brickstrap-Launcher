@@ -152,7 +152,7 @@ export function firstServers(placeId, order, excludeFull) {
 /** Beim Überfahren einer Kachel: Serverliste schon anfragen, damit der Klick sofort wirkt. */
 export function prefetch(game) {
   if (!game?.placeId || !app.config) return;
-  firstServers(game.placeId, "Desc", app.config.hideFullServers);
+  firstServers(game.placeId, "Desc", app.config.hideFullServers ?? false);
 }
 
 // ---------- Start ----------

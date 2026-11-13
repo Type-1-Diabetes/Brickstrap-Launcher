@@ -18,7 +18,7 @@
   ];
 
   let sorte = $state("voll");
-  let ohneVolle = $state(app.config?.hideFullServers ?? true);
+  let ohneVolle = $state(app.config?.hideFullServers ?? false);
   let server = $state([]);
   let cursor = $state(null);
   let laedt = $state(true);
@@ -94,6 +94,23 @@
 
   const f = $derived(fehler ? fehlerText(fehler) : null);
   const kurzId = (id) => id.slice(0, 8);
+
+  // Aufgeklappte Zeile und geladene Avatare je Server
+  let offen = $state(null);
+  let avatare = $state({});
+  async function umschalten(s) {
+    offen = offen === s.id ? null : s.id;
+    if (offen && !avatare[s.id] && s.playerTokens?.length) {
+      avatare[s.id] = "laedt";
+      try {
+        avatare[s.id] = await call("server_avatars", { tokens: s.playerTokens });
+      } catch {
+        avatare[s.id] = "fehler";
+      }
+    }
+  }
+  const linkKopieren = (s) =>
+    kopieren(`roblox://experiences/start?placeId=${game.placeId}&gameInstanceId=${s.id}`, "Link zu diesem Server kopiert");
 </script>
 
 <section class="server">
@@ -155,7 +172,17 @@
       </div>
       {#each sichtbar as s, i (s.id)}
         {@const voll = s.playing >= s.maxPlayers}
-        <div class="zeile" class:voll role="row" style="--i: {Math.min(i, 12)}">
+        <div
+          class="zeile klickbar"
+          class:voll
+          class:auf={offen === s.id}
+          role="row"
+          tabindex="0"
+          aria-expanded={offen === s.id}
+          style="--i: {Math.min(i, 12)}"
+          onclick={(e) => !e.target.closest("button") && umschalten(s)}
+          onkeydown={(e) => (e.key === "Enter" || e.key === " ") && e.target === e.currentTarget && (e.preventDefault(), umschalten(s))}
+        >
           <span class="spieler zahl" role="cell"><strong>{s.playing}</strong><span class="leise">/{s.maxPlayers}</span></span>
           <span class="auslastung" role="cell">
             <span class="spur"><span class="fuellung" style="transform: scaleX({Math.min(1, s.playing / Math.max(1, s.maxPlayers))})"></span></span>
@@ -180,6 +207,34 @@
             </button>
           </span>
         </div>
+        {#if offen === s.id}
+          <div class="details" role="row">
+            <div class="fakten zahl" role="cell">
+              <div><span class="leise">Spieler</span><strong>{s.playing} von {s.maxPlayers}</strong></div>
+              <div><span class="leise">Freie Plätze</span><strong>{Math.max(0, s.maxPlayers - s.playing)}</strong></div>
+              <div><span class="leise">Server-Ping</span><strong>{s.ping != null ? `${s.ping} ms` : "–"}</strong></div>
+              <div><span class="leise">FPS des Servers</span><strong>{s.fps != null ? s.fps.toFixed(1) : "–"}</strong></div>
+              <div class="breit"><span class="leise">Server-ID</span><code class="waehlbar">{s.id}</code></div>
+            </div>
+            <div class="spieler-bilder" role="cell">
+              <span class="leise">Spieler im Server</span>
+              {#if avatare[s.id] === "laedt"}
+                <div class="avatare">{#each Array(Math.min(8, s.playing)) as _, k (k)}<span class="skelett av"></span>{/each}</div>
+              {:else if Array.isArray(avatare[s.id]) && avatare[s.id].length}
+                <div class="avatare">{#each avatare[s.id] as url, k (k)}<img class="av" src={url} alt="" loading="lazy" />{/each}</div>
+              {:else}
+                <p class="leise klein">Roblox liefert für diesen Server keine Bilder.</p>
+              {/if}
+              <p class="leise klein">Ob Freunde dabei sind, zeigt Brickstrap erst mit Login (kommt später). Namen gibt Roblox ohne Login nicht heraus.</p>
+            </div>
+            <div class="det-aktionen" role="cell">
+              <button class="knopf klein" onclick={() => linkKopieren(s)}><Icon name="kopieren" size={14} />Link kopieren</button>
+              <button class="knopf primaer klein" disabled={s.playing >= s.maxPlayers || !!starting.key} onclick={() => launch(game, s.id)}>
+                <Icon name="spielen" size={13} />Beitreten
+              </button>
+            </div>
+          </div>
+        {/if}
       {/each}
     </div>
     {#if cursor}
@@ -282,6 +337,22 @@
   .zeile:hover .beitreten:not(:disabled) { --bg: var(--primaer); --bg-h: var(--primaer-hover); --fg: var(--auf-primaer); }
 
   .mehr { display: flex; justify-content: center; }
+  .klickbar { cursor: default; }
+  .zeile.auf { background: var(--s2); }
+  .details {
+    display: grid; grid-template-columns: minmax(260px, 1fr) 1.4fr auto; gap: 24px; align-items: start;
+    padding: 16px 18px 18px; background: var(--s2); border-top: 1px solid var(--linie);
+    animation: aufklappen 200ms var(--ein);
+  }
+  @keyframes aufklappen { from { opacity: 0; transform: translateY(-4px); } }
+  .fakten { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+  .fakten div { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; }
+  .fakten strong { font-size: 15px; font-weight: 700; }
+  .fakten .breit { grid-column: 1 / -1; }
+  .spieler-bilder { display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }
+  .avatare { display: flex; flex-wrap: wrap; gap: 6px; }
+  .av { width: 36px; height: 36px; border-radius: 50%; background: var(--s3); object-fit: cover; }
+  .det-aktionen { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
   .klein { font-size: 12.5px; }
   .unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 </style>

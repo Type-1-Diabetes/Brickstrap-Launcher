@@ -81,6 +81,13 @@
         </div>
         <div class="zeile">
           <div class="text">
+            <span class="label">Öffnen, wenn Roblox beendet wird</span>
+            <p class="hint">Schließt du Roblox, kommt Brickstrap wieder nach vorn.</p>
+          </div>
+          <span class="schalter"><input type="checkbox" aria-label="Öffnen, wenn Roblox beendet wird" checked={app.config.showOnExit} onchange={(e) => setze({ showOnExit: e.currentTarget.checked })} /><span></span></span>
+        </div>
+        <div class="zeile">
+          <div class="text">
             <span class="label">Volle Server ausblenden</span>
             <p class="hint">Standard für die Serverliste. Auf jeder Spielseite umschaltbar.</p>
           </div>

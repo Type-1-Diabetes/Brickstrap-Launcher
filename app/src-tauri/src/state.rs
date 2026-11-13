@@ -36,6 +36,8 @@ pub struct Config {
     pub hide_on_launch: bool,
     /// Serverliste ohne volle Server
     pub hide_full_servers: bool,
+    /// Brickstrap öffnen, wenn Roblox beendet wird
+    pub show_on_exit: bool,
 }
 
 /// Discord-Anwendung von Brickstrap (öffentliche ID, kein Geheimnis).
@@ -59,7 +61,8 @@ impl Default for Config {
             discord_join_button: true,
             close_to_tray: true,
             hide_on_launch: true,
-            hide_full_servers: true,
+            hide_full_servers: false,
+            show_on_exit: true,
         }
     }
 }
