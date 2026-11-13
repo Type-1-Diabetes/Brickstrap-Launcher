@@ -451,7 +451,9 @@ fn newest_player_log(dirs: &[PathBuf]) -> Option<(PathBuf, SystemTime)> {
     let mut best: Option<(PathBuf, SystemTime)> = None;
     for e in dirs.iter().filter_map(|d| std::fs::read_dir(d).ok()).flatten().flatten() {
         let name = e.file_name().to_string_lossy().into_owned();
-        if !name.contains("Player") {
+        // Neben jedem Spiel-Log legt Roblox eine `…_Player_…_CrashHandler_last.log` an,
+        // etwas später. Die enthält keine Spielzeilen und darf nicht gewinnen.
+        if !name.contains("Player") || name.contains("CrashHandler") || !name.ends_with(".log") {
             continue;
         }
         let Ok(meta) = e.metadata() else { continue };
