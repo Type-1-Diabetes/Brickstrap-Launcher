@@ -68,6 +68,30 @@
     }
   }
 
+  // Kurze Erklärungen für bekannte Einträge der Datei. Unbekannte zeigen nur ihren Typ.
+  const ERKLAERUNG = {
+    AllTutorialsDisabled: "Blendet die Einführungen für neue Spieler aus.",
+    BadgeVisible: "Zeigt eine Meldung, wenn du ein Abzeichen bekommst.",
+    CameraYInverted: "Kehrt die Kamera nach oben und unten um.",
+    ChatTranslationEnabled: "Übersetzt Chatnachrichten automatisch.",
+    ChatTranslationFTUXShown: "Merkt sich, dass der Hinweis zur Chat-Übersetzung schon kam.",
+    ChatTranslationLocale: "Sprache, in die der Chat übersetzt wird.",
+    ChatTranslationToggleEnabled: "Zeigt einen Knopf zum Umschalten der Übersetzung.",
+    ChatVisible: "Zeigt das Chatfenster im Spiel.",
+    ComputerMovementMode: "Steuerung mit Maus und Tastatur.",
+    ControlMode: "Wie die Maus die Kamera steuert.",
+    DefaultCameraID: "Gewählte Kamera für Gesichtserkennung.",
+    GamepadCameraSensitivity: "Kamera-Tempo mit dem Controller.",
+    GraphicsOptimizationMode: "Wie Roblox die Grafik an deinen PC anpasst.",
+    HapticStrength: "Stärke der Vibration am Controller.",
+    HasEverUsedVR: "Merkt sich, ob du schon VR genutzt hast.",
+    MasterVolumeStudio: "Lautstärke in Roblox Studio.",
+    MaxQualityEnabled: "Höchste Grafikstufe freigeschaltet.",
+    MicroProfilerWebServerEnabled: "Werkzeug für Entwickler. Aus lassen.",
+    MouseSensitivityFirstPerson: "Maus-Tempo in der Ich-Ansicht (X und Y).",
+    MouseSensitivityThirdPerson: "Maus-Tempo in der Schulteransicht (X und Y).",
+  };
+
   const f = $derived(fehler ? fehlerText(fehler) : null);
   const fpsText = (v) => (Number(v) === 0 ? "Ohne Limit" : `${v} FPS`);
 </script>
@@ -112,11 +136,12 @@
                 onchange={(v) => setze(e, v)}
                 options={[...new Set(["30", "60", "75", "120", "144", "165", "240", "0", String(wert(e))])].map((o) => ({ value: o, label: fpsText(o) }))}
               />
-            {:else if e.min !== null && e.max !== null && e.max - e.min <= 10}
+            {:else if e.min !== null && e.max !== null}
               <input class="regler" type="range" aria-label={e.label} disabled={laeuft} min={e.min} max={e.max} step={e.step ?? 1} value={wert(e)} oninput={(ev) => setze(e, ev.currentTarget.value)} />
               <span class="wert zahl">{e.name === "SavedQualityLevel" && Number(wert(e)) === 0 ? "Auto" : e.kind === "float" ? Number(wert(e)).toLocaleString("de-DE", { maximumFractionDigits: 2 }) : wert(e)}</span>
             {:else}
-              <input class="feld zahlfeld" type="number" aria-label={e.label} disabled={laeuft} min={e.min ?? undefined} max={e.max ?? undefined} step={e.step ?? (e.kind === "float" ? 0.01 : 1)} value={wert(e)} onchange={(ev) => setze(e, ev.currentTarget.value)} />
+              <!-- Ohne bekannten gültigen Bereich nur anzeigen, keine freie Eingabe. -->
+              <span class="leise zahl waehlbar">{e.value}</span>
             {/if}
           </div>
         </div>
@@ -133,10 +158,13 @@
           <div class="karte">
             {#each weitere as e (e.name)}
               <div class="zeile">
-                <div class="text"><code class="waehlbar">{e.name}</code><span class="hint">{e.kind}</span></div>
+                <div class="text"><code class="waehlbar">{e.name}</code><span class="hint">{ERKLAERUNG[e.name] ?? e.kind}</span></div>
                 <div class="steuer">
-                  {#if e.editable}
-                    <input class="feld zahlfeld" aria-label={e.name} disabled={laeuft} value={wert(e)} onchange={(ev) => setze(e, ev.currentTarget.value)} />
+                  {#if e.kind === "bool"}
+                    <span class="schalter">
+                      <input type="checkbox" aria-label={e.name} disabled={laeuft} checked={wert(e) === "true"} onchange={(ev) => setze(e, ev.currentTarget.checked ? "true" : "false")} />
+                      <span></span>
+                    </span>
                   {:else}
                     <span class="leise zahl waehlbar">{e.value}</span>
                   {/if}
@@ -172,7 +200,6 @@
   .label { font-weight: 600; }
   .hint { color: var(--t3); font-size: 13px; }
   .steuer { display: flex; align-items: center; gap: 12px; flex: none; }
-  .zahlfeld { width: 120px; text-align: right; }
   .wert { min-width: 36px; text-align: right; font-weight: 600; }
   .regler { width: 180px; height: 24px; accent-color: var(--primaer); }
   code { font-family: var(--mono); font-size: 12.5px; color: var(--t2); }

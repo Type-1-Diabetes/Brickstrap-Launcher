@@ -58,7 +58,7 @@ struct Known {
 const KNOWN: &[Known] = &[
     Known { name: "FramerateCap", label: "FPS-Limit", hint: "0 = ohne Limit. Roblox bietet im Menü bis 240 an. Höhere Werte wirken eventuell nicht.", min: Some(0.0), max: Some(1000.0), step: Some(1.0) },
     Known { name: "SavedQualityLevel", label: "Grafikqualität", hint: "0 = automatisch, 1 bis 10 = feste Stufe. Niedrigere Stufen bringen mehr FPS.", min: Some(0.0), max: Some(10.0), step: Some(1.0) },
-    Known { name: "GraphicsQualityLevel", label: "Grafikqualität (fein)", hint: "Feine Stufe der Grafikqualität. Nicht in jeder Datei vorhanden.", min: None, max: None, step: Some(1.0) },
+    Known { name: "GraphicsQualityLevel", label: "Grafikqualität (fein)", hint: "Feine Stufe der Grafikqualität von 1 bis 21. Nicht in jeder Datei vorhanden.", min: Some(1.0), max: Some(21.0), step: Some(1.0) },
     Known { name: "Fullscreen", label: "Vollbild", hint: "Roblox im Vollbild starten.", min: None, max: None, step: None },
     Known { name: "MouseSensitivity", label: "Mausempfindlichkeit", hint: "Im Menü nur eingeschränkt einstellbar. Hier sind auch Zwischenwerte möglich.", min: Some(0.01), max: Some(10.0), step: Some(0.01) },
     Known { name: "MasterVolume", label: "Lautstärke", hint: "Gesamtlautstärke von 0 (stumm) bis 1 (volle Lautstärke).", min: Some(0.0), max: Some(1.0), step: Some(0.05) },
