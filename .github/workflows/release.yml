@@ -54,6 +54,10 @@ jobs:
           cache-on-failure: true
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
+      # cargo-xwin braucht llvm-lib, clang-cl und lld-link. Ubuntu hat sie nur unter /usr/lib/llvm-<Version>/bin.
+      - name: LLVM in den PATH
+        run: ls -d /usr/lib/llvm-*/bin | sort -V | tail -1 >> "$GITHUB_PATH"
+
       - run: npm ci --no-audit --no-fund
 
       - name: Bauen

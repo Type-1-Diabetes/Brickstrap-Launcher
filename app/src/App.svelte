@@ -47,6 +47,9 @@
     } else if (e.altKey && e.key === "ArrowLeft") {
       e.preventDefault();
       back();
+    } else if (e.key === "F11") {
+      e.preventDefault();
+      call("vollbild").catch(() => {});
     } else if (e.key === "Escape" && tippt && e.target === suchfeld) {
       suchfeld.blur();
     }

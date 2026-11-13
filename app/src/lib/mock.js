@@ -161,7 +161,9 @@ function servers(placeId, cursor, order, excludeFull) {
   return { servers: slice, nextCursor: (page + 1) * 100 < list.length ? String(page + 1) : null };
 }
 
+let vollbildAn = false;
 const handlers = {
+  vollbild: () => (vollbildAn = !vollbildAn),
   async home_feed({ fresh }) {
     await delay(fresh ? 600 : 5);
     if (!fresh) return null;

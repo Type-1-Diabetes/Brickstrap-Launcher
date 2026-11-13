@@ -86,6 +86,7 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            vollbild,
             roblox_api::home_feed,
             roblox_api::search,
             roblox_api::game_details,
@@ -121,4 +122,12 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("Brickstrap konnte nicht starten");
+}
+
+/// F11: Vollbild des Hauptfensters an/aus. Gibt den neuen Zustand zurück.
+#[tauri::command]
+fn vollbild(window: tauri::WebviewWindow) -> Result<bool, String> {
+    let an = !window.is_fullscreen().map_err(|e| format!("UNBEKANNT|{e}"))?;
+    window.set_fullscreen(an).map_err(|e| format!("UNBEKANNT|{e}"))?;
+    Ok(an)
 }
