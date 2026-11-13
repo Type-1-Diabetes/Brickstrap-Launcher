@@ -176,7 +176,6 @@
   .label { font-weight: 600; }
   .hint { color: var(--t3); font-size: 13px; }
   .steuer { display: flex; align-items: center; gap: 12px; flex: none; }
-  .zahlfeld { width: 120px; text-align: right; }
   .wert { min-width: 36px; text-align: right; font-weight: 600; }
   .regler { width: 180px; height: 24px; accent-color: var(--primaer); }
   code { font-family: var(--mono); font-size: 12.5px; color: var(--t2); }
