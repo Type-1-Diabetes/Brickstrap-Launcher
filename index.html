@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Brickstrap · Launcher für Roblox unter Windows</title>
-<meta name="description" content="Brickstrap ist ein kostenloser Launcher für Roblox unter Windows. Server selbst wählen, FastFlags, Freunde, Discord-Status. Ohne Eingriff in Roblox.">
+<meta name="description" content="Kostenloser Launcher für Roblox unter Windows. Du wählst deinen Server selbst und stellst FastFlags ein. Brickstrap greift nie in den Roblox-Client ein.">
 <meta name="theme-color" content="#0b0b0d">
+<script>document.documentElement.classList.add("js")</script>
 <meta property="og:title" content="Brickstrap">
 <meta property="og:description" content="Ein Launcher, der Roblox nicht anfasst. Kostenlos für Windows.">
 <meta property="og:image" content="https://type-1-diabetes.github.io/Brickstrap-Launcher/assets/bilder/spiel.webp">
@@ -56,6 +57,9 @@
   ::-webkit-scrollbar { width: 12px; }
   ::-webkit-scrollbar-thumb { background: var(--s3); border: 3px solid var(--s0); border-radius: 8px; }
 
+  .sprung { position: fixed; left: 12px; top: 12px; z-index: 20; padding: 10px 14px; border-radius: 10px; background: var(--primaer); color: var(--auf-primaer); font-weight: 600; text-decoration: none; transform: translateY(-160%); }
+  .sprung:focus-visible { transform: none; }
+
   /* Knöpfe wie in der App */
   .knopf {
     display: inline-flex; align-items: center; justify-content: center; gap: 9px;
@@ -64,10 +68,10 @@
     text-decoration: none; white-space: nowrap; cursor: pointer;
     transition: background-color 120ms ease, transform 140ms var(--ein);
   }
-  .knopf:hover { background: var(--s4); }
+  @media (hover: hover) and (pointer: fine) { .knopf:hover { background: var(--s4); } }
   .knopf:active { transform: scale(0.97); }
   .knopf.primaer { background: var(--primaer); color: var(--auf-primaer); }
-  .knopf.primaer:hover { background: var(--primaer-hover); }
+  @media (hover: hover) and (pointer: fine) { .knopf.primaer:hover { background: var(--primaer-hover); } }
   .knopf .klein { font-weight: 500; font-size: 13px; opacity: 0.62; }
 
   /* Kopf */
@@ -77,8 +81,9 @@
   .logo { display: block; height: 26px; }
   .logo img { height: 100%; width: auto; display: block; }
   nav { display: flex; gap: 22px; margin-right: auto; }
-  nav a { color: var(--t2); text-decoration: none; font-size: 14.5px; font-weight: 500; }
-  nav a:hover { color: var(--t1); }
+  nav a { position: relative; display: inline-flex; align-items: center; min-height: 44px; color: var(--t2); text-decoration: none; font-size: 14.5px; font-weight: 500; transition: color 150ms ease; }
+  nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 10px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform 220ms var(--ein); }
+  @media (hover: hover) and (pointer: fine) { nav a:hover { color: var(--t1); } nav a:hover::after { transform: scaleX(1); } }
 
   /* Erster Bildschirm */
   .hero { padding-top: clamp(40px, 7vw, 88px); }
@@ -94,12 +99,14 @@
   .meta strong { color: var(--t1); font-weight: 700; }
   .meta .punkt { width: 4px; height: 4px; border-radius: 50%; background: var(--t4); }
   .pruef {
-    display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 8px; margin: -4px 0;
+    display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px 0 10px;
     border: 1px solid var(--linie-stark); border-radius: 8px; background: none;
     color: var(--t2); font: inherit; font-size: 13px; cursor: pointer;
     transition: border-color 120ms ease, color 120ms ease;
   }
-  .pruef:hover { border-color: var(--t3); color: var(--t1); }
+  @media (hover: hover) and (pointer: fine) { .pruef:hover { border-color: var(--t3); color: var(--t1); } }
+  .pruef:active { transform: scale(0.97); }
+  .pruef { transition: border-color 120ms ease, color 120ms ease, transform 140ms var(--ein); }
   .pruef code { font-family: var(--mono); font-size: 12.5px; color: var(--t3); }
   .pruef.kopiert code { color: var(--t1); }
 
@@ -130,10 +137,15 @@
   .nie svg { color: var(--t3); margin-top: 1px; }
   .nie li strong { color: var(--t2); }
 
-  /* Zeilen bauen sich beim Laden gestaffelt auf */
+  /* Einmal beim Laden: Überschrift zuerst, dann Text, Meta und die Zeilen des Registers */
   @media (prefers-reduced-motion: no-preference) {
-    .js .spalte li { opacity: 0; transform: translateY(6px); }
-    .js .bereit .spalte li { opacity: 1; transform: none; transition: opacity 240ms ease, transform 250ms var(--ein); transition-delay: calc(var(--i) * 45ms + 120ms); }
+    .js .hero h1, .js .hero .lead, .js .hero .meta, .js .spalte li { opacity: 0; transform: translateY(8px); }
+    .js .bereit h1, .js .bereit .lead, .js .bereit .meta, .js .bereit .spalte li {
+      opacity: 1; transform: none; transition: opacity 260ms ease, transform 300ms var(--ein);
+    }
+    .js .bereit .lead { transition-delay: 60ms; }
+    .js .bereit .meta { transition-delay: 110ms; }
+    .js .bereit .spalte li { transition-delay: calc(var(--i) * 24ms + 160ms); }
   }
 
   /* Bild der App */
@@ -143,7 +155,6 @@
   }
   .bildrahmen img { display: block; width: 100%; height: auto; }
   .bildrahmen::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--rand-bild); pointer-events: none; }
-  .unterschrift { margin-top: 10px; color: var(--t3); font-size: 13px; }
 
   /* Abschnitte */
   section.abschnitt { padding-top: clamp(72px, 9vw, 120px); }
@@ -219,6 +230,7 @@
 </style>
 </head>
 <body>
+<a class="sprung" href="#inhalt">Zum Inhalt</a>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="ja" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="nie" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
@@ -242,10 +254,10 @@
   </div>
 </header>
 
-<main>
+<main id="inhalt">
   <div class="hero breite">
     <h1>Ein Launcher, der Roblox nicht anfasst.</h1>
-    <p class="lead">Brickstrap startet den offiziellen Roblox-Client von außen. Du wählst deinen Server selbst, stellst Grafik und Leistung ein und siehst, wo deine Freunde spielen. Kostenlos für Windows.</p>
+    <p class="lead">Brickstrap startet den offiziellen Roblox-Client nur von außen. Den Server suchst du dir selbst aus, die Grafik stellst du vorher ein. Kostenlos, für Windows.</p>
     <div class="meta zahl" aria-live="polite">
       <span><strong data-version-lang>Neueste Version</strong></span>
       <span class="punkt" aria-hidden="true"></span>
@@ -261,15 +273,15 @@
       <div class="spalte ja">
         <h2><em>Brickstrap macht</em><span>über Web-APIs und Dateien von Roblox</span></h2>
         <ul>
-          <li style="--i:0"><svg class="i" width="22" height="22"><use href="#ja"/></svg><div><strong>Server selbst wählen</strong><small>Kleinster Server, bester Ping oder genau der, den du willst. Ein Klick tritt bei.</small></div></li>
+          <li style="--i:0"><svg class="i" width="22" height="22"><use href="#ja"/></svg><div><strong>Server selbst wählen</strong><small>Kleinster Server, bester Ping oder genau der, den du willst. Ein Klick, und du bist drin.</small></div></li>
           <li style="--i:1"><svg class="i" width="22" height="22"><use href="#ja"/></svg><div><strong>FastFlags mit fertigen Stufen</strong><small>Max FPS, Ausgewogen, Hohe Qualität. Nur Flags, die Roblox offiziell zulässt.</small></div></li>
-          <li style="--i:2"><svg class="i" width="22" height="22"><use href="#ja"/></svg><div><strong>Freunde und Spieler</strong><small>Sieh, wer online ist, tritt bei und schau dir Profile und Abzeichen an.</small></div></li>
+          <li style="--i:2"><svg class="i" width="22" height="22"><use href="#ja"/></svg><div><strong>Freunde und Spieler</strong><small>Wer ist online, wer spielt was? Dazu Profile und Abzeichen jedes Kontos.</small></div></li>
           <li style="--i:3"><svg class="i" width="22" height="22"><use href="#ja"/></svg><div><strong>Discord-Status</strong><small>Spiel, Server-Region und Spielerzahl, mit Knopf zum Beitreten.</small></div></li>
-          <li style="--i:4"><svg class="i" width="22" height="22"><use href="#ja"/></svg><div><strong>Spielzeit und „Wieder beitreten“</strong><small>Gelesen aus der Logdatei von Roblox. Zurück auf den letzten Server mit einem Klick.</small></div></li>
+          <li style="--i:4"><svg class="i" width="22" height="22"><use href="#ja"/></svg><div><strong>Spielzeit und „Wieder beitreten“</strong><small>Brickstrap liest sie aus der Logdatei von Roblox. Der letzte Server bleibt drei Stunden lang einen Klick entfernt.</small></div></li>
         </ul>
       </div>
       <div class="spalte nie">
-        <h2><em>Brickstrap macht nie</em><span>darum bleibt dein Konto sicher</span></h2>
+        <h2><em>Brickstrap macht nie</em><span>wofür Roblox Konten sperren kann</span></h2>
         <ul>
           <li style="--i:5"><svg class="i" width="22" height="22"><use href="#nie"/></svg><div><strong>Code in Roblox einschleusen</strong><small>Keine DLL, kein Hook, kein Overlay im Roblox-Prozess.</small></div></li>
           <li style="--i:6"><svg class="i" width="22" height="22"><use href="#nie"/></svg><div><strong>Speicher des Clients lesen oder schreiben</strong><small>Auch kein FPS-Unlocker und keine „Speicher-Bereinigung“.</small></div></li>
@@ -283,13 +295,12 @@
     <figure class="bildrahmen" style="margin-inline:0">
       <img src="assets/bilder/spiel.webp" width="1440" height="860" alt="Spielseite von Brickstrap mit Kennzahlen, Spielen-Knopf und Serverliste mit Auslastung und Ping">
     </figure>
-    <p class="unterschrift">Spielseite mit Serverliste. Alle Bilder zeigen die Vorschau mit Demo-Daten.</p>
   </div>
 
   <section class="abschnitt" id="installieren" aria-labelledby="t-installieren">
     <div class="breite">
-      <h2 id="t-installieren">In einer Minute startklar.</h2>
-      <p class="unter">Keine Installation, kein Installer. Eine Datei, die sich selbst einrichtet.</p>
+      <h2 id="t-installieren">Vier Schritte bis zum ersten Spiel.</h2>
+      <p class="unter">Du lädst eine einzige exe. Beim ersten Start richtet sie sich selbst ein.</p>
       <ol class="schritte">
         <li>
           <h3>Laden</h3>
@@ -306,7 +317,7 @@
         </li>
         <li>
           <h3>Anmelden</h3>
-          <p>Mit deinem Roblox-Konto auf der echten Seite von Roblox. Updates kommen danach von allein.</p>
+          <p>Mit deinem Roblox-Konto, auf der echten Anmeldeseite von Roblox. Neue Versionen lädt Brickstrap danach selbst.</p>
         </li>
       </ol>
     </div>
@@ -319,9 +330,8 @@
           <h2>Mehr FPS, ohne zu basteln.</h2>
           <p>Wähl eine Stufe oder stell jedes Flag einzeln ein. Brickstrap schreibt sie vor jedem Start neu, auch nach einem Update von Roblox.</p>
           <ul>
-            <li>Presets: Max FPS, Ausgewogen, Hohe Qualität</li>
-            <li>Nur Flags aus der offiziellen Allowlist</li>
-            <li>Als JSON teilen und einfügen</li>
+            <li>Nur Flags, die auf der Allowlist von Roblox stehen</li>
+            <li>Deine Einstellung als JSON an Freunde schicken</li>
           </ul>
         </div>
         <figure class="bildrahmen" style="margin:0"><img src="assets/bilder/fastflags.webp" width="1440" height="860" loading="lazy" alt="FastFlag-Editor mit den drei Presets und einzelnen Flags"></figure>
@@ -331,9 +341,10 @@
           <h2>Deine Spiele, sofort da.</h2>
           <p>Angepinnte Spiele, zuletzt gespielt und die Reihen von Roblox auf einer Seite. Fährst du über ein Spiel, lädt die Serverliste schon vor.</p>
           <ul>
-            <li>Suche nach Name, Place-ID oder Link</li>
-            <li>Spielzeit nach Tag, Woche und gesamt</li>
-            <li>Läuft im Infobereich weiter, startet sofort</li>
+            <li>Suche nach Name, Place-ID oder Link zur Spielseite</li>
+            <li>Spielzeit pro Spiel, für 7 Tage, 30 Tage und gesamt</li>
+            <li>Schließen versteckt das Fenster nur, der nächste Start ist sofort da</li>
+            <li>Spieler suchen und ihr öffentliches Inventar ansehen</li>
           </ul>
         </div>
         <figure class="bildrahmen" style="margin:0"><img src="assets/bilder/start.webp" width="1440" height="860" loading="lazy" alt="Startseite von Brickstrap mit angepinnten Spielen und Reihen"></figure>
@@ -344,8 +355,8 @@
   <section class="schluss" aria-labelledby="t-schluss">
     <div class="breite">
       <div>
-        <h2 id="t-schluss">Bereit für deinen Server?</h2>
-        <p class="zahl"><span data-version-satz>Kostenlos für Windows 10 und 11.</span> Braucht WebView2, bei Windows meist vorhanden.</p>
+        <h2 id="t-schluss">Brickstrap für Windows</h2>
+        <p class="zahl"><span data-version-satz>Kostenlos für Windows 10 und 11.</span> Braucht WebView2, das ist bei Windows 10 und 11 meist schon installiert.</p>
       </div>
       <div class="knoepfe">
         <a class="knopf primaer" data-download href="https://github.com/Type-1-Diabetes/Brickstrap-Launcher/releases/latest"><svg class="i" width="18" height="18"><use href="#laden"/></svg>Herunterladen</a>
@@ -357,14 +368,13 @@
 
 <footer>
   <div class="breite">
-    <span>Brickstrap ist kein Produkt von Roblox Corporation. Roblox ist eine Marke der Roblox Corporation.</span>
+    <span>Brickstrap ist kein Produkt von Roblox Corporation. Roblox ist eine Marke der Roblox Corporation. Die Bilder zeigen die Vorschau mit erfundenen Demo-Daten.</span>
     <a href="https://github.com/Type-1-Diabetes/Brickstrap-Launcher/releases">Alle Versionen</a>
   </div>
 </footer>
 
 <script>
   // Neueste Version live von GitHub. Scheitert der Abruf, führen alle Knöpfe auf /releases/latest.
-  document.documentElement.classList.add("js");
   const hero = document.querySelector(".hero");
   requestAnimationFrame(() => requestAnimationFrame(() => hero.classList.add("bereit")));
 
@@ -383,7 +393,7 @@
       const v = rel.tag_name || "";
       document.querySelectorAll("[data-version]").forEach((e) => (e.textContent = v));
       document.querySelector("[data-version-lang]").textContent = "Version " + v.replace(/^v/, "");
-      document.querySelector("[data-version-satz]").textContent = `Version ${v.replace(/^v/, "")}, kostenlos für Windows 10 und 11.`;
+      document.querySelector("[data-version-satz]").textContent = `Version ${v.replace(/^v/, "")}, kostenlos.`;
       if (exe) {
         document.querySelectorAll("[data-download]").forEach((a) => (a.href = exe.browser_download_url));
         document.querySelector("[data-groesse]").textContent = mb(exe.size) + " · Windows 10 und 11";
