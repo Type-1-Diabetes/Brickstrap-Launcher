@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-13T20:47:11+00:00",
+  "generatedAt": "2026-11-14T16:02:29+00:00",
   "title": "Design System: Brickstrap",
   "extensions": {
     "colorMeta": {
@@ -361,6 +361,16 @@
         "name": "focus-ring",
         "value": "outline: 2px solid var(--t1); outline-offset: 2px",
         "purpose": "Keyboard focus on every control."
+      },
+      {
+        "name": "floating-list",
+        "value": "0 12px 28px #00000073",
+        "purpose": "Search suggestions only; floating layer above the page."
+      },
+      {
+        "name": "dialog",
+        "value": "0 24px 64px -12px #000c",
+        "purpose": "Update dialog over the 80 % Black scrim."
       }
     ],
     "motion": [
@@ -413,6 +423,10 @@
       {
         "name": "presets-3col",
         "value": "1050px"
+      },
+      {
+        "name": "side-panel",
+        "value": "1360px"
       }
     ],
     "layout": {
@@ -475,12 +489,12 @@
       "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-chip{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:15px;border:1px solid var(--linie-stark);background:transparent;color:var(--t2);font-size:13px;font-weight:500;transition:background-color 120ms ease,color 120ms ease}.ds-chip:hover{background:var(--s2);color:var(--t1)}.ds-chip[aria-pressed=true]{background:var(--t1);border-color:var(--t1);color:var(--auf-primaer)}.ds-chip:focus-visible{outline:2px solid var(--t1);outline-offset:2px}"
     },
     {
-      "name": "Settings Card",
+      "name": "Settings Rows",
       "kind": "card",
-      "refersTo": "settings-card",
-      "description": "Rail-grey card with hairline-split rows: label and hint left, control right.",
-      "html": "<div class=\"ds-karte\"><div class=\"ds-zeile\"><div><div class=\"ds-label\">Discord-Status</div><div class=\"ds-hint\">Zeigt in Discord, was du spielst.</div></div><span class=\"ds-marke\">Aktiv</span></div><div class=\"ds-zeile\"><div><div class=\"ds-label\">Schatten <span class=\"ds-marke ds-warn\">Experimentell</span></div><code class=\"ds-name\">FFlagDebugSkyGray</code></div><span class=\"ds-hint\">Aus</span></div></div>",
-      "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-karte{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;border-radius:var(--r-l);background:var(--s1);overflow:hidden;color:var(--t1);font-size:14px;max-width:520px}.ds-zeile{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px 16px 14px 18px;border-top:1px solid var(--linie);transition:background-color 100ms ease}.ds-zeile:first-child{border-top:0}.ds-label{font-weight:600;display:flex;gap:8px;align-items:center}.ds-hint{color:var(--t3);font-size:13px}.ds-name{font-family:'Cascadia Mono',Consolas,monospace;font-size:11.5px;color:var(--t3)}.ds-marke{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:4px;background:var(--s3);color:var(--t2);font-size:11px;font-weight:600}.ds-warn{background:var(--warnung-flaeche);color:var(--warnung)}"
+      "refersTo": "settings-row-surface",
+      "description": "Settings as separate Rail Grey rows with a 4 px gap, like Windows 11 Settings.",
+      "html": "<div class=\"ds-rows\"><div class=\"ds-row\"><span class=\"ds-row-tx\"><strong>Im Infobereich weiterlaufen</strong><small>Schließen versteckt das Fenster nur.</small></span><span class=\"ds-sw ds-sw-an\"></span></div><div class=\"ds-row\"><span class=\"ds-row-tx\"><strong>Volle Server ausblenden</strong><small>Gilt für jede Serverliste.</small></span><span class=\"ds-sw\"></span></div></div>",
+      "css": ".ds-rows{display:flex;flex-direction:column;gap:4px;width:520px}.ds-row{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px 16px 14px 18px;border-radius:10px;background:#121215;color:#f3f4f6;transition:background-color 120ms ease}.ds-row:hover{background:#18191d}.ds-row-tx{display:flex;flex-direction:column;gap:4px}.ds-row-tx strong{font-weight:600}.ds-row-tx small{color:#8b9099;font-size:13px}.ds-sw{position:relative;width:40px;height:22px;border-radius:11px;background:#0b0b0d;border:1px solid #4a4b54;flex:none}.ds-sw::after{content:\"\";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#c3c7cd;transition:transform 180ms cubic-bezier(0.22,1,0.36,1)}.ds-sw-an{background:#fff;border-color:#fff}.ds-sw-an::after{transform:translateX(18px);background:#0b0b0d}"
     },
     {
       "name": "Server Row",
@@ -505,6 +519,38 @@
       "description": "Hinweis: empty and error state with icon square, subtitle, gray text, optional button.",
       "html": "<div class=\"ds-hinweis ds-fehler\"><div class=\"ds-sym\">!</div><div><h3>Keine Verbindung</h3><p>Prüf deine Internetverbindung. Angepinnte Spiele funktionieren trotzdem.</p></div></div>",
       "css": ":root{--s0:#0b0b0d;--s1:#121215;--s2:#18191d;--s3:#212227;--s4:#2b2c33;--linie:#24252b;--linie-stark:#34353d;--t1:#f3f4f6;--t2:#c3c7cd;--t3:#8b9099;--t4:#62666f;--primaer:#fff;--primaer-hover:#e4e6ea;--auf-primaer:#0b0b0d;--fehler:#f0525a;--fehler-flaeche:#2a1416;--warnung:#e2b34a;--warnung-flaeche:#29220f;--live:#5ad08b;--r-s:6px;--r:8px;--r-l:12px;--ein:cubic-bezier(0.22,1,0.36,1)}.ds-hinweis{font-family:Archivo,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;display:flex;gap:14px;align-items:flex-start;padding:20px;border-radius:var(--r-l);background:var(--s1);max-width:560px;color:var(--t1);font-size:14px}.ds-hinweis h3{margin:0;font-size:14px;font-weight:700}.ds-hinweis p{margin:4px 0 0;color:var(--t3)}.ds-sym{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--s3);color:var(--t2);flex:none;font-weight:700}.ds-fehler .ds-sym{background:var(--fehler-flaeche);color:var(--fehler)}"
+    },
+    {
+      "name": "Player Row",
+      "kind": "custom",
+      "refersTo": "player-row",
+      "description": "Search result for a player: round avatar, display name, @name; the whole row opens the profile.",
+      "html": "<button class=\"ds-player\"><span class=\"ds-player-ava\">F</span><span class=\"ds-player-tx\"><strong>Feuerfuchs</strong><small>@FeuerFuchs</small></span><svg class=\"ds-player-arrow\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 5l7 7-7 7\"/></svg></button>",
+      "css": ".ds-player{display:flex;align-items:center;gap:14px;width:320px;padding:8px 10px;border:0;border-radius:12px;background:none;color:#f3f4f6;font:inherit;text-align:left;transition:background-color 120ms ease}.ds-player:hover{background:#121215}.ds-player:focus-visible{outline:2px solid #f3f4f6;outline-offset:-2px}.ds-player-ava{display:grid;place-items:center;width:52px;height:52px;flex:none;border-radius:50%;background:#18191d;box-shadow:inset 0 0 0 1px #ffffff12;color:#62666f;font-weight:800;font-size:18px}.ds-player-tx{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}.ds-player-tx strong{font-weight:600;font-size:15px}.ds-player-tx small{color:#8b9099;font-size:13px}.ds-player-arrow{color:#8b9099;opacity:0;transform:translateX(-4px);transition:opacity 140ms ease,transform 160ms cubic-bezier(0.22,1,0.36,1)}.ds-player:hover .ds-player-arrow,.ds-player:focus-visible .ds-player-arrow{opacity:1;transform:none}"
+    },
+    {
+      "name": "Inventory Item",
+      "kind": "custom",
+      "refersTo": "item-row",
+      "description": "Badge or item row in the inventory; missing badges fade to greyscale.",
+      "html": "<ul class=\"ds-items\"><li class=\"ds-item\"><span class=\"ds-item-img\"></span><span class=\"ds-item-tx\"><strong>Willkommen</strong><span>Erhalten am 5.11.2026</span></span></li><li class=\"ds-item ds-item-fehlt\"><span class=\"ds-item-img\"></span><span class=\"ds-item-tx\"><strong>Meister</strong><span>Fehlt · unter 0,1 % der Spieler</span></span></li></ul>",
+      "css": ".ds-items{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,240px);gap:4px 16px}.ds-item{display:flex;align-items:center;gap:12px;padding:7px 8px;border-radius:8px;color:#f3f4f6}.ds-item:hover{background:#121215}.ds-item-img{width:48px;height:48px;border-radius:8px;background:#5a7fc4;box-shadow:inset 0 0 0 1px #ffffff12;flex:none}.ds-item-tx{display:flex;flex-direction:column;gap:1px;min-width:0}.ds-item-tx strong{font-weight:600}.ds-item-tx span{color:#8b9099;font-size:12.5px;font-variant-numeric:tabular-nums}.ds-item-fehlt .ds-item-img{opacity:.4;filter:grayscale(1)}.ds-item-fehlt strong{color:#8b9099}"
+    },
+    {
+      "name": "Progress Track",
+      "kind": "custom",
+      "refersTo": "progress-track",
+      "description": "Badge progress per game; Silver fill grows with scaleX.",
+      "html": "<div class=\"ds-prog\"><span><strong>7</strong> von 12 erhalten</span><span class=\"ds-prog-track\"><span style=\"transform:scaleX(.58)\"></span></span></div>",
+      "css": ".ds-prog{display:flex;align-items:center;gap:12px;color:#c3c7cd;font-size:13px;font-variant-numeric:tabular-nums}.ds-prog strong{color:#f3f4f6;font-weight:700}.ds-prog-track{width:140px;height:6px;border-radius:3px;background:#212227;overflow:hidden}.ds-prog-track span{display:block;height:100%;background:#c3c7cd;transform-origin:left;transition:transform 420ms cubic-bezier(0.22,1,0.36,1)}"
+    },
+    {
+      "name": "Dropdown List",
+      "kind": "custom",
+      "refersTo": "dropdown",
+      "description": "Own select list (Auswahl) with keyboard support; the active row is one step brighter.",
+      "html": "<ul class=\"ds-drop\" role=\"listbox\"><li aria-selected=\"true\">Ausgewogen</li><li class=\"ds-drop-aktiv\">Max FPS</li><li>Hohe Qualität</li></ul>",
+      "css": ".ds-drop{width:220px;margin:0;padding:4px;list-style:none;background:#212227;border:1px solid #34353d;border-radius:10px}.ds-drop li{display:flex;align-items:center;height:34px;padding:0 10px;border-radius:6px;color:#c3c7cd;font-size:13.5px}.ds-drop li:hover,.ds-drop .ds-drop-aktiv{background:#2b2c33;color:#f3f4f6}.ds-drop li[aria-selected=true]{color:#f3f4f6;font-weight:600}"
     }
   ],
   "narrative": {
@@ -557,6 +603,11 @@
         "name": "The No-Shadow Rule",
         "body": "Surfaces do not cast shadows. Separation comes from a brighter surface step or a hairline.",
         "section": "elevation"
+      },
+      {
+        "name": "The Floating-Layer Exception",
+        "body": "Only layers that float above the page carry one soft drop shadow: the search suggestions (`0 12px 28px #00000073`) and the update dialog (`0 24px 64px -12px #000c`, over a Black scrim at 80 %). Anything that sits in the page flow stays flat.",
+        "section": "elevation"
       }
     ],
     "dos": [
@@ -568,11 +619,12 @@
       "**Do** set counts, pings and times in tabular numerals, and identifiers (server IDs, flag names, keys, paths) in mono.",
       "**Do** animate only `transform` and `opacity`, 120–250 ms on the enter curve, and grow bars with `scaleX`.",
       "**Do** write UI copy in German, du form, short active sentences, with correct umlauts and no dashes as a stylistic device.",
-      "**Do** give every empty or failed list a notice that says what happened and what to do."
+      "**Do** give every empty or failed list a notice that says what happened and what to do.",
+      "**Do** make a whole row the click target (player rows, friends, account) and let a chevron or hover step show it."
     ],
     "donts": [
       "**Don't** imitate Roblox's logo, or use \"Roblox\" or \"Blox\" in any name.",
-      "**Don't** add colour, gradients, glow or shadow.",
+      "**Don't** add colour, gradients or glow, and no shadow outside floating layers.",
       "**Don't** tilt the mark or change its stroke weight.",
       "**Don't** use glass, blur, Mica or neon effects.",
       "**Don't** use Ash (#62666F) for readable text.",

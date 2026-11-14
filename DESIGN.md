@@ -81,6 +81,8 @@ rounded:
   sm: "6px"
   md: "8px"
   lg: "12px"
+  control-lg: "10px"
+  xl: "16px"
 spacing:
   row-y: "14px"
   row-x: "18px"
@@ -220,11 +222,60 @@ components:
   skeleton:
     backgroundColor: "{colors.surface-2}"
     rounded: "{rounded.md}"
+  chip-small:
+    textColor: "{colors.silver}"
+    padding: "0 10px"
+    height: "26px"
+  settings-row-surface:
+    backgroundColor: "{colors.surface-1}"
+    rounded: "{rounded.control-lg}"
+    padding: "14px 16px 14px 18px"
+  settings-row-surface-hover:
+    backgroundColor: "{colors.surface-2}"
+  side-panel:
+    backgroundColor: "{colors.black}"
+    width: "296px"
+  side-block:
+    backgroundColor: "{colors.surface-1}"
+    rounded: "{rounded.lg}"
+    padding: "14px"
+  player-row:
+    textColor: "{colors.text-1}"
+    rounded: "{rounded.lg}"
+    padding: "8px 10px"
+  player-row-hover:
+    backgroundColor: "{colors.surface-1}"
+  profile-avatar:
+    backgroundColor: "{colors.surface-1}"
+    rounded: "{rounded.lg}"
+    width: "260px"
+  item-row:
+    rounded: "{rounded.md}"
+    padding: "7px 8px"
+  item-row-hover:
+    backgroundColor: "{colors.surface-1}"
+  progress-track:
+    backgroundColor: "{colors.surface-3}"
+    textColor: "{colors.silver}"
+    height: "6px"
+  game-summary:
+    backgroundColor: "{colors.surface-1}"
+    rounded: "{rounded.lg}"
+    padding: "12px 16px 12px 12px"
+  dropdown:
+    backgroundColor: "{colors.surface-3}"
+    rounded: "{rounded.control-lg}"
+    padding: "4px"
+  dialog:
+    backgroundColor: "{colors.surface-1}"
+    rounded: "{rounded.xl}"
+    padding: "28px"
+    width: "520px"
 ---
 
 # Design System: Brickstrap
 
-Recorded from the shipped logo system (`brand/build_logo.py`, `brand/logo/`) and from the shipped launcher UI (`app/src/app.css`, `app/src/ui/`, `app/src/pages/`). The identity sections are unchanged. The UI sections describe the build as it stands, not the plan.
+Recorded from the shipped logo system (`brand/build_logo.py`, `brand/logo/`) and from the shipped launcher UI (`app/src/app.css`, `app/src/ui/`, `app/src/pages/`). The identity sections are unchanged. The UI sections describe the build as it stands, not the plan (refreshed 2026-11-14: player search, profile, inventory, side panel, dialogs).
 
 ## Overview
 
@@ -309,9 +360,10 @@ A fixed desktop shell: a grid of rail plus main column over a full-width dock.
 - **Rail:** 232 px wide. Below a window width of 1100 px it collapses to 68 px (icons only, names as tooltips). A click on the collapse button overrides the automatic state until the window crosses 1100 px again. The rail switches between the two widths without animating its width.
 - **Dock:** 52 px tall, spans the full window width at the bottom.
 - **Header:** 60 px, holding the search field (max 620 px, 38 px tall).
-- **Content:** page padding 8 px top, 28 px sides, 40 px bottom; the page caps at 1400 px. Settings, FastFlags and list pages cap at 920 px (`--inhalt-max`).
+- **Content:** page padding 8 px top, 28 px sides, 40 px bottom; the page caps at 1600 px. Settings, FastFlags and list pages cap at 1180 px (`--inhalt-max`).
+- **Side panel:** from a window width of 1360 px a 296 px column opens on the right (account, friends online, what is running, quick start, playtime). Below 1360 px it disappears and the account moves into the rail.
 - **Rhythm:** 28 px between sections (36 px on the start page), 10 px from a section heading to its card, 16 px between tiles, 14 × 18 px padding inside setting rows.
-- **Grids:** pinned tiles fill `auto-fill, minmax(236px, 1fr)`. Game card rows scroll sideways in 152 px columns with snap. FastFlag presets run in five columns, three below 1050 px. The game page header is a two-column grid (image 300–440 px, info).
+- **Grids:** pinned tiles fill `auto-fill, minmax(236px, 1fr)`. Game card rows scroll sideways in 152 px columns with snap. FastFlag presets run in five columns, three below 1050 px. The game page header is a two-column grid (image 300–440 px, info). The profile header uses the same grid with a square 260 px avatar (200 px below 1100 px). Player results fill `auto-fill, minmax(280px, 1fr)`, inventory items `minmax(240px, 1fr)`, worn items `minmax(112px, 1fr)`.
 
 ## Elevation & Depth
 
@@ -320,14 +372,18 @@ Flat by default. Depth comes from tonal layering on the brightness ladder: groun
 ### Named Rules
 **The No-Shadow Rule.** Surfaces do not cast shadows. Separation comes from a brighter surface step or a hairline.
 
+**The Floating-Layer Exception.** Only layers that float above the page carry one soft drop shadow: the search suggestions (`0 12px 28px #00000073`) and the update dialog (`0 24px 64px -12px #000c`, over a Black scrim at 80 %). Anything that sits in the page flow stays flat.
+
 ## Shapes
 
 Gently rounded, never pill-shaped containers.
 
 - **Small** (6 px): pinned-game thumbnails in the rail, the pin badge, focus-ring corners.
 - **Standard** (8 px): buttons, fields, rail items, skeleton blocks.
-- **Large** (12 px): cards, the server table, game tiles and cards, notices, the save bar.
-- **Full round:** switches, chips (half their height), status dots.
+- **Large** (12 px): cards, the server table, game tiles and cards, notices, the save bar, side-panel blocks, the profile avatar, player rows.
+- **Control large** (10 px): big buttons, the header search field, settings rows, dropdown lists.
+- **Extra large** (16 px): the update dialog and the sign-in card.
+- **Full round:** switches, chips (half their height), status dots, player avatars in lists.
 - **Badges:** 4 px corners.
 - **Icons:** own SVG set on a 24 grid, stroke 1.75, round caps and joins like the logo.
 
@@ -369,13 +425,13 @@ Solid, quiet and quick.
 
 ### Chips
 - **Style:** 30 px tall, full round, 1 px Strong Hairline border, transparent, Silver 13 px text at weight 500.
-- **Hover:** Card Hover fill, Near White text. **Selected:** Near White fill, Black text. Used as sort and filter choices.
+- **Hover:** Card Hover fill, Near White text. **Selected:** Near White fill, Black text. Used as sort and filter choices, and as a radio group for search mode (Spiele | Spieler) and inventory categories. **Small chip:** 26 px tall, 10 px padding, 12.5 px text, for secondary filters (Alle, Erhalten, Fehlen).
 
 ### Badges (Marke)
 20 px tall, 4 px corners, Raised Grey with Silver 11 px text at weight 600. The warning variant uses Warning Amber on its surface ("Experimentell", "Status aus: keine ID").
 
 ### Settings rows
-A Rail Grey card (12 px corners) holds rows split by 1 px hairlines. Each row puts a label (600) and a Gray hint on the left and the control (switch, select, number field, flat icon button) on the right. Row padding 14 × 16 × 14 × 18 px. Used for app settings, Roblox settings and FastFlags; FastFlag rows show the flag name in mono below the hint.
+Each row is its own Rail Grey surface with 10 px corners, stacked with a 4 px gap like Windows 11 Settings; hover moves the row to Card Hover. Each row puts a label (600) and a Gray hint on the left and the control (switch, select, number field, flat icon button) on the right. Row padding 14 × 16 × 14 × 18 px. Used for app settings, Roblox settings and FastFlags; FastFlag rows show the flag name in mono below the hint.
 
 ### Server table
 The signature list of the game page.
@@ -397,6 +453,36 @@ Rail Grey column with a hairline on the right. Logo mark and wordmark on top, th
 
 ### Dock
 52 px Rail Grey bar with a hairline on top. Left: a status lamp (8 px; Ash when idle, Live Green while Roblox runs, Warning Amber on a warning), a title and a Gray sub-line, plus flat small actions. Right: the FastFlag preset select and the primary "Roblox starten" button, which becomes a disabled default button reading "Roblox läuft" while a game is open.
+
+### Side panel (RechteSpalte)
+296 px Black column with a hairline on its left edge, 16 × 14 px padding, blocks 10 px apart. Each block is Rail Grey with 12 px corners and 14 px padding, headed by a 13 px Silver title at normal width. List rows are 5 × 6 px, hover Card Hover. Friends show a 32 px round avatar with a 10 px status dot ringed in Rail Grey (Live Green while playing, Gray when only online). Playtime uses 4 px tracks with a Silver `scaleX` fill.
+
+### Account (Konto)
+Avatar (36 px, 28 px compact), display name at 600 and @name in Gray. It is a button: hover Card Hover, click opens the own profile.
+
+### Player row
+The search result for people. 52 px round avatar on Card Hover with an inset hairline, display name 600 at 15 px, @name in Gray 13 px, a 15 px Silver check for verified accounts. The whole row is a button with 12 px corners; hover Rail Grey, and a chevron slides in from the right (opacity plus 4 px `translateX`, 160 ms). Initials in Ash until the avatar fades in.
+
+### Profile header
+Same two-column grid as the game page. Left: a square Rail Grey frame with the full-body avatar, `object-fit: contain`, rising 6 px while it fades in. Right: name as a 30 px headline with the verified check, @name in Silver plus badges ("Das bist du", "Gesperrt" in warning), a status line with an 8 px dot (Live Green playing, Silver online, Ash offline), four values in the game page's value style (Freunde, Follower, Folgt, Dabei seit), then actions: "Beitreten" as the one primary only when the server is joinable, "Spiel ansehen" default, copy and browser as flat round icons.
+
+### Inventory
+Category chips, then a toolbar with a game select (optgroups: games from loaded badges with counts, then pinned games) and a filter field with a search icon. Items are rows of a 48 px image (8 px corners, inset hairline), name at 600 and a Gray meta line; hover Rail Grey. Under "Alle Spiele" the meta line is the game name as a quiet link that applies the filter.
+- **Game summary:** a Rail Grey bar with the game icon (40 px), name and chevron (opens the game), "7 von 12 erhalten" with a 140 × 6 px progress track, and small chips Alle, Erhalten, Fehlen on the right.
+- **Missing badges:** image at 40 % opacity and greyscale, name in Gray, meta "Fehlt · 2,3 % der Spieler". Earned ones read "Erhalten am 3.11.2026" and sort first.
+- **Private:** a compact notice instead of tabs.
+
+### Progress track
+6 px Raised Grey track (4 px in the side panel and playtime list), Silver fill grown with `scaleX` from the left over 420 ms. The update download uses a White fill with a linear 120 ms transition.
+
+### Dropdown list (Auswahl, search suggestions)
+Raised Grey list (Card Hover for suggestions) with a strong hairline, 10 px corners, 4–5 px padding, rows 34 px with 6 px corners; the active row is Top Grey. Opens with a 150 ms scale from 0.96 (suggestions: 3 px rise, 120 ms). Arrow keys, Enter and Escape work.
+
+### Dialog
+Update dialog: centred over a Black scrim at 80 %, Rail Grey with a strong hairline, 16 px corners, 28 px padding, max 520 px. The 48 px app icon, a 24 px title, release notes on Card Hover, a progress track while downloading, the primary action stretched next to "Später". The sign-in page reuses the card shape (460 px, 32 px padding) on the Black ground.
+
+### Slideshow (Diashow)
+The game page image cycles through screenshots with a 600 ms crossfade and a slow 1.02 → 1 scale. Arrows and actions appear on hover on Black scrim circles; dots sit in a scrim pill at the bottom, the current one stretched to 16 px.
 
 ### Toast
 Bottom right above the dock, up to 380 px wide, Raised Grey with 10 px corners, icon in Silver (Error Red for errors), title at 600, text in Silver 13 px. Enters with a fade and 8 px rise from 0.97 scale (220 ms).
@@ -425,10 +511,11 @@ Card Hover blocks in the shape of the coming content, 8 px or 12 px corners, pul
 - **Do** animate only `transform` and `opacity`, 120–250 ms on the enter curve, and grow bars with `scaleX`.
 - **Do** write UI copy in German, du form, short active sentences, with correct umlauts and no dashes as a stylistic device.
 - **Do** give every empty or failed list a notice that says what happened and what to do.
+- **Do** make a whole row the click target (player rows, friends, account) and let a chevron or hover step show it.
 
 ### Don't:
 - **Don't** imitate Roblox's logo, or use "Roblox" or "Blox" in any name.
-- **Don't** add colour, gradients, glow or shadow.
+- **Don't** add colour, gradients or glow, and no shadow outside floating layers.
 - **Don't** tilt the mark or change its stroke weight.
 - **Don't** use glass, blur, Mica or neon effects.
 - **Don't** use Ash (#62666F) for readable text.
