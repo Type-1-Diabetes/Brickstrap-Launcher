@@ -3,13 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Brickstrap · Launcher für Roblox unter Windows</title>
-<meta name="description" content="Kostenloser Launcher für Roblox unter Windows. Du wählst deinen Server selbst und stellst FastFlags ein. Brickstrap greift nie in den Roblox-Client ein.">
+<title>Brickstrap: kostenloser Roblox-Launcher für Windows</title>
+<meta name="description" content="Brickstrap startet Roblox unter Windows von außen: Server selbst wählen, FastFlags mit fertigen Stufen, Freunde und Discord-Status. Kostenlos und quelloffen.">
+<link rel="canonical" href="https://type-1-diabetes.github.io/Brickstrap-Launcher/">
 <meta name="theme-color" content="#0b0b0d">
 <script>document.documentElement.classList.add("js")</script>
-<meta property="og:title" content="Brickstrap">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
+<meta property="og:url" content="https://type-1-diabetes.github.io/Brickstrap-Launcher/">
+<meta property="og:site_name" content="Brickstrap">
+<meta property="og:title" content="Brickstrap: kostenloser Roblox-Launcher für Windows">
 <meta property="og:description" content="Ein Launcher, der Roblox nicht anfasst. Kostenlos für Windows.">
-<meta property="og:image" content="https://type-1-diabetes.github.io/Brickstrap-Launcher/assets/bilder/spiel.webp">
+<meta property="og:image" content="https://type-1-diabetes.github.io/Brickstrap-Launcher/assets/bilder/teilen.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Spielseite von Brickstrap mit Serverliste">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Brickstrap","description":"Kostenloser Launcher für Roblox unter Windows. Startet den offiziellen Client von außen, mit Server-Auswahl, FastFlags, Freunden und Discord-Status.","url":"https://type-1-diabetes.github.io/Brickstrap-Launcher/","downloadUrl":"https://github.com/Type-1-Diabetes/Brickstrap-Launcher/releases/latest","applicationCategory":"GameApplication","operatingSystem":"Windows 10, Windows 11","inLanguage":"de","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"image":"https://type-1-diabetes.github.io/Brickstrap-Launcher/assets/bilder/teilen.png","screenshot":"https://type-1-diabetes.github.io/Brickstrap-Launcher/assets/bilder/spiel.webp"}
+</script>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/icon-256.png">
 <link rel="preload" href="assets/fonts/archivo-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -187,6 +199,21 @@
   .zweier .text li::before { content: ""; flex: none; width: 5px; height: 5px; border-radius: 50%; background: var(--t3); transform: translateY(-3px); }
   .zweier .bildrahmen { margin-top: 0; }
 
+  /* Fragen */
+  .fragen { margin-top: 28px; max-width: 860px; border-radius: 14px; background: var(--s1); overflow: hidden; }
+  .fragen details + details { border-top: 1px solid var(--linie); }
+  .fragen summary {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    min-height: 60px; padding: 14px 22px; cursor: pointer; list-style: none;
+    font-weight: 600; font-size: 16.5px; transition: background-color 150ms ease;
+  }
+  .fragen summary::-webkit-details-marker { display: none; }
+  .fragen summary svg { color: var(--t3); transition: transform 200ms var(--ein); }
+  .fragen details[open] summary svg { transform: rotate(180deg); }
+  @media (hover: hover) and (pointer: fine) { .fragen summary:hover { background: var(--s2); } }
+  .fragen summary:focus-visible { outline-offset: -2px; border-radius: 0; }
+  .fragen details p { padding: 0 22px 20px; color: var(--t2); max-width: 68ch; }
+
   /* Schluss */
   .schluss { margin-top: clamp(72px, 9vw, 120px); padding: clamp(40px, 6vw, 72px) 0; background: var(--s1); border-top: 1px solid var(--linie); }
   .schluss .breite { display: flex; align-items: center; justify-content: space-between; gap: 24px 40px; flex-wrap: wrap; }
@@ -236,6 +263,7 @@
   <symbol id="nie" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="laden" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="kopieren" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></g></symbol>
+  <symbol id="auf" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="extern" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g></symbol>
 </svg>
 
@@ -246,6 +274,7 @@
       <a href="#register">Was es macht</a>
       <a href="#installieren">Installieren</a>
       <a href="#mehr">Funktionen</a>
+      <a href="#fragen">Fragen</a>
       <a href="https://github.com/Type-1-Diabetes/Brickstrap-Launcher/releases">Versionen</a>
     </nav>
     <a class="knopf primaer" data-download href="https://github.com/Type-1-Diabetes/Brickstrap-Launcher/releases/latest">
@@ -283,10 +312,10 @@
       <div class="spalte nie">
         <h2><em>Brickstrap macht nie</em><span>wofür Roblox Konten sperren kann</span></h2>
         <ul>
-          <li style="--i:5"><svg class="i" width="22" height="22"><use href="#nie"/></svg><div><strong>Code in Roblox einschleusen</strong><small>Keine DLL, kein Hook, kein Overlay im Roblox-Prozess.</small></div></li>
-          <li style="--i:6"><svg class="i" width="22" height="22"><use href="#nie"/></svg><div><strong>Speicher des Clients lesen oder schreiben</strong><small>Auch kein FPS-Unlocker und keine „Speicher-Bereinigung“.</small></div></li>
+          <li style="--i:5"><svg class="i" width="22" height="22"><use href="#nie"/></svg><div><strong>Code in Roblox einschleusen</strong><small>Brickstrap ist ein eigenes Programm und hängt sich nie in den Roblox-Prozess.</small></div></li>
+          <li style="--i:6"><svg class="i" width="22" height="22"><use href="#nie"/></svg><div><strong>Speicher des Clients lesen oder schreiben</strong><small>FPS-Unlocker und „Speicher-Bereinigung“ arbeiten genau so. Darum fehlen sie.</small></div></li>
           <li style="--i:7"><svg class="i" width="22" height="22"><use href="#nie"/></svg><div><strong>Die Roblox-Datei verändern</strong><small>Der offizielle Client bleibt, wie er ist.</small></div></li>
-          <li style="--i:8"><svg class="i" width="22" height="22"><use href="#nie"/></svg><div><strong>Für dich klicken oder tippen</strong><small>Keine Macros, keine automatischen Eingaben.</small></div></li>
+          <li style="--i:8"><svg class="i" width="22" height="22"><use href="#nie"/></svg><div><strong>Für dich klicken oder tippen</strong><small>Jede Eingabe im Spiel kommt von dir.</small></div></li>
           <li style="--i:9"><svg class="i" width="22" height="22"><use href="#nie"/></svg><div><strong>Deine Anmeldung weitergeben</strong><small>Du meldest dich auf der echten Seite von Roblox an. Das Cookie bleibt verschlüsselt auf deinem PC und geht nur an roblox.com.</small></div></li>
         </ul>
       </div>
@@ -327,8 +356,8 @@
     <div class="breite">
       <div class="zweier">
         <div class="text">
-          <h2>Mehr FPS, ohne zu basteln.</h2>
-          <p>Wähl eine Stufe oder stell jedes Flag einzeln ein. Brickstrap schreibt sie vor jedem Start neu, auch nach einem Update von Roblox.</p>
+          <h2>FastFlags mit einem Klick.</h2>
+          <p>Max FPS für schwache PCs, Ausgewogen oder Hohe Qualität. Oder du stellst jedes Flag einzeln ein. Brickstrap schreibt sie vor jedem Start, nach einem Update von Roblox auch in den neuen Versionsordner.</p>
           <ul>
             <li>Nur Flags, die auf der Allowlist von Roblox stehen</li>
             <li>Deine Einstellung als JSON an Freunde schicken</li>
@@ -352,15 +381,43 @@
     </div>
   </section>
 
+  <section class="abschnitt" id="fragen" aria-labelledby="t-fragen">
+    <div class="breite">
+      <h2 id="t-fragen">Fragen vor dem Download</h2>
+      <div class="fragen">
+        <details>
+          <summary>Kann mein Konto deswegen gesperrt werden?<svg class="i" width="18" height="18"><use href="#auf"/></svg></summary>
+          <p>Brickstrap nutzt nur, was Roblox offen anbietet: die Web-APIs, Links zum Beitreten, die Liste erlaubter FastFlags und die Logdatei auf deinem PC. Roblox sperrt unter anderem für Eingriffe in den Client, und die macht Brickstrap nicht. Eine Garantie kann allerdings nur Roblox geben.</p>
+        </details>
+        <details>
+          <summary>Warum warnt Windows beim ersten Start?<svg class="i" width="18" height="18"><use href="#auf"/></svg></summary>
+          <p>Die exe hat noch keine Code-Signatur. SmartScreen warnt bei jeder unsignierten Datei, die erst wenige Leute geladen haben. Ob deine Datei die echte ist, prüfst du mit der SHA-256 oben auf der Seite. Den Quellcode kannst du auf GitHub lesen.</p>
+        </details>
+        <details>
+          <summary>Was passiert mit meinem Roblox-Login?<svg class="i" width="18" height="18"><use href="#auf"/></svg></summary>
+          <p>Du meldest dich in einem Fenster mit der echten Anmeldeseite von roblox.com an. Brickstrap speichert das Cookie verschlüsselt im Anmeldeinformations-Manager von Windows und schickt es nur an roblox.com, zum Beispiel um zu sehen, welche Freunde gerade spielen.</p>
+        </details>
+        <details>
+          <summary>Brauche ich Roblox trotzdem?<svg class="i" width="18" height="18"><use href="#auf"/></svg></summary>
+          <p>Ja. Brickstrap startet den offiziellen Roblox-Client, der muss installiert sein. Dazu braucht Brickstrap WebView2, das bei Windows 10 und 11 meist schon da ist.</p>
+        </details>
+        <details>
+          <summary>Wie kommen neue Versionen auf meinen PC?<svg class="i" width="18" height="18"><use href="#auf"/></svg></summary>
+          <p>Brickstrap fragt beim Start und alle drei Stunden bei GitHub nach. Gibt es eine neue Version, fragt es dich, lädt sie, prüft die Prüfsumme und startet neu.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
   <section class="schluss" aria-labelledby="t-schluss">
     <div class="breite">
       <div>
         <h2 id="t-schluss">Brickstrap für Windows</h2>
-        <p class="zahl"><span data-version-satz>Kostenlos für Windows 10 und 11.</span> Braucht WebView2, das ist bei Windows 10 und 11 meist schon installiert.</p>
+        <p class="zahl"><span data-version-satz>Kostenlos für Windows 10 und 11.</span> Der Quellcode liegt offen auf GitHub. Anmelden musst du dich nur bei Roblox.</p>
       </div>
       <div class="knoepfe">
-        <a class="knopf primaer" data-download href="https://github.com/Type-1-Diabetes/Brickstrap-Launcher/releases/latest"><svg class="i" width="18" height="18"><use href="#laden"/></svg>Herunterladen</a>
-        <a class="knopf" href="https://github.com/Type-1-Diabetes/Brickstrap-Launcher"><svg class="i" width="16" height="16"><use href="#extern"/></svg>Quellcode</a>
+        <a class="knopf primaer" data-download href="https://github.com/Type-1-Diabetes/Brickstrap-Launcher/releases/latest"><svg class="i" width="18" height="18"><use href="#laden"/></svg>Für Windows herunterladen</a>
+        <a class="knopf" href="https://github.com/Type-1-Diabetes/Brickstrap-Launcher"><svg class="i" width="16" height="16"><use href="#extern"/></svg>Quellcode ansehen</a>
       </div>
     </div>
   </section>

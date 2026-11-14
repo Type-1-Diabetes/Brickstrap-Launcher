@@ -4,7 +4,7 @@ Dieser Branch enthält nur die Seite für GitHub Pages (`index.html`, `assets/`)
 Der Code der App liegt in `main`.
 
 Herkunft der Dateien:
-- `assets/bilder/*.webp`: Bildschirmfotos der Browser-Vorschau mit Demo-Daten, aus `main:docs/bilder/*.png` (WebP, Qualität 88).
+- `assets/bilder/*.webp`, `assets/bilder/teilen.png` (1200×630, oberer Ausschnitt von `spiel.png`): Bildschirmfotos der Browser-Vorschau mit Demo-Daten, aus `main:docs/bilder/*.png` (WebP, Qualität 88).
 - `assets/lockup.svg`, `assets/zeichen.svg`, `assets/*.png`: aus `main:brand/logo/`.
 - `assets/fonts/`: Archivo (SIL Open Font License, siehe `OFL.txt`), aus `main:app/src/fonts/`.
 
