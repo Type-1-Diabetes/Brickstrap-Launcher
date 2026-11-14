@@ -1,34 +1,33 @@
-# Brickstrap
+<p align="center"><img src="docs/bilder/banner.png" alt="Brickstrap" width="100%"></p>
 
-Ein schneller, quelloffener Launcher für Roblox unter Windows, gebaut mit Rust und Tauri. Er startet den offiziellen Roblox-Client nur von außen: keine Injection, keine Änderung an der Client-Datei.
+<p align="center">
+  <a href="https://github.com/Type-1-Diabetes/Brickstrap-Launcher/releases/latest"><b>Herunterladen für Windows</b></a>
+</p>
 
-Kein Produkt von Roblox Corporation.
+Brickstrap ist ein kostenloser Launcher für Roblox. Du findest Spiele schneller, wählst deinen Server selbst und stellst Grafik und Leistung ein, ohne Roblox anzufassen.
 
-**Stand:** v0.1.0 in Arbeit, noch nicht auf Windows getestet.
+<p align="center"><img src="docs/bilder/spiel.png" alt="Spielseite mit Serverliste" width="100%"></p>
 
-## Was es kann
+## Warum Brickstrap
 
-- Startseite mit angepinnten Spielen, zuletzt gespielten und beliebten Spielen
-- Suche nach Name, Place-ID oder Link zur Spielseite
-- Serverliste je Spiel: sortieren, volle Server ausblenden, kleinsten Server oder besten Ping mit einem Klick betreten
-- FastFlags (nur die von Roblox erlaubten) mit Presets wie „Max FPS“
-- Roblox-Einstellungen wie FPS-Limit und Mausempfindlichkeit
-- Discord-Status und Spielzeit, gelesen aus der Logdatei von Roblox
-- Kein Login nötig. Brickstrap startet Roblox nur per Link und ändert nichts am Client.
+- **Dein Server, ein Klick.** Kleinster Server, bester Ping oder genau der, den du willst.
+- **Freunde im Blick.** Sieh, wer online ist und was gespielt wird. Tritt direkt bei.
+- **Mehr FPS.** FastFlags mit fertigen Stufen: Max FPS, Ausgewogen, Hohe Qualität.
+- **Discord-Status.** Spiel, Server-Region und Spielerzahl, mit Knopf zum Beitreten.
+- **Deine Spiele.** Anpinnen, Spielzeit sehen, mit „Wieder beitreten“ zurück auf den letzten Server.
+- **Schnell und leicht.** Startet sofort, braucht wenig Speicher und aktualisiert sich selbst.
+- **Sicher.** Brickstrap startet nur den offiziellen Roblox-Client und verändert ihn nicht. Die Anmeldung läuft über die echte Seite von Roblox.
 
-## Entwickeln
+<p align="center"><img src="docs/bilder/fastflags.png" alt="FastFlags mit Presets" width="100%"></p>
 
-```
-cd app
-npm install
-npm run dev        # Browser-Vorschau mit Demo-Daten
-npx tauri dev      # als Programm (Windows)
-```
+## So geht's
 
-- Plan und Recherche: [docs/research/roblox-launcher-rust.md](docs/research/roblox-launcher-rust.md)
-- Produkt: [PRODUCT.md](PRODUCT.md) · Logo und Farben: [DESIGN.md](DESIGN.md) · Logo-Dateien: [brand/](brand/)
-- Für Entwicklung: [CLAUDE.md](CLAUDE.md)
+1. [Neueste Version laden](https://github.com/Type-1-Diabetes/Brickstrap-Launcher/releases/latest) (`Brickstrap_…_x64.exe`).
+2. Starten. Warnt Windows, klick „Weitere Informationen“ und dann „Trotzdem ausführen“.
+3. Mit deinem Roblox-Konto anmelden und loslegen.
 
-## Release
+Die Bilder zeigen die Vorschau mit Demo-Daten.
 
-GitHub → *Actions → Release → Run workflow*, Branch `main`, Version z. B. `v0.1.0`. Der Workflow baut den Windows-Installer und hängt ihn mit Prüfsumme an das Release. Normale Pushes bauen nichts.
+---
+
+<sub>Brickstrap ist kein Produkt von Roblox Corporation. Roblox ist eine Marke der Roblox Corporation. Mitentwickeln: siehe [CLAUDE.md](CLAUDE.md).</sub>

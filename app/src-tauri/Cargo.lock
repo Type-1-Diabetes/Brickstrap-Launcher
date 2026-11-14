@@ -321,7 +321,7 @@ dependencies = [
 
 [[package]]
 name = "brickstrap"
-version = "0.0.7"
+version = "0.0.8"
 dependencies = [
  "discord-rich-presence",
  "keyring",
