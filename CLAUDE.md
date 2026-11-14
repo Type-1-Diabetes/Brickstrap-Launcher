@@ -19,7 +19,7 @@ Ein eigener, quelloffener **Launcher für Roblox unter Windows**, gebaut mit Rus
 | Nutzer | Roblox-Spieler, die Bloxstrap/Fishstrap kennen und mehr Kontrolle wollen |
 | Dienste | nur die Web-APIs von Roblox und GitHub. Kein eigener Server. Das Roblox-Cookie geht an keinen fremden Server |
 | Sprache | alles Deutsch: UI-Texte (nur Deutsch, Entscheidung vom 13.11.2026), Kommentare, Commits. Du-Form, kurze Sätze, korrekte Umlaute |
-| Repo | privat (`Type-1-Diabetes/Brickstrap-Launcher`). Veröffentlichung als Open Source (Lizenz vermutlich MIT) ist geplant |
+| Repo | **öffentlich** (`Type-1-Diabetes/Brickstrap-Launcher`, seit 14.11.2026). Lizenz noch offen (vermutlich MIT) |
 
 **Stufen** (Plan §12.9): 1. MVP ohne Login (Suche, Startseite, Server-Picker, Start per Deeplink) · 2. FastFlag- und Einstellungs-Editor, Discord-Status · 3. Login, Freunde, Region · 4. Mehrere Instanzen, Overlay-Fenster · 5. Eigener Bootstrapper + Mods · 6. Chat, Konto-Wechsel.
 
@@ -49,7 +49,7 @@ Ein eigener, quelloffener **Launcher für Roblox unter Windows**, gebaut mit Rus
 
 ## Testbuilds und Kosten
 
-Das Repo ist **privat**. GitHub Free: 2.000 Actions-Minuten im Monat und 500 MB Speicher für Artefakte. Der Build läuft auf Linux (zählt einfach, Windows würde doppelt zählen). Der alte Windows-Build mit NSIS brauchte kalt 15 Minuten (30 abgerechnete). Release-Dateien kosten nichts. Ohne hinterlegte Zahlungsart entstehen keine Kosten, Läufe stoppen dann nur, wenn das Kontingent leer ist. Sobald das Repo öffentlich ist, sind Actions komplett kostenlos.
+Das Repo ist **öffentlich** (seit 14.11.2026): Actions-Minuten auf Standard-Runnern kosten nichts. Trotzdem gilt der Wunsch nach kurzen Workflows und wenigen Läufen. Ein Release dauert etwa 2 Minuten. Alles im Repo ist für jeden sichtbar: keine Geheimnisse, Cookies, echten Konto-Namen oder IDs in Code, Commits, Issues oder Logs.
 
 - **Kein Testbuild vor einem Release.** Ein Release baut selbst; schlägt der Build fehl, entsteht kein Release.
 - **Kein Testbuild bei normalen Änderungen** an Rust, Oberfläche oder Doku. Die laufen lokal (`cargo check`, Lint, `npm run build`).
@@ -174,7 +174,7 @@ Der Workflow erwartet die App unter `app/` mit `app/package-lock.json` und `app/
 - **Mock lädt die echte `allowlist.json`** und hat dieselben Presets wie `fastflags.rs`. Presets in beiden ändern. Zustände ansehen über die Adresse: `?leer`, `?offline`, `?ohne-roblox`, `?update`, `?neue-version`, `?abgemeldet` (kombinierbar).
 - **Microsoft-Store-Roblox:** „installiert“ heißt Versionsordner **oder** registriertes `roblox://`. Logs und `GlobalBasicSettings_13.xml` werden auch unter `Packages\ROBLOXCORPORATION.ROBLOX_55nm5eh3cm0pr\LocalState` gesucht. FastFlags lassen sich dort nicht schreiben.
 - **FastFlags und Roblox-Updates:** Aktualisiert sich Roblox beim Start, entsteht ein neuer Versionsordner ohne `ClientAppSettings.json`. `activity.rs` prüft jede Sekunde die Versionsordner und schreibt die Flags sofort in einen neuen. Ob das schneller ist als der Start des Clients, ist am echten PC zu prüfen; sonst greifen die Flags erst beim nächsten Start.
-- **Updates von Brickstrap** (`update.rs`): fragt `api.github.com/repos/Type-1-Diabetes/Brickstrap-Launcher/releases/latest` ohne Token ab (Repo muss **öffentlich** sein, sonst 404 = „kein Update“). Nimmt das erste `.exe`-Asset und die passende `<exe>.sha256`. Tausch: laufende exe → `<name>.old`, neue → alter Pfad, Neustart über `cmd /C ping … & start` (wegen Einzelinstanz verzögert). Asset-Namen und Repo-Pfad darum **nicht ändern**. Vorschau des Dialogs: `?neue-version`.
+- **Updates von Brickstrap** (`update.rs`): fragt `api.github.com/repos/Type-1-Diabetes/Brickstrap-Launcher/releases/latest` ohne Token ab (klappt, weil das Repo öffentlich ist; privat gäbe es 404 = „kein Update“). Nimmt das erste `.exe`-Asset und die passende `<exe>.sha256`. Tausch: laufende exe → `<name>.old`, neue → alter Pfad, Neustart über `cmd /C ping … & start` (wegen Einzelinstanz verzögert). Asset-Namen und Repo-Pfad darum **nicht ändern**. Vorschau des Dialogs: `?neue-version`.
 - **Fester Platz** (`install.rs`): Startet die exe woanders (z. B. aus „Downloads“), kopiert sie sich nach `%LOCALAPPDATA%\Brickstrap\Brickstrap.exe` (nur wenn dort nichts oder eine ältere Version laut `version.txt` liegt), legt fehlende Verknüpfungen `Brickstrap.lnk` auf Desktop und im Startmenü per PowerShell an und startet von dort neu. Updates ersetzen nur diese Datei. In Debug-Builds aus.
 - **Alte Instanzen** (`install::andere_beenden`, vor dem Plugin `single-instance`): Läuft beim Start eine `brickstrap*.exe` aus einem **anderen** Pfad (alte Version im Infobereich, Download-exe), beendet Brickstrap sie. Sonst holt die Einzelinstanz die alte nach vorn. Gleicher Pfad bleibt normale Einzelinstanz. Verknüpfungen auf Desktop und im Startmenü werden umgebogen, wenn sie auf eine andere exe zeigen.
 - **Freundesliste** (`friends.rs`): zuerst `friends/v1/users/{id}/friends/find?limit=50` seitenweise (Felder `PageItems`, `NextCursor` unbestätigt), dann die alte `/friends`; beide mit Cookie. Der Fehlertext nennt die HTTP-Codes (Tooltip auf „Freunde gerade nicht erreichbar“).
@@ -216,7 +216,6 @@ Nicht in der Cloud prüfbar: Start von Roblox, Registry, Mutex, WebView2, Tray, 
 - Am PC prüfen (mit Ordner `roh`): Spielersuche, Profil (Trägt gerade, eigene Spiele), Inventar-Kategorien, Spiel der Abzeichen (`awarder`), Vorschläge, Game-Pässe, Events, Einladungslink mit Server, Flags im neuen Versionsordner nach einem Update, Regionen.
 - Lizenz (MIT?).
 - Region der Server (braucht Login) und Mod-Manager folgen in späteren Stufen.
-- Repo öffentlich machen (Entscheidung des Projektinhabers vom 14.11.2026, nötig für die Update-Suche): dann kosten Actions nichts mehr. Vorher prüfen, dass keine Geheimnisse in der Historie liegen.
 - Update-Tausch am echten PC prüfen (Rechte im Ordner der exe, Neustart, Aufräumen der `.old`). Erst ab dem zweiten Release mit Updater testbar.
 - Code-Signatur-Zertifikat (sonst warnen SmartScreen und Defender).
 - `brand/build_logo.py` trägt noch Kommentare und Pixel-Tabellen der älteren Noppen-Fassung. Die PNGs sind die schlichte finale Fassung.
