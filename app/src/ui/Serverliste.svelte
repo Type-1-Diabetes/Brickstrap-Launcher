@@ -3,7 +3,7 @@
   // Die erste Seite kommt oft schon aus dem Vorladen (Hover auf der Kachel).
   import Icon from "./Icon.svelte";
   import Hinweis from "./Hinweis.svelte";
-  import { app, firstServers, launch, starting, saveConfig, toast, kopieren } from "../lib/app.svelte.js";
+  import { app, firstServers, launch, starting, saveConfig, toast, kopieren, openUser } from "../lib/app.svelte.js";
   import { call } from "../lib/bridge.js";
   import { fehlerText } from "../lib/errors.js";
   import { seit } from "../lib/format.js";
@@ -26,6 +26,14 @@
   let fehler = $state(null);
   let stand = $state(0);
   let lauf = 0;
+
+  // Freunde auf einem Server: Roblox nennt die Server-ID nur, wenn der Freund den Beitritt erlaubt.
+  let freunde = $state([]);
+  $effect(() => {
+    call("friends_online").then((l) => (freunde = l ?? [])).catch(() => {});
+  });
+  const freundeIn = (id) => freunde.filter((f) => f.jobId === id);
+  const name = (f) => f.displayName || f.name;
 
   // Roblox sortiert nur nach Spielerzahl; Ping sortieren wir selbst.
   const order = $derived(sorte === "leer" ? "Asc" : "Desc");
@@ -172,6 +180,7 @@
       </div>
       {#each sichtbar as s, i (s.id)}
         {@const voll = s.playing >= s.maxPlayers}
+        {@const hier = freundeIn(s.id)}
         <div
           class="zeile klickbar"
           class:voll
@@ -183,7 +192,15 @@
           onclick={(e) => !e.target.closest("button") && umschalten(s)}
           onkeydown={(e) => (e.key === "Enter" || e.key === " ") && e.target === e.currentTarget && (e.preventDefault(), umschalten(s))}
         >
-          <span class="spieler zahl" role="cell"><strong>{s.playing}</strong><span class="leise">/{s.maxPlayers}</span></span>
+          <span class="spieler zahl" role="cell">
+            <strong>{s.playing}</strong><span class="leise">/{s.maxPlayers}</span>
+            {#if hier.length}
+              <span class="freund" title="{hier.map(name).join(', ')} {hier.length === 1 ? 'ist' : 'sind'} hier">
+                {#if hier[0].avatarUrl}<img src={hier[0].avatarUrl} alt="" />{:else}{name(hier[0]).slice(0, 1).toUpperCase()}{/if}
+                {#if hier.length > 1}<span class="mehr-freunde">+{hier.length - 1}</span>{/if}
+              </span>
+            {/if}
+          </span>
           <span class="auslastung" role="cell">
             <span class="spur"><span class="fuellung" style="transform: scaleX({Math.min(1, s.playing / Math.max(1, s.maxPlayers))})"></span></span>
           </span>
@@ -225,7 +242,19 @@
               {:else}
                 <p class="leise klein">Roblox liefert für diesen Server keine Bilder.</p>
               {/if}
-              <p class="leise klein">Ob Freunde dabei sind, zeigt Brickstrap erst mit Login (kommt später). Namen gibt Roblox ohne Login nicht heraus.</p>
+              {#if freundeIn(s.id).length}
+                <ul class="freunde-hier">
+                  {#each freundeIn(s.id) as f (f.userId)}
+                    <li>
+                      <button class="freund-zeile" onclick={() => openUser(f)} title="Profil von {name(f)} öffnen">
+                        <span class="freund groß">{#if f.avatarUrl}<img src={f.avatarUrl} alt="" />{:else}{name(f).slice(0, 1).toUpperCase()}{/if}</span>
+                        <span><strong>{name(f)}</strong> ist auf diesem Server</span>
+                      </button>
+                    </li>
+                  {/each}
+                </ul>
+              {/if}
+              <p class="leise klein">Freunde erkennt Brickstrap nur, wenn sie ihren Server für dich freigeben. Die übrigen Spieler zeigt Roblox nur als Bild, ohne Namen.</p>
             </div>
             <div class="det-aktionen" role="cell">
               <button class="knopf klein" onclick={() => linkKopieren(s)}><Icon name="kopieren" size={14} />Link kopieren</button>
@@ -297,6 +326,23 @@
     background: var(--s1);
   }
   .spieler strong { font-size: 15px; font-weight: 700; }
+  .spieler { display: flex; align-items: center; }
+  .freund {
+    position: relative; display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: 8px; flex: none;
+    border-radius: 50%; background: var(--s3); color: var(--t1); font-size: 10.5px; font-weight: 700;
+    box-shadow: 0 0 0 2px var(--live);
+  }
+  .freund img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+  .mehr-freunde { position: absolute; left: calc(100% + 4px); font-size: 11px; color: var(--t2); }
+  .freunde-hier { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .freund-zeile {
+    display: flex; align-items: center; gap: 10px; padding: 4px 8px 4px 4px; margin-left: -4px; border: 0; border-radius: var(--r);
+    background: none; color: var(--t2); font: inherit; font-size: 13px; text-align: left; cursor: default;
+    transition: background-color 120ms ease;
+  }
+  .freund-zeile:hover { background: var(--s3); }
+  .freund-zeile strong { color: var(--t1); font-weight: 600; }
+  .freund.groß { width: 28px; height: 28px; margin-left: 0; font-size: 12px; }
   .voll .spieler strong, .voll .ping { color: var(--t3); }
 
   .spur { display: block; height: 6px; border-radius: 3px; background: var(--s3); overflow: hidden; }

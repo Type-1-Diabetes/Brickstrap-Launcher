@@ -1,4 +1,4 @@
-//! Zugriff auf die Web-APIs von Roblox (ohne Login).
+//! Zugriff auf die Web-APIs von Roblox. Diese Abrufe laufen ohne Cookie (das schickt nur friends.rs).
 //!
 //! Suche und Explore sind nicht offiziell dokumentiert. Darum werden alle Antworten
 //! nachsichtig gelesen (mehrere mögliche Feldnamen) und Fehler sauber gemeldet.

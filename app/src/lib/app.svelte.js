@@ -14,7 +14,7 @@ export const app = $state({
   activity: { state: "idle" },
   roblox: { installed: true, running: false, version: null },
   toasts: [],
-  /** angemeldetes Roblox-Konto (aus Dateien von Roblox, ohne Login) */
+  /** angemeldetes Roblox-Konto (Name, Avatar) */
   account: null,
   /** Anmeldung bei Roblox (Pflicht): { loggedIn, userId, name, displayName } */
   auth: null,

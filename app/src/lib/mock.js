@@ -158,6 +158,8 @@ function servers(placeId, cursor, order, excludeFull) {
   if (excludeFull) list = list.filter((s) => s.playing < s.maxPlayers);
   list = list.toSorted((a, b) => (order === "Asc" ? a.playing - b.playing : b.playing - a.playing));
   const slice = list.slice(page * 100, page * 100 + 100);
+  // Der vierte Server der ersten Seite ist der von „Feuerfuchs“ (friends_online), damit die Markierung zu sehen ist.
+  if (g === games[0] && page === 0 && slice[3]) slice[3] = { ...slice[3], id: "0a1b2c3d-0000-4444-8888-aabbccddeeff" };
   return { servers: slice, nextCursor: (page + 1) * 100 < list.length ? String(page + 1) : null };
 }
 

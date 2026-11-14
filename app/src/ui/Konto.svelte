@@ -1,5 +1,5 @@
 <script>
-  // Angemeldetes Roblox-Konto (aus den Dateien von Roblox, ohne Login bei Brickstrap).
+  // Angemeldetes Roblox-Konto (Name und Avatar); Klick öffnet das eigene Profil.
   import { app, openUser } from "../lib/app.svelte.js";
   /** @type {{ kompakt?: boolean }} */
   let { kompakt = false } = $props();
