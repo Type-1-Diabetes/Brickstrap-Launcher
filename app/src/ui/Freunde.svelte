@@ -1,9 +1,9 @@
 <script>
-  // Freunde, die gerade online sind. Spielende zuerst; Klick öffnet das Spiel,
+  // Freunde, die gerade online sind. Spielende zuerst; Klick öffnet das Profil,
   // der Knopf tritt dem Server des Freundes bei (nur wenn Roblox es erlaubt).
   import { onMount } from "svelte";
   import Icon from "./Icon.svelte";
-  import { launch, starting, openGame } from "../lib/app.svelte.js";
+  import { launch, starting, openUser } from "../lib/app.svelte.js";
   import { call } from "../lib/bridge.js";
 
   const SICHTBAR = 6;
@@ -57,12 +57,7 @@
     <ul>
       {#each zeige as f (f.userId)}
         <li>
-          <button
-            class="zeile"
-            disabled={!f.universeId}
-            onclick={() => f.universeId && openGame(spiel(f))}
-            title={f.universeId ? `${f.gameName ?? "Spiel"} öffnen` : undefined}
-          >
+          <button class="zeile" onclick={() => openUser(f)} title="Profil von {f.displayName || f.name} öffnen">
             <span class="ava">
               {#if f.avatarUrl}<img src={f.avatarUrl} alt="" loading="lazy" />{:else}<span class="init">{(f.displayName || f.name || "?").slice(0, 1).toUpperCase()}</span>{/if}
               <span class="status" class:spielt={f.status === "spielt"}></span>
@@ -108,8 +103,7 @@
     background: none; color: var(--t1); font: inherit; text-align: left; cursor: default;
     transition: background-color 120ms ease;
   }
-  .zeile:not(:disabled):hover { background: var(--s2); }
-  .zeile:disabled { opacity: 1; }
+  .zeile:hover { background: var(--s2); }
   .ava { position: relative; width: 32px; height: 32px; flex: none; border-radius: 50%; background: var(--s3); }
   .init { display: grid; place-items: center; width: 100%; height: 100%; font-size: 13px; font-weight: 600; color: var(--t2); }
   .ava img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }

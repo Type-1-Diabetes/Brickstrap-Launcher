@@ -15,6 +15,7 @@ mod region;
 mod roblox_api;
 mod state;
 mod update;
+mod users;
 
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
@@ -111,6 +112,11 @@ pub fn run() {
             roblox_api::search_suggest,
             account::account_get,
             friends::friends_online,
+            users::user_search,
+            users::user_profile,
+            users::user_badges,
+            users::user_game_badges,
+            users::user_inventory,
             auth::auth_status,
             auth::auth_login,
             auth::auth_logout,

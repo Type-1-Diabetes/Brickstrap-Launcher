@@ -118,7 +118,7 @@ pub struct GameBrief {
 
 // ---------- Hilfen zum nachsichtigen Lesen ----------
 
-fn num(v: &Value, keys: &[&str]) -> u64 {
+pub(crate) fn num(v: &Value, keys: &[&str]) -> u64 {
     for k in keys {
         match v.get(*k) {
             Some(Value::Number(n)) => return n.as_u64().unwrap_or_else(|| n.as_f64().unwrap_or(0.0) as u64),
@@ -133,7 +133,7 @@ fn num(v: &Value, keys: &[&str]) -> u64 {
     0
 }
 
-fn text(v: &Value, keys: &[&str]) -> String {
+pub(crate) fn text(v: &Value, keys: &[&str]) -> String {
     for k in keys {
         if let Some(s) = v.get(*k).and_then(Value::as_str) {
             return s.to_string();
@@ -204,7 +204,7 @@ fn cache_path(state: &AppState, key: &str) -> PathBuf {
     dir.join(format!("{key}.json"))
 }
 
-fn ids(list: &[u64]) -> String {
+pub(crate) fn ids(list: &[u64]) -> String {
     list.iter().map(u64::to_string).collect::<Vec<_>>().join(",")
 }
 
@@ -452,7 +452,7 @@ pub struct GameExtras {
 }
 
 /// Bild-URLs aus einer Thumbnail-Antwort (`targetId` → `imageUrl`). Fehler ergeben eine leere Karte.
-async fn thumb_map(state: &AppState, url: &str) -> HashMap<u64, String> {
+pub(crate) async fn thumb_map(state: &AppState, url: &str) -> HashMap<u64, String> {
     let Ok(v) = get_json(state, url).await else { return HashMap::new() };
     v.get("data")
         .and_then(Value::as_array)
@@ -465,38 +465,62 @@ async fn thumb_map(state: &AppState, url: &str) -> HashMap<u64, String> {
 }
 
 async fn fetch_badges(state: &AppState, universe_id: u64) -> Vec<Badge> {
-    let url = format!("https://badges.roblox.com/v1/universes/{universe_id}/badges?limit=100&sortOrder=Asc");
-    let Ok(v) = get_json(state, &url).await else { return Vec::new() };
-    let mut out: Vec<Badge> = v
-        .get("data")
-        .and_then(Value::as_array)
-        .into_iter()
-        .flatten()
-        .filter(|b| b.get("enabled").and_then(Value::as_bool).unwrap_or(true))
-        .filter_map(|b| {
-            let id = num(b, &["id"]);
-            let stats = b.get("statistics").cloned().unwrap_or(Value::Null);
-            (id != 0).then(|| Badge {
-                id,
-                name: text(b, &["displayName", "name"]),
-                description: text(b, &["displayDescription", "description"]),
-                icon_url: None,
-                awarded: num(&stats, &["awardedCount"]),
-                // Roblox liefert einen Anteil von 0 bis 1.
-                win_rate: stats.get("winRatePercentage").and_then(Value::as_f64).map(|r| r * 100.0),
-            })
-        })
-        .collect();
-    if !out.is_empty() {
-        let list: Vec<u64> = out.iter().map(|b| b.id).collect();
-        let icons = thumb_map(
-            state,
-            &format!("https://thumbnails.roblox.com/v1/badges/icons?badgeIds={}&size=150x150&format=Png&isCircular=false", ids(&list)),
-        )
-        .await;
-        for b in &mut out {
-            b.icon_url = icons.get(&b.id).cloned();
+    universe_badges(state, universe_id, 1).await
+}
+
+/// Abzeichen eines Spiels, bis zu `max_pages` Seiten zu je 100.
+pub(crate) async fn universe_badges(state: &AppState, universe_id: u64, max_pages: usize) -> Vec<Badge> {
+    let mut out: Vec<Badge> = Vec::new();
+    let mut cursor: Option<String> = None;
+    for _ in 0..max_pages {
+        let mut url = format!("https://badges.roblox.com/v1/universes/{universe_id}/badges?limit=100&sortOrder=Asc");
+        if let Some(c) = &cursor {
+            url.push_str(&format!("&cursor={}", urlencode(c)));
         }
+        let Ok(v) = get_json(state, &url).await else { break };
+        out.extend(
+            v.get("data")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter(|b| b.get("enabled").and_then(Value::as_bool).unwrap_or(true))
+                .filter_map(|b| {
+                    let id = num(b, &["id"]);
+                    let stats = b.get("statistics").cloned().unwrap_or(Value::Null);
+                    (id != 0).then(|| Badge {
+                        id,
+                        name: text(b, &["displayName", "name"]),
+                        description: text(b, &["displayDescription", "description"]),
+                        icon_url: None,
+                        awarded: num(&stats, &["awardedCount"]),
+                        // Roblox liefert einen Anteil von 0 bis 1.
+                        win_rate: stats.get("winRatePercentage").and_then(Value::as_f64).map(|r| r * 100.0),
+                    })
+                }),
+        );
+        cursor = v.get("nextPageCursor").and_then(Value::as_str).map(String::from);
+        if cursor.is_none() {
+            break;
+        }
+    }
+    let icons = badge_icons(state, &out.iter().map(|b| b.id).collect::<Vec<_>>()).await;
+    for b in &mut out {
+        b.icon_url = icons.get(&b.id).cloned();
+    }
+    out
+}
+
+/// Bilder zu Abzeichen, in Paketen zu 100.
+pub(crate) async fn badge_icons(state: &AppState, badge_ids: &[u64]) -> HashMap<u64, String> {
+    let mut out = HashMap::new();
+    for chunk in badge_ids.chunks(100) {
+        out.extend(
+            thumb_map(
+                state,
+                &format!("https://thumbnails.roblox.com/v1/badges/icons?badgeIds={}&size=150x150&format=Png&isCircular=false", ids(chunk)),
+            )
+            .await,
+        );
     }
     out
 }
@@ -792,7 +816,7 @@ pub async fn server_count(state: &AppState, place_id: u64, job_id: &str) -> Opti
     None
 }
 
-fn urlencode(s: &str) -> String {
+pub(crate) fn urlencode(s: &str) -> String {
     let mut out = String::new();
     for b in s.bytes() {
         match b {

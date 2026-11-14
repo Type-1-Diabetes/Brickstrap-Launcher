@@ -1,2 +1,3 @@
-// Suchbegriff, gemeinsam für das Feld oben und die Suchseite.
-export const suche = $state({ query: "" });
+// Suchbegriff und Art der Suche, gemeinsam für das Feld oben und die Suchseite.
+/** art: "spiele" | "spieler" */
+export const suche = $state({ query: "", art: "spiele" });

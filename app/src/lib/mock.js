@@ -161,6 +161,45 @@ function servers(placeId, cursor, order, excludeFull) {
   return { servers: slice, nextCursor: (page + 1) * 100 < list.length ? String(page + 1) : null };
 }
 
+
+// ---------- Spieler (erfunden) ----------
+
+const LEUTE = [
+  [11, "FeuerFuchs", "Feuerfuchs", true, 20],
+  [12, "Kiesel_07", "Kiesel", false, 200],
+  [13, "Nachtwache", "Nachtwache", false, 260],
+  [14, "lenny_b", "Lenny", false, 120],
+  [15, "Turmbauer2011", "Turmbauer", false, 40],
+  [16, "MiraMond", "Mira", false, 300],
+  [17, "Feuerwehr_Fan", "Florian", false, 5],
+  [18, "pixelpilot", "Pixelpilot", false, 180],
+  [1, "DemoSpieler", "Demo", false, 220],
+];
+const leute = LEUTE.map(([userId, name, displayName, verified, hue]) => ({ userId, name, displayName, verified, hue }));
+
+// Flache Figur aus Blöcken als Avatar (kein Verlauf).
+function figur(u, size, nurKopf = false) {
+  const c = (l, s = 45) => `hsl(${u.hue} ${s}% ${l}%)`;
+  const haut = "hsl(30 45% 72%)";
+  const body = nurKopf
+    ? `<rect width="100" height="100" fill="${c(30, 20)}"/><rect x="28" y="22" width="44" height="46" rx="6" fill="${haut}"/><rect x="26" y="16" width="48" height="14" fill="${c(30, 50)}"/><rect x="38" y="40" width="5" height="6" fill="#222"/><rect x="57" y="40" width="5" height="6" fill="#222"/><rect x="18" y="72" width="64" height="28" fill="${c(55)}"/>`
+    : `<rect x="38" y="8" width="24" height="22" rx="3" fill="${haut}"/><rect x="36" y="5" width="28" height="8" fill="${c(30, 50)}"/><rect x="32" y="31" width="36" height="30" fill="${c(55)}"/><rect x="18" y="31" width="13" height="30" fill="${c(48)}"/><rect x="69" y="31" width="13" height="30" fill="${c(48)}"/><rect x="33" y="62" width="16" height="30" fill="${c(24, 25)}"/><rect x="51" y="62" width="16" height="30" fill="${c(24, 25)}"/>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">${body}</svg>`;
+  return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+}
+const kleinBild = (hue, seed) => bild({ hue, universeId: seed }, 150, 150);
+const BADGE_NAMEN = ["Willkommen", "Erste Runde", "10 Siege", "Sammler", "Nachtschicht", "Ohne Sturz", "Schnellster Lauf", "Entdecker", "Teamspieler", "100 Stunden", "Geheimer Raum", "Meister"];
+// Welche Abzeichen der Demo-Spieler hat: je Spiel ein paar.
+const BESITZ = { 9001: [0, 1, 2, 3, 5, 7, 9], 9009: [0, 1, 4], 9013: [0, 1, 2, 3, 4, 5, 6, 7, 8], 9005: [0, 2], 9014: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 9003: [0] };
+const besitzListe = Object.entries(BESITZ).flatMap(([uid, ks]) => ks.map((k) => ({ uid: Number(uid), k })))
+  .toSorted((a, b) => ((a.uid * 7 + a.k * 13) % 31) - ((b.uid * 7 + b.k * 13) % 31));
+const SACHEN = {
+  accessoires: [["Rote Kappe", "Hat"], ["Seitenscheitel braun", "HairAccessory"], ["Sonnenbrille", "FaceAccessory"], ["Schal gestreift", "NeckAccessory"], ["Rucksack", "BackAccessory"], ["Gürteltasche", "WaistAccessory"]],
+  kleidung: [["Jeansjacke mit Hoodie", "JacketAccessory"], ["Schwarze Jeans", "Pants"], ["Feuerwehr-Shirt", "Shirt"], ["Weißes T-Shirt", "TShirt"], ["Turnschuh links", "LeftShoeAccessory"], ["Turnschuh rechts", "RightShoeAccessory"]],
+  emotes: [["Salutieren", "EmoteAnimation"], ["Applaus", "EmoteAnimation"], ["Winken", "EmoteAnimation"]],
+  gamepaesse: [["VIP", "GamePass"], ["Doppelte Münzen", "GamePass"]],
+};
+
 let vollbildAn = false;
 const handlers = {
   discord_seite: () => null,
@@ -187,6 +226,65 @@ const handlers = {
       { userId: 13, name: "Nachtwache", displayName: "Nachtwache", avatarUrl: null, status: "studio", gameName: null, placeId: null, universeId: null, jobId: null },
       { userId: 14, name: "lenny_b", displayName: "Lenny", avatarUrl: null, status: "online", gameName: null, placeId: null, universeId: null, jobId: null },
     ];
+  },
+  async user_search({ query, cursor }) {
+    await delay(400);
+    if (modus.has("offline")) throw { code: "NETZ", message: "Demo" };
+    const q = query.trim().replace(/^@/, "").toLowerCase();
+    if (q === "fehler") throw { code: "RATE_LIMIT", message: "30" };
+    const treffer = leute.filter((u) => String(u.userId) === q || u.name.toLowerCase().includes(q) || u.displayName.toLowerCase().includes(q));
+    const page = Number(cursor || 0);
+    return {
+      users: treffer.slice(page * 6, page * 6 + 6).map(({ hue, ...u }) => ({ ...u, avatarUrl: figur({ hue }, 150, true) })),
+      nextCursor: (page + 1) * 6 < treffer.length ? String(page + 1) : null,
+    };
+  },
+  async user_profile({ userId }) {
+    await delay(450);
+    if (modus.has("offline")) throw { code: "NETZ", message: "Demo" };
+    const u = leute.find((x) => x.userId === userId) ?? leute[0];
+    const g = games[(userId * 3) % games.length];
+    const status = userId === 11 ? "spielt" : userId === 14 ? "online" : userId === 13 ? "studio" : "offline";
+    return {
+      userId: u.userId, name: u.name, displayName: u.displayName, verified: u.verified, banned: false,
+      description: u.userId === 12 ? "" : `Demo-Profil von ${u.displayName}. Alles hier ist erfunden.\nBaue gern Türme und spiele abends mit Freunden.`,
+      created: "2019-03-14T16:20:00Z",
+      friends: 120 + u.userId * 37, followers: u.userId * 3, following: 6 + u.userId,
+      avatarUrl: figur(u, 420), headshotUrl: figur(u, 150, true),
+      presence: { status, gameName: status === "spielt" ? g.name : null, placeId: status === "spielt" ? g.placeId : null, universeId: status === "spielt" ? g.universeId : null, jobId: status === "spielt" ? "0a1b2c3d-0000-4444-8888-aabbccddeeff" : null },
+      inventoryPublic: userId !== 13,
+      wearing: [...SACHEN.kleidung.slice(0, 3), ...SACHEN.accessoires.slice(1, 2), ...SACHEN.emotes.slice(0, 2)].map(([name, kind], k) => ({ id: 1000 + k, name, kind, iconUrl: kleinBild((u.hue + k * 40) % 360, 400 + k) })),
+      games: userId === 15 ? games.slice(10, 13) : userId === 11 ? games.slice(2, 4) : [],
+    };
+  },
+  async user_badges({ cursor }) {
+    await delay(500);
+    const page = Number(cursor || 0);
+    const slice = besitzListe.slice(page * 25, page * 25 + 25);
+    const ids = [...new Set(slice.map((b) => b.uid))];
+    return {
+      badges: slice.map(({ uid, k }) => {
+        const g = games.find((x) => x.universeId === uid);
+        return { id: uid * 100 + k, name: BADGE_NAMEN[k], description: `Demo-Abzeichen aus „${g.name}“.`, iconUrl: kleinBild((g.hue + k * 53) % 360, g.universeId + k * 11), universeId: k === 6 && uid === 9013 ? null : uid };
+      }),
+      games: ids.map((id) => games.find((x) => x.universeId === id)).map((g) => ({ universeId: g.universeId, placeId: g.placeId, name: g.name })),
+      nextCursor: (page + 1) * 25 < besitzListe.length ? String(page + 1) : null,
+    };
+  },
+  async user_game_badges({ universeId }) {
+    await delay(450);
+    const g = games.find((x) => x.universeId === universeId) ?? games[0];
+    const hat = BESITZ[universeId] ?? [];
+    return BADGE_NAMEN.map((name, k) => ({
+      id: universeId * 100 + k, name, description: `Demo-Abzeichen aus „${g.name}“.`, iconUrl: kleinBild((g.hue + k * 53) % 360, g.universeId + k * 11),
+      winRate: k === 11 ? 0.04 : Math.round(8000 / (k + 1)) / 100,
+      awardedAt: hat.includes(k) ? new Date(Date.now() - (k + 1) * 9 * 86400e3).toISOString() : null,
+    }));
+  },
+  async user_inventory({ category }) {
+    await delay(400);
+    if (category === "gamepaesse" && modus.has("offline")) throw { code: "HTTP", message: "403" };
+    return { items: (SACHEN[category] ?? []).map(([name, kind], k) => ({ id: 2000 + k + category.length * 50, name, kind, iconUrl: kleinBild((k * 61 + category.length * 30) % 360, 700 + k + category.length) })), nextCursor: null };
   },
   vollbild: () => (vollbildAn = !vollbildAn),
   async home_feed({ fresh }) {

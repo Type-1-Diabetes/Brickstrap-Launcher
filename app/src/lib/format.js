@@ -59,3 +59,42 @@ export function seit(unix) {
   if (d < 7 * 86400) return `vor ${Math.round(d / 86400)} Tagen`;
   return new Date(unix * 1000).toLocaleDateString("de-DE");
 }
+
+const datumKurz = new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "numeric", year: "numeric" });
+const monatJahrF = new Intl.DateTimeFormat("de-DE", { month: "long", year: "numeric" });
+
+/** ISO-Zeit → „3.11.2025“ oder "" */
+export function datum(iso) {
+  const t = Date.parse(iso ?? "");
+  return Number.isNaN(t) ? "" : datumKurz.format(t);
+}
+
+/** ISO-Zeit → „März 2019“ oder "" */
+export function monatJahr(iso) {
+  const t = Date.parse(iso ?? "");
+  return Number.isNaN(t) ? "" : monatJahrF.format(t);
+}
+
+/** Anteil in Prozent → „2,3 %“, „unter 0,1 %“ oder "" */
+export function anteil(p) {
+  if (p == null) return "";
+  if (p < 0.1) return "unter 0,1 %";
+  return `${p < 10 ? p.toFixed(1).replace(".", ",") : Math.round(p)} %`;
+}
+
+const ASSET_ARTEN = {
+  Hat: "Hut", HairAccessory: "Haare", FaceAccessory: "Gesicht", NeckAccessory: "Hals", ShoulderAccessory: "Schulter",
+  FrontAccessory: "Vorne", BackAccessory: "Rücken", WaistAccessory: "Hüfte", Face: "Gesicht",
+  TShirt: "T-Shirt", Shirt: "Shirt", Pants: "Hose", TShirtAccessory: "T-Shirt", ShirtAccessory: "Shirt", PantsAccessory: "Hose",
+  JacketAccessory: "Jacke", SweaterAccessory: "Pullover", ShortsAccessory: "Shorts", DressSkirtAccessory: "Kleid oder Rock",
+  LeftShoeAccessory: "Schuh", RightShoeAccessory: "Schuh", Emote: "Emote", EmoteAnimation: "Emote", GamePass: "Game-Pass",
+  EyebrowAccessory: "Augenbrauen", EyelashAccessory: "Wimpern", MoodAnimation: "Stimmung",
+};
+
+/** Asset-Typ von Roblox (englisch) → deutsches Wort. Animationen heißen „Animation“. */
+export function assetArt(kind) {
+  if (!kind) return "";
+  if (ASSET_ARTEN[kind]) return ASSET_ARTEN[kind];
+  if (kind.endsWith("Animation")) return "Animation";
+  return kind;
+}

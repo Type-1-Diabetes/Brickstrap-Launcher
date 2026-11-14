@@ -10,6 +10,7 @@
   import Start from "./pages/Start.svelte";
   import Suche from "./pages/Suche.svelte";
   import Spiel from "./pages/Spiel.svelte";
+  import Spieler from "./pages/Spieler.svelte";
   import Bibliothek from "./pages/Bibliothek.svelte";
   import Flags from "./pages/Flags.svelte";
   import Roblox from "./pages/Roblox.svelte";
@@ -25,7 +26,7 @@
   let inhalt = $state();
 
   // Discord-Status im Launcher: welche Seite gerade offen ist.
-  const SEITEN = { start: "Startseite", suche: "Sucht ein Spiel", bibliothek: "Bibliothek", flags: "FastFlags konfigurieren", roblox: "Roblox-Einstellungen", einstellungen: "Einstellungen" };
+  const SEITEN = { start: "Startseite", suche: "Sucht ein Spiel", bibliothek: "Bibliothek", spieler: "Sieht sich ein Profil an", flags: "FastFlags konfigurieren", roblox: "Roblox-Einstellungen", einstellungen: "Einstellungen" };
   $effect(() => {
     const r = app.route;
     const spiel = r.name === "spiel";
@@ -91,7 +92,8 @@
     const id = ++vorschlagLauf;
     const key = q.trim().toLowerCase();
     aktiv = -1;
-    if (key.length < 2) {
+    // Vorschläge gibt es nur für Spiele.
+    if (key.length < 2 || suche.art === "spieler") {
       vorschlaege = [];
       return;
     }
@@ -108,6 +110,8 @@
 
   function sucheTippen(e) {
     suche.query = e.currentTarget.value;
+    // „@name“ sucht Spieler
+    if (suche.query.startsWith("@")) suche.art = "spieler";
     vorschlagOffen = true;
     vorschlagen(suche.query);
     if (app.route.name !== "suche") go("suche");
@@ -164,7 +168,7 @@
           <input
             bind:this={suchfeld}
             type="search"
-            placeholder="Spiel suchen oder Place-ID / Link einfügen"
+            placeholder={suche.art === "spieler" ? "Spieler suchen: Name, @Name oder ID" : "Spiel oder @Spieler suchen, Place-ID oder Link einfügen"}
             value={suche.query}
             oninput={sucheTippen}
             onkeydown={sucheTasten}
@@ -205,6 +209,7 @@
             {#if app.route.name === "start"}<Start />
             {:else if app.route.name === "suche"}<Suche />
             {:else if app.route.name === "spiel"}<Spiel params={app.route.params} />
+            {:else if app.route.name === "spieler"}<Spieler params={app.route.params} />
             {:else if app.route.name === "bibliothek"}<Bibliothek />
             {:else if app.route.name === "flags"}<Flags />
             {:else if app.route.name === "roblox"}<Roblox />

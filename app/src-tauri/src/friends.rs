@@ -44,7 +44,7 @@ fn s(v: &Value, k: &str) -> String {
 
 /// POST mit Cookie. Roblox verlangt bei POST ein CSRF-Token: Die erste Antwort (403)
 /// liefert es im Kopf `x-csrf-token`, dann einmal neu senden.
-async fn post_auth(state: &AppState, url: &str, body: &Value, cookie: Option<&str>) -> Option<Value> {
+pub(crate) async fn post_auth(state: &AppState, url: &str, body: &Value, cookie: Option<&str>) -> Option<Value> {
     let mut token: Option<String> = None;
     for _ in 0..2 {
         let mut req = state.http.post(url).json(body);
@@ -69,7 +69,7 @@ async fn post_auth(state: &AppState, url: &str, body: &Value, cookie: Option<&st
     None
 }
 
-async fn get(state: &AppState, url: &str) -> Option<Value> {
+pub(crate) async fn get(state: &AppState, url: &str) -> Option<Value> {
     let r = state.http.get(url).send().await.ok()?;
     if !r.status().is_success() {
         return None;
@@ -176,4 +176,37 @@ pub async fn friends_online(state: State<'_, AppState>, fresh: Option<bool>) -> 
         *g = Some((Instant::now(), me, online.clone()));
     }
     Ok(online)
+}
+
+/// Status eines beliebigen Kontos (für die Profilseite). Mit Cookie zeigt Roblox das Spiel,
+/// sofern die Person es für dich freigibt; sonst nur online/offline.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Presence {
+    /// "offline", "online", "spielt" oder "studio"
+    pub status: String,
+    pub game_name: Option<String>,
+    pub place_id: Option<u64>,
+    pub universe_id: Option<u64>,
+    pub job_id: Option<String>,
+}
+
+pub async fn presence_of(state: &AppState, user_id: u64) -> Option<Presence> {
+    let cookie = crate::auth::cookie();
+    let v = post_auth(state, "https://presence.roblox.com/v1/presence/users", &json!({ "userIds": [user_id] }), cookie.as_deref()).await?;
+    let p = v.get("userPresences")?.as_array()?.first()?.clone();
+    let status = match p.get("userPresenceType").and_then(Value::as_u64) {
+        Some(1) => "online",
+        Some(2) => "spielt",
+        Some(3) => "studio",
+        _ => "offline",
+    };
+    let ort = s(&p, "lastLocation");
+    Some(Presence {
+        status: status.into(),
+        game_name: (status == "spielt" && !ort.is_empty()).then_some(ort),
+        place_id: u(&p, "rootPlaceId").or_else(|| u(&p, "placeId")),
+        universe_id: u(&p, "universeId"),
+        job_id: Some(s(&p, "gameId")).filter(|g| g.len() == 36),
+    })
 }

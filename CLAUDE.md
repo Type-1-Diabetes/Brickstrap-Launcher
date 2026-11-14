@@ -35,7 +35,7 @@ Ein eigener, quelloffener **Launcher für Roblox unter Windows**, gebaut mit Rus
 - **Workflows kurz und schnell** (Wunsch des Projektinhabers): ein einziger Workflow `release.yml`, ein Linux-Job, der die Windows-exe per `cargo-xwin` cross-kompiliert (Linux-Minuten zählen einfach). Nur die exe, kein Installer. Keine Tests, kein Linting, keine Prüfschritte in GitHub Actions. Normale Pushes bauen nichts.
 - **Keine Kosten bei GitHub** (Wunsch des Projektinhabers): siehe [Testbuilds und Kosten](#testbuilds-und-kosten). Keine neuen Workflows, keine Zeitpläne (`schedule`), keine Läufe bei Push oder Pull Request, kein Dependabot-Build.
 - **Prüfen passiert lokal** (siehe [Prüfen](#prüfen-lokal-nicht-in-ci)).
-- **Login ist Pflicht** (Entscheidung des Projektinhabers vom 13.11.2026): Ohne Anmeldung zeigt die App nur `pages/Anmelden.svelte`. Die Anmeldung läuft über die echte Login-Seite von roblox.com in einem privaten Tauri-Fenster (`auth.rs`, Fenster `login`, ohne Capabilities). Danach liest Rust das Cookie aus diesem Fenster (nie auf dem Hauptthread, sonst Verklemmung unter Windows). OAuth („Mit Roblox anmelden“) bräuchte eine von Roblox geprüfte App und kommt eventuell später. Nur `friends.rs` schickt das Cookie mit (Presence, mit CSRF-Token); alle anderen Abrufe laufen ohne.
+- **Login ist Pflicht** (Entscheidung des Projektinhabers vom 13.11.2026): Ohne Anmeldung zeigt die App nur `pages/Anmelden.svelte`. Die Anmeldung läuft über die echte Login-Seite von roblox.com in einem privaten Tauri-Fenster (`auth.rs`, Fenster `login`, ohne Capabilities). Danach liest Rust das Cookie aus diesem Fenster (nie auf dem Hauptthread, sonst Verklemmung unter Windows). OAuth („Mit Roblox anmelden“) bräuchte eine von Roblox geprüfte App und kommt eventuell später. Nur `friends.rs` schickt das Cookie mit (Presence, mit CSRF-Token; auch `presence_of` für die Profilseite); alle anderen Abrufe laufen ohne.
 - **Das Cookie `.ROBLOSECURITY` ist ein Generalschlüssel:** nur im Rust-Teil, verschlüsselt im Windows-Anmeldeinformations-Manager (`keyring`). Nie an die Oberfläche, nie in Logdatei, Einstellungen, Export, Commit oder an einen anderen Host als `*.roblox.com`.
 - **Fremden Code prüfen:** Bloxstrap, Fishstrap, NexStrap (MIT) dürfen als Vorlage dienen, mit Hinweis auf die Herkunft. RoValra und Roblox Account Manager sind **GPL**: nur das Prinzip übernehmen, keinen Code kopieren.
 - **Undokumentierte APIs** (Suche, Explore, Chat, `gamejoin`) kapseln, Fehler abfangen, nie die ganze App davon abhängig machen. Sie können jederzeit brechen.
@@ -103,7 +103,8 @@ app/
 │  ├─ ui/                      Leiste, Dock, Toasts, Icon (+icons.js), Bild, Spielkarte, Reihe, Hinweis, Serverliste,
 │  │                           Spielextras (Events, Game-Pässe, Abzeichen), Zeitstatistik (7/30 Tage, Gesamt),
 │  │                           Freunde (rechte Spalte: online, spielt was, Beitreten)
-│  └─ pages/                   Start, Suche, Spiel, Bibliothek, Flags, Roblox, Einstellungen
+│  │                           Spielerzeile (Treffer der Spielersuche), Inventar (Abzeichen mit Filter nach Spiel, Kategorien)
+│  └─ pages/                   Start, Suche (Spiele | Spieler), Spiel, Spieler (Profil), Bibliothek, Flags, Roblox, Einstellungen
 └─ src-tauri/
    ├─ tauri.conf.json          Fenster (unsichtbar bis gezeichnet), CSP, NSIS (currentUser, Deutsch)
    ├─ capabilities/default.json
@@ -116,6 +117,8 @@ app/
       ├─ roblox_api.rs         Startseite (Cache), Suche + Vorschläge, Details (50 je Abruf), Bewertung, Abzeichen/Pässe/Events,
       │                        Bilder (1 Tag Cache), Serverliste, game_brief, Rohantworten (`roh/`)
       ├─ friends.rs            Online-Freunde: Freundesliste + Presence (mit Cookie, nur *.roblox.com), Avatare, 30 s gemerkt
+      ├─ users.rs              Spielersuche (Name, @Name, ID, Profil-Link), Profil (Zahlen, Status, trägt, eigene Spiele),
+      │                        Abzeichen eines Kontos (+ Spiel), alle Abzeichen eines Spiels mit Datum, Inventar-Kategorien
       ├─ install.rs            Fester Platz `%LOCALAPPDATA%\Brickstrap\Brickstrap.exe` + `version.txt`, Verknüpfungen Desktop/Startmenü
       ├─ update.rs             Updates über GitHub-Releases: suchen (Start + alle 3 Std.), laden, SHA-256 prüfen, exe tauschen, neu starten
       ├─ region.rs             Region eines Servers aus der IP (Tabelle, kein fremder Dienst)
@@ -161,6 +164,7 @@ Der Workflow erwartet die App unter `app/` mit `app/package-lock.json` und `app/
 - **Feldnamen der undokumentierten APIs** (omni-search, explore-api, servers) stammen aus Quelltext anderer Launcher, nicht aus eigenem Abruf (Roblox ist aus der Cloud gesperrt). `roblox_api.rs` liest darum mehrere mögliche Namen. Erster echter Test unter Windows: Rohantworten ansehen und anpassen.
 - **Rohantworten ansehen:** Gibt es im Datenordner den Ordner `roh`, legt `get_json` jede Antwort dort als JSON ab. So lassen sich die undokumentierten Endpunkte am PC prüfen. Danach den Ordner wieder löschen.
 - **Unbestätigte Endpunkte (Stand 13.11.2026):** Vorschläge (`games-autocomplete/v1/get-suggestion`), Game-Pässe (`apis.roblox.com/game-passes/v1/universes/{id}/game-passes`, Rückfall auf den alten Pfad), Events (`virtual-events/v1/universes/{id}/virtual-events`, verlangt eventuell eine Anmeldung). Alle scheitern still: Die Oberfläche zeigt den Teil dann nicht. `game_votes`, Abzeichen und `client-version` sind dokumentiert.
+- **Spieler und Inventar** (`users.rs`, Stand 14.11.2026): Dokumentiert sind `users/search` (stark gedrosselt, darum zuerst genauer Name über `usernames/users`), Zähler, `can-view-inventory`, `badges/v1/users/{id}/badges` und `awarded-dates`. Unbestätigt: `avatar/v1/users/{id}/avatar` (Trägt gerade), `games/v2/users/{id}/games?accessFilter=2`, `inventory/v2/users/{id}/inventory?assetTypes=…` (Accessoires, Kleidung, Emotes, Game-Pässe) und ob `awarder.id` in der Abzeichenliste eine Universe- oder Place-ID ist (`users.rs` probiert beides, liest auch `awardingUniverse`). Der Filter nach Spiel lädt alle Abzeichen des Spiels (bis 1000) und fragt `awarded-dates` ab, zeigt also auch fehlende. Im Discord-Status steht nur „Sieht sich ein Profil an“, nie der Name. Klick auf einen Freund oder das eigene Konto öffnet das Profil.
 - **Roblox-Update:** `roblox_update` vergleicht die Versionsordner mit `clientVersionUpload` von `clientsettingscdn.roblox.com` (10 Minuten gemerkt). Wer einen anderen Kanal als LIVE nutzt, bekommt dauerhaft „Update steht an“.
 - **Regionstabelle** (`regions.json`) stammt aus einer Community-Liste (Quelle in der Datei) und enthält nur auf Roblox registrierte Bereiche. Server bei AWS und unbekannte Adressen zeigen nur die IP. Orte sind Schätzungen.
 - **Einladungslink mit Server** (`https://www.roblox.com/games/start?placeId=…&gameInstanceId=…`) und „Wieder beitreten“ (JobId der letzten Sitzung, 3 Stunden lang angeboten): Ob Roblox auf genau diesen Server führt, ist unbestätigt.
@@ -207,7 +211,7 @@ Nicht in der Cloud prüfbar: Start von Roblox, Registry, Mutex, WebView2, Tray, 
 - **Noch nie auf Windows gelaufen.** Erster Testbuild (Run workflow ohne Version) und Test am PC: Start, Infobereich, Deeplink-Beitritt, FastFlags im Versionsordner, XML schreiben, Logdatei, Discord.
 - **Discord-Anwendung** „Brickstrap“ ist eingebaut (`DISCORD_APP_ID` = 1570919112279072948, öffentliche ID). Eigene ID in den Einstellungen bleibt optional.
 - Echte Antworten von omni-search, explore-api und servers/Public prüfen (Feldnamen, `sortDisplayName`, `contentType`).
-- Am PC prüfen (mit Ordner `roh`): Vorschläge, Game-Pässe, Events, Einladungslink mit Server, Flags im neuen Versionsordner nach einem Update, Regionen.
+- Am PC prüfen (mit Ordner `roh`): Spielersuche, Profil (Trägt gerade, eigene Spiele), Inventar-Kategorien, Spiel der Abzeichen (`awarder`), Vorschläge, Game-Pässe, Events, Einladungslink mit Server, Flags im neuen Versionsordner nach einem Update, Regionen.
 - Lizenz (MIT?).
 - Region der Server (braucht Login) und Mod-Manager folgen in späteren Stufen.
 - Repo öffentlich machen (Entscheidung des Projektinhabers vom 14.11.2026, nötig für die Update-Suche): dann kosten Actions nichts mehr. Vorher prüfen, dass keine Geheimnisse in der Historie liegen.

@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import Icon from "./Icon.svelte";
   import { call } from "../lib/bridge.js";
-  import { zahl, wann } from "../lib/format.js";
+  import { zahl, wann, anteil } from "../lib/format.js";
 
   /** @type {{ universeId: number }} */
   let { universeId } = $props();
@@ -31,12 +31,6 @@
   const laeuft = (e) => Date.parse(e.start) <= Date.now();
   const liste = $derived(reiter === "passes" ? (daten?.passes ?? []) : (daten?.badges ?? []));
   const sichtbar = $derived(alle ? liste : liste.slice(0, 8));
-
-  function anteil(p) {
-    if (p == null) return "";
-    if (p < 0.1) return "unter 0,1 %";
-    return `${p < 10 ? p.toFixed(1).replace(".", ",") : Math.round(p)} %`;
-  }
 
   function wechseln(r) {
     reiter = r;

@@ -34,7 +34,7 @@ export const app = $state({
 export function go(name, params = {}) {
   if (app.route.name === name && JSON.stringify(app.route.params) === JSON.stringify(params)) return;
   // Suchfeld leeren, wenn die Suche verlassen wird (außer zum geöffneten Treffer und zurück).
-  if (app.route.name === "suche" && name !== "spiel") suche.query = "";
+  if (app.route.name === "suche" && name !== "spiel" && name !== "spieler") suche.query = "";
   app.history.push($state.snapshot(app.route));
   if (app.history.length > 30) app.history.shift();
   app.route = { name, params };
@@ -47,6 +47,10 @@ export function back() {
 
 export function openGame(game) {
   go("spiel", { universeId: game.universeId, placeId: game.placeId, name: game.name });
+}
+
+export function openUser(user) {
+  go("spieler", { userId: user.userId, name: user.displayName || user.name || "" });
 }
 
 // ---------- Hinweise unten rechts ----------
