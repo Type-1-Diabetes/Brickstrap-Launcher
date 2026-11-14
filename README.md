@@ -24,7 +24,8 @@ Brickstrap ist ein kostenloser Launcher für Roblox. Du findest Spiele schneller
 
 1. [Neueste Version laden](https://github.com/Type-1-Diabetes/Brickstrap-Launcher/releases/latest) (`Brickstrap_…_x64.exe`).
 2. Starten. Warnt Windows, klick „Weitere Informationen“ und dann „Trotzdem ausführen“.
-3. Mit deinem Roblox-Konto anmelden und loslegen.
+3. Brickstrap legt sich selbst eine Verknüpfung auf dem Desktop und im Startmenü an. Die geladene Datei kannst du danach löschen.
+4. Mit deinem Roblox-Konto anmelden und loslegen. Updates kommen von allein.
 
 Die Bilder zeigen die Vorschau mit Demo-Daten.
 

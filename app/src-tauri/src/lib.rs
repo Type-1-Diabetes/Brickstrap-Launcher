@@ -8,6 +8,7 @@ mod basicsettings;
 mod discord;
 mod fastflags;
 mod friends;
+mod install;
 mod launch;
 mod paths;
 mod region;
@@ -34,6 +35,10 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_main(app)))
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            // Aus „Downloads“ o. Ä. gestartet: an den festen Platz kopieren und von dort neu starten.
+            if install::sicherstellen() {
+                std::process::exit(0);
+            }
             let data_dir = app.path().app_data_dir()?;
             region::init(&data_dir);
             app.manage(state::AppState::new(data_dir));

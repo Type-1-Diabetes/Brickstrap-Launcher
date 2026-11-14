@@ -116,6 +116,7 @@ app/
       ├─ roblox_api.rs         Startseite (Cache), Suche + Vorschläge, Details (50 je Abruf), Bewertung, Abzeichen/Pässe/Events,
       │                        Bilder (1 Tag Cache), Serverliste, game_brief, Rohantworten (`roh/`)
       ├─ friends.rs            Online-Freunde: Freundesliste + Presence (mit Cookie, nur *.roblox.com), Avatare, 30 s gemerkt
+      ├─ install.rs            Fester Platz `%LOCALAPPDATA%\Brickstrap\Brickstrap.exe` + `version.txt`, Verknüpfungen Desktop/Startmenü
       ├─ update.rs             Updates über GitHub-Releases: suchen (Start + alle 3 Std.), laden, SHA-256 prüfen, exe tauschen, neu starten
       ├─ region.rs             Region eines Servers aus der IP (Tabelle, kein fremder Dienst)
       ├─ launch.rs             Start per Deeplink oder `--app`, Roblox-Update prüfen, Einladungslink, Config, Anpinnen
@@ -170,6 +171,7 @@ Der Workflow erwartet die App unter `app/` mit `app/package-lock.json` und `app/
 - **Microsoft-Store-Roblox:** „installiert“ heißt Versionsordner **oder** registriertes `roblox://`. Logs und `GlobalBasicSettings_13.xml` werden auch unter `Packages\ROBLOXCORPORATION.ROBLOX_55nm5eh3cm0pr\LocalState` gesucht. FastFlags lassen sich dort nicht schreiben.
 - **FastFlags und Roblox-Updates:** Aktualisiert sich Roblox beim Start, entsteht ein neuer Versionsordner ohne `ClientAppSettings.json`. `activity.rs` prüft jede Sekunde die Versionsordner und schreibt die Flags sofort in einen neuen. Ob das schneller ist als der Start des Clients, ist am echten PC zu prüfen; sonst greifen die Flags erst beim nächsten Start.
 - **Updates von Brickstrap** (`update.rs`): fragt `api.github.com/repos/Type-1-Diabetes/Brickstrap-Launcher/releases/latest` ohne Token ab (Repo muss **öffentlich** sein, sonst 404 = „kein Update“). Nimmt das erste `.exe`-Asset und die passende `<exe>.sha256`. Tausch: laufende exe → `<name>.old`, neue → alter Pfad, Neustart über `cmd /C ping … & start` (wegen Einzelinstanz verzögert). Asset-Namen und Repo-Pfad darum **nicht ändern**. Vorschau des Dialogs: `?neue-version`.
+- **Fester Platz** (`install.rs`): Startet die exe woanders (z. B. aus „Downloads“), kopiert sie sich nach `%LOCALAPPDATA%\Brickstrap\Brickstrap.exe` (nur wenn dort nichts oder eine ältere Version laut `version.txt` liegt), legt fehlende Verknüpfungen `Brickstrap.lnk` auf Desktop und im Startmenü per PowerShell an und startet von dort neu. Updates ersetzen nur diese Datei. In Debug-Builds aus.
 - **Fenster-Rückfall:** `lib.rs` zeigt das Fenster nach 4 s selbst, falls die Oberfläche beim Laden scheitert.
 - **Neuer Befehl:** Rust-Funktion → `generate_handler!` → Handler in `mock.js` → Aufruf über `call()`. Ohne Mock bricht die Browser-Vorschau.
 - **Overlay-Fenster** nur als eigenes transparentes Tauri-Fenster (`always_on_top`, Klick-Durchlass). Es zeigt nur, was der Launcher von außen weiß.

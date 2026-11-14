@@ -170,6 +170,7 @@ pub async fn update_install(app: AppHandle, state: State<'_, AppState>) -> Resul
         return Err(format!("SCHREIBGESCHUETZT|{e}"));
     }
 
+    crate::install::version_merken(&exe, &info.version);
     neu_starten(&exe)?;
     app.exit(0);
     Ok(())
@@ -178,7 +179,7 @@ pub async fn update_install(app: AppHandle, state: State<'_, AppState>) -> Resul
 /// Startet die neue exe, nachdem diese Instanz beendet ist. Sofort gestartet würde sie
 /// wegen der Einzelinstanz nur die alte nach vorn holen und sich schließen.
 #[cfg(windows)]
-fn neu_starten(exe: &std::path::Path) -> Result<(), String> {
+pub(crate) fn neu_starten(exe: &std::path::Path) -> Result<(), String> {
     use std::os::windows::process::CommandExt;
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
     // `ping` wartet etwa 2 Sekunden, `start` löst die exe vom cmd-Fenster.
@@ -191,7 +192,7 @@ fn neu_starten(exe: &std::path::Path) -> Result<(), String> {
 }
 
 #[cfg(not(windows))]
-fn neu_starten(exe: &std::path::Path) -> Result<(), String> {
+pub(crate) fn neu_starten(exe: &std::path::Path) -> Result<(), String> {
     std::process::Command::new(exe).spawn().map(|_| ()).map_err(|e| format!("START|{e}"))
 }
 
