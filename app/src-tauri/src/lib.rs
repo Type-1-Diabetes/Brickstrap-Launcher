@@ -31,6 +31,9 @@ fn show_main(app: &tauri::AppHandle) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Alte Instanz aus einem anderen Ordner (z. B. Version im Infobereich) beenden, damit die
+    // Einzelinstanz nicht sie nach vorn holt statt diese neue exe zu starten.
+    install::andere_beenden();
     tauri::Builder::default()
         // Zweiter Start holt das vorhandene Fenster nach vorn.
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_main(app)))

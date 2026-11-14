@@ -9,14 +9,16 @@
   const SICHTBAR = 6;
   let liste = $state(null);
   let fehler = $state(false);
+  let grund = $state("");
   let alle = $state(false);
 
   async function laden(fresh = false) {
     try {
       liste = await call("friends_online", { fresh });
       fehler = false;
-    } catch {
+    } catch (e) {
       fehler = true;
+      grund = e?.message ?? "";
       liste ??= [];
     }
   }
@@ -50,7 +52,7 @@
       {#each [0, 1, 2] as i (i)}<li class="platzhalter"><span class="ava"></span><span class="balken"></span></li>{/each}
     </ul>
   {:else if fehler && liste.length === 0}
-    <p class="leise klein">Freunde gerade nicht erreichbar. <button class="link" onclick={() => laden(true)}>Erneut versuchen</button></p>
+    <p class="leise klein" title={grund || undefined}>Freunde gerade nicht erreichbar. <button class="link" onclick={() => laden(true)}>Erneut versuchen</button></p>
   {:else if liste.length === 0}
     <p class="leise klein">Gerade ist niemand online.</p>
   {:else}

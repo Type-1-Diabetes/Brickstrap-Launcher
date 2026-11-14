@@ -69,6 +69,74 @@ pub(crate) async fn post_auth(state: &AppState, url: &str, body: &Value, cookie:
     None
 }
 
+/// GET mit Cookie (nur an *.roblox.com). Fehler als HTTP-Status, 0 = keine Verbindung.
+async fn get_auth(state: &AppState, url: &str, cookie: Option<&str>) -> Result<Value, u16> {
+    let mut req = state.http.get(url);
+    if let Some(c) = cookie {
+        req = req.header("Cookie", format!(".ROBLOSECURITY={c}"));
+    }
+    let r = req.send().await.map_err(|_| 0u16)?;
+    if !r.status().is_success() {
+        return Err(r.status().as_u16());
+    }
+    r.json().await.map_err(|_| 1u16)
+}
+
+/// Freunde als (ID, Name, Anzeigename). Roblox hat die alte Liste `/friends` 2025 eingeschränkt
+/// (nur IDs, teils nur mit Anmeldung). Darum zuerst die seitenweise Liste `/friends/find`
+/// (Felder `PageItems`, `NextCursor`, unbestätigt), dann die alte; beide mit Cookie.
+async fn freundesliste(state: &AppState, me: u64, cookie: Option<&str>) -> Result<Vec<(u64, String, String)>, String> {
+    let lesen = |v: &Value| -> Vec<(u64, String, String)> {
+        ["PageItems", "pageItems", "data"]
+            .iter()
+            .find_map(|k| v.get(*k).and_then(Value::as_array))
+            .into_iter()
+            .flatten()
+            .filter_map(|f| Some((u(f, "id").or_else(|| u(f, "Id"))?, s(f, "name"), s(f, "displayName"))))
+            .collect()
+    };
+    let mut fehler = String::new();
+
+    let mut liste: Vec<(u64, String, String)> = Vec::new();
+    let mut cursor: Option<String> = None;
+    for _ in 0..40 {
+        let mut url = format!("https://friends.roblox.com/v1/users/{me}/friends/find?limit=50");
+        if let Some(c) = &cursor {
+            url.push_str(&format!("&cursor={}", crate::roblox_api::urlencode(c)));
+        }
+        match get_auth(state, &url, cookie).await {
+            Ok(v) => {
+                liste.extend(lesen(&v));
+                cursor = ["NextCursor", "nextCursor", "nextPageCursor"]
+                    .iter()
+                    .find_map(|k| v.get(*k).and_then(Value::as_str))
+                    .filter(|c| !c.is_empty())
+                    .map(String::from);
+                if cursor.is_none() {
+                    break;
+                }
+            }
+            Err(code) => {
+                fehler = format!("find {code}");
+                break;
+            }
+        }
+    }
+    if !liste.is_empty() {
+        return Ok(liste);
+    }
+
+    match get_auth(state, &format!("https://friends.roblox.com/v1/users/{me}/friends"), cookie).await {
+        Ok(v) => Ok(lesen(&v)),
+        // Liefert `find` eine leere Liste ohne Fehler, hat das Konto schlicht keine Freunde.
+        Err(_) if fehler.is_empty() => Ok(Vec::new()),
+        Err(code) => {
+            eprintln!("Freundesliste: {fehler}, friends {code}");
+            Err(format!("NETZ|Freundesliste nicht erreichbar ({fehler}, friends {code})."))
+        }
+    }
+}
+
 pub(crate) async fn get(state: &AppState, url: &str) -> Option<Value> {
     let r = state.http.get(url).send().await.ok()?;
     if !r.status().is_success() {
@@ -91,16 +159,7 @@ pub async fn friends_online(state: State<'_, AppState>, fresh: Option<bool>) -> 
     let cookie = crate::auth::cookie();
 
     // 1. Freundesliste (IDs und, je nach Roblox-Version, Namen)
-    let liste = get(&state, &format!("https://friends.roblox.com/v1/users/{me}/friends"))
-        .await
-        .ok_or("NETZ|Freundesliste nicht erreichbar.")?;
-    let freunde: Vec<(u64, String, String)> = liste
-        .get("data")
-        .and_then(Value::as_array)
-        .into_iter()
-        .flatten()
-        .filter_map(|f| Some((u(f, "id")?, s(f, "name"), s(f, "displayName"))))
-        .collect();
+    let freunde = freundesliste(&state, me, cookie.as_deref()).await?;
     if freunde.is_empty() {
         return Ok(Vec::new());
     }

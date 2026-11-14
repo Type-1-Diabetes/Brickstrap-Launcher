@@ -36,7 +36,8 @@ fn gleich(a: &Path, b: &Path) -> bool {
     }
 }
 
-/// Verknüpfungen auf dem Desktop und im Startmenü (nur anlegen, wenn sie fehlen).
+/// Verknüpfungen auf dem Desktop und im Startmenü anlegen oder auf den festen Platz umbiegen,
+/// falls sie noch auf eine alte exe (z. B. in „Downloads“) zeigen.
 #[cfg(windows)]
 fn verknuepfungen(exe: &Path) {
     use std::os::windows::process::CommandExt;
@@ -46,8 +47,8 @@ fn verknuepfungen(exe: &Path) {
     let skript = format!(
         "$w=New-Object -ComObject WScript.Shell;\
          foreach($o in @([Environment]::GetFolderPath('Desktop'),[Environment]::GetFolderPath('Programs'))){{\
-         $l=Join-Path $o 'Brickstrap.lnk';\
-         if(-not (Test-Path $l)){{$s=$w.CreateShortcut($l);$s.TargetPath='{pfad}';$s.WorkingDirectory='{ordner}';\
+         $l=Join-Path $o 'Brickstrap.lnk';$s=$w.CreateShortcut($l);\
+         if($s.TargetPath -ne '{pfad}'){{$s.TargetPath='{pfad}';$s.WorkingDirectory='{ordner}';\
          $s.IconLocation='{pfad},0';$s.Description='Brickstrap';$s.Save()}}}}"
     );
     let _ = std::process::Command::new("powershell")
@@ -89,3 +90,59 @@ pub fn sicherstellen() -> bool {
     verknuepfungen(&ziel);
     crate::update::neu_starten(&ziel).is_ok()
 }
+
+/// Andere laufende Brickstrap-Instanzen aus einem anderen Ordner beenden (z. B. eine alte
+/// Version im Infobereich). Sonst holt die Einzelinstanz beim Start einer neuen exe nur die
+/// alte nach vorn. Muss vor dem Plugin `single-instance` laufen. Gleicher Pfad = normale
+/// Einzelinstanz (Fenster nach vorn), darum bleibt die unangetastet.
+#[cfg(windows)]
+pub fn andere_beenden() {
+    use windows_sys::Win32::Foundation::{CloseHandle, INVALID_HANDLE_VALUE, WAIT_TIMEOUT};
+    use windows_sys::Win32::System::Diagnostics::ToolHelp::{
+        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W, TH32CS_SNAPPROCESS,
+    };
+    use windows_sys::Win32::System::Threading::{
+        OpenProcess, QueryFullProcessImageNameW, TerminateProcess, WaitForSingleObject, PROCESS_QUERY_LIMITED_INFORMATION,
+        PROCESS_SYNCHRONIZE, PROCESS_TERMINATE,
+    };
+    if cfg!(debug_assertions) {
+        return;
+    }
+    let Ok(ich) = std::env::current_exe() else { return };
+    let eigene = std::process::id();
+    // SAFETY: Standard-Aufrufe der Toolhelp- und Prozess-API; jeder Handle wird geschlossen.
+    unsafe {
+        let snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if snap == INVALID_HANDLE_VALUE {
+            return;
+        }
+        let mut entry: PROCESSENTRY32W = std::mem::zeroed();
+        entry.dwSize = std::mem::size_of::<PROCESSENTRY32W>() as u32;
+        let mut ok = Process32FirstW(snap, &mut entry) != 0;
+        while ok {
+            let len = entry.szExeFile.iter().position(|&c| c == 0).unwrap_or(entry.szExeFile.len());
+            let name = String::from_utf16_lossy(&entry.szExeFile[..len]).to_ascii_lowercase();
+            if entry.th32ProcessID != eigene && name.starts_with("brickstrap") && name.ends_with(".exe") {
+                let h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_TERMINATE | PROCESS_SYNCHRONIZE, 0, entry.th32ProcessID);
+                if !h.is_null() {
+                    let mut buf = [0u16; 1024];
+                    let mut n = buf.len() as u32;
+                    let pfad = (QueryFullProcessImageNameW(h, 0, buf.as_mut_ptr(), &mut n) != 0)
+                        .then(|| std::path::PathBuf::from(String::from_utf16_lossy(&buf[..n as usize])));
+                    if pfad.is_some_and(|p| !gleich(&p, &ich)) && TerminateProcess(h, 0) != 0 {
+                        // Kurz warten, bis die Sperre der Einzelinstanz frei ist.
+                        if WaitForSingleObject(h, 3000) == WAIT_TIMEOUT {
+                            eprintln!("Alte Instanz beendet sich nicht rechtzeitig");
+                        }
+                    }
+                    CloseHandle(h);
+                }
+            }
+            ok = Process32NextW(snap, &mut entry) != 0;
+        }
+        CloseHandle(snap);
+    }
+}
+
+#[cfg(not(windows))]
+pub fn andere_beenden() {}
