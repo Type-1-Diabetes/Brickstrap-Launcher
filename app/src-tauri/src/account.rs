@@ -1,6 +1,6 @@
-//! Welches Roblox-Konto ist im Roblox-Client angemeldet? Ohne Cookie, nur aus Dateien:
-//! Zuerst `%localappdata%\Roblox\LocalStorage\appStorage.json` (Feldnamen unbestätigt, nachsichtig gelesen),
-//! sonst die letzte `userid:` in den Player-Logdateien (Zeile `GameJoinLoadTime`).
+//! Name und Avatar des Kontos. Die ID kommt aus der Anmeldung bei Brickstrap (Pflicht).
+//! Rückfall, falls die Anmeldung noch lädt: `%localappdata%\Roblox\LocalStorage\appStorage.json`
+//! (Feldnamen unbestätigt) oder die letzte `userid:` in den Player-Logdateien. Abrufe ohne Cookie.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

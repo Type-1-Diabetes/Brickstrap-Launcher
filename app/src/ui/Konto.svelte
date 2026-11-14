@@ -3,10 +3,11 @@
   import { app, openUser } from "../lib/app.svelte.js";
   /** @type {{ kompakt?: boolean }} */
   let { kompakt = false } = $props();
-  const a = $derived(app.account);
+  // Name und Bild kommen von account_get; bis dahin reicht die Anmeldung selbst.
+  const a = $derived(app.account ?? (app.auth?.loggedIn ? { ...app.auth, avatarUrl: null } : null));
 </script>
 
-<button class="konto" class:kompakt disabled={!a} onclick={() => a && openUser(a)} title={a ? `Angemeldet als @${a.name}. Klick öffnet dein Profil.` : "Kein Roblox-Konto erkannt"}>
+<button class="konto" class:kompakt disabled={!a} onclick={() => a && openUser(a)} title={a ? `Angemeldet als @${a.name}. Klick öffnet dein Profil.` : "Nicht angemeldet"}>
   <span class="avatar">
     {#if a?.avatarUrl}<img src={a.avatarUrl} alt="" />{:else}<span>{(a?.displayName || a?.name || "?").slice(0, 1).toUpperCase()}</span>{/if}
   </span>
@@ -15,8 +16,8 @@
       <strong>{a.displayName || a.name}</strong>
       <small>@{a.name}</small>
     {:else}
-      <strong>Kein Konto erkannt</strong>
-      <small>Starte Roblox einmal</small>
+      <strong>Nicht angemeldet</strong>
+      <small>Melde dich bei Roblox an</small>
     {/if}
   </span>
 </button>

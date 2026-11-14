@@ -18,7 +18,7 @@ Brickstrap is a free, open-source launcher for Roblox on Windows. It starts the 
 
 ## Positioning
 
-The combination: fast and lightweight (Rust/Tauri, instant start, low RAM), the best server finder (region, small/new servers, follow friends, one-click join) and rule-compliant by design (open source, no injection, login optional).
+The combination: fast and lightweight (Rust/Tauri, instant start, low RAM), the best server finder (region, small/new servers, follow friends, one-click join) and rule-compliant by design (open source, no injection, sign-in only on the real Roblox page).
 
 ## Operating Context
 
@@ -32,7 +32,8 @@ The combination: fast and lightweight (Rust/Tauri, instant start, low RAM), the 
 - Not affiliated with Roblox Corporation.
 - No code injection, no memory access to the client.
 - Undecided: licence (MIT likely).
-- v0.1 scope (user decision 2026-11-13): no-login MVP (home, search, game page, server picker, deeplink launch), pin/favourite games, FastFlag editor (allowlist only, presets), GlobalBasicSettings editor, Discord status and playtime from the log file.
+- v0.1 scope (user decision 2026-11-13): home, search, game page, server picker, deeplink launch, pin/favourite games, FastFlag editor (allowlist only, presets), GlobalBasicSettings editor, Discord status and playtime from the log file.
+- Sign-in is mandatory (user decision 2026-11-13): through the real roblox.com login page in a separate window; the cookie stays encrypted on the PC and goes only to roblox.com. It powers friends online, friends on a server and the own profile.
 
 ## Brand Commitments
 

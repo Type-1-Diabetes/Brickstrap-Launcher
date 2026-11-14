@@ -124,7 +124,7 @@
           <p><strong>Brickstrap {__APP_VERSION__}</strong>{#if isDemo} · Vorschau im Browser mit Demo-Daten{/if}</p>
           <button class="knopf klein" onclick={updateSuchen} disabled={upd.sucht}>{upd.sucht ? "Sucht …" : "Nach Updates suchen"}</button>
         </div>
-        <p class="hint">Brickstrap startet den offiziellen Roblox-Client nur von außen, per Link oder über das Programm von Roblox. Es ändert nichts am Client, greift nicht auf seinen Speicher zu und braucht kein Login.</p>
+        <p class="hint">Brickstrap startet den offiziellen Roblox-Client nur von außen, per Link oder über das Programm von Roblox. Es ändert nichts am Client und greift nicht auf seinen Speicher zu. Angemeldet bist du nur bei Roblox, auf deren eigener Seite.</p>
         <p class="hint">Kein Produkt von Roblox Corporation. Roblox ist eine Marke der Roblox Corporation.</p>
         <p class="hint">Schrift: Archivo (SIL Open Font License).</p>
       </div>
