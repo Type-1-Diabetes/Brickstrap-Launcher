@@ -1,7 +1,8 @@
 <script>
-  // Rechte Spalte auf breiten Fenstern: Konto, was gerade läuft, Schnellstart, Spielzeit.
+  // Rechte Spalte auf breiten Fenstern: Konto, Freunde online, was gerade läuft, Schnellstart, Spielzeit.
   import { onMount } from "svelte";
   import Konto from "./Konto.svelte";
+  import Freunde from "./Freunde.svelte";
   import Bild from "./Bild.svelte";
   import Icon from "./Icon.svelte";
   import { app, launch, starting, openGame, go } from "../lib/app.svelte.js";
@@ -23,6 +24,8 @@
   <section class="block">
     <Konto />
   </section>
+
+  <Freunde />
 
   <section class="block">
     <h2>Gerade</h2>

@@ -35,7 +35,7 @@ Ein eigener, quelloffener **Launcher für Roblox unter Windows**, gebaut mit Rus
 - **Workflows kurz und schnell** (Wunsch des Projektinhabers): ein einziger Workflow `release.yml`, ein Linux-Job, der die Windows-exe per `cargo-xwin` cross-kompiliert (Linux-Minuten zählen einfach). Nur die exe, kein Installer. Keine Tests, kein Linting, keine Prüfschritte in GitHub Actions. Normale Pushes bauen nichts.
 - **Keine Kosten bei GitHub** (Wunsch des Projektinhabers): siehe [Testbuilds und Kosten](#testbuilds-und-kosten). Keine neuen Workflows, keine Zeitpläne (`schedule`), keine Läufe bei Push oder Pull Request, kein Dependabot-Build.
 - **Prüfen passiert lokal** (siehe [Prüfen](#prüfen-lokal-nicht-in-ci)).
-- **Login ist Pflicht** (Entscheidung des Projektinhabers vom 13.11.2026): Ohne Anmeldung zeigt die App nur `pages/Anmelden.svelte`. Die Anmeldung läuft über die echte Login-Seite von roblox.com in einem privaten Tauri-Fenster (`auth.rs`, Fenster `login`, ohne Capabilities). Danach liest Rust das Cookie aus diesem Fenster (nie auf dem Hauptthread, sonst Verklemmung unter Windows). OAuth („Mit Roblox anmelden“) bräuchte eine von Roblox geprüfte App und kommt eventuell später. Die Web-Abrufe selbst schicken das Cookie noch nicht mit.
+- **Login ist Pflicht** (Entscheidung des Projektinhabers vom 13.11.2026): Ohne Anmeldung zeigt die App nur `pages/Anmelden.svelte`. Die Anmeldung läuft über die echte Login-Seite von roblox.com in einem privaten Tauri-Fenster (`auth.rs`, Fenster `login`, ohne Capabilities). Danach liest Rust das Cookie aus diesem Fenster (nie auf dem Hauptthread, sonst Verklemmung unter Windows). OAuth („Mit Roblox anmelden“) bräuchte eine von Roblox geprüfte App und kommt eventuell später. Nur `friends.rs` schickt das Cookie mit (Presence, mit CSRF-Token); alle anderen Abrufe laufen ohne.
 - **Das Cookie `.ROBLOSECURITY` ist ein Generalschlüssel:** nur im Rust-Teil, verschlüsselt im Windows-Anmeldeinformations-Manager (`keyring`). Nie an die Oberfläche, nie in Logdatei, Einstellungen, Export, Commit oder an einen anderen Host als `*.roblox.com`.
 - **Fremden Code prüfen:** Bloxstrap, Fishstrap, NexStrap (MIT) dürfen als Vorlage dienen, mit Hinweis auf die Herkunft. RoValra und Roblox Account Manager sind **GPL**: nur das Prinzip übernehmen, keinen Code kopieren.
 - **Undokumentierte APIs** (Suche, Explore, Chat, `gamejoin`) kapseln, Fehler abfangen, nie die ganze App davon abhängig machen. Sie können jederzeit brechen.
@@ -100,7 +100,8 @@ app/
 │  │  ├─ suche.svelte.js       Suchbegriff (Kopf ↔ Suchseite)
 │  │  ├─ errors.js, format.js  Fehlercodes → Text; Zahlen, Dauer, „vor X“
 │  ├─ ui/                      Leiste, Dock, Toasts, Icon (+icons.js), Bild, Spielkarte, Reihe, Hinweis, Serverliste,
-│  │                           Spielextras (Events, Game-Pässe, Abzeichen), Zeitstatistik (7/30 Tage, Gesamt)
+│  │                           Spielextras (Events, Game-Pässe, Abzeichen), Zeitstatistik (7/30 Tage, Gesamt),
+│  │                           Freunde (rechte Spalte: online, spielt was, Beitreten)
 │  └─ pages/                   Start, Suche, Spiel, Bibliothek, Flags, Roblox, Einstellungen
 └─ src-tauri/
    ├─ tauri.conf.json          Fenster (unsichtbar bis gezeichnet), CSP, NSIS (currentUser, Deutsch)
@@ -113,6 +114,7 @@ app/
       ├─ paths.rs              Roblox-Pfade, Versionsordner, läuft Roblox? (Toolhelp)
       ├─ roblox_api.rs         Startseite (Cache), Suche + Vorschläge, Details (50 je Abruf), Bewertung, Abzeichen/Pässe/Events,
       │                        Bilder (1 Tag Cache), Serverliste, game_brief, Rohantworten (`roh/`)
+      ├─ friends.rs            Online-Freunde: Freundesliste + Presence (mit Cookie, nur *.roblox.com), Avatare, 30 s gemerkt
       ├─ region.rs             Region eines Servers aus der IP (Tabelle, kein fremder Dienst)
       ├─ launch.rs             Start per Deeplink oder `--app`, Roblox-Update prüfen, Einladungslink, Config, Anpinnen
       ├─ fastflags.rs          Allowlist, Presets, ClientAppSettings.json vor jedem Start (nur bei Änderung)

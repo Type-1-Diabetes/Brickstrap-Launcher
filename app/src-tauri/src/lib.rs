@@ -7,6 +7,7 @@ mod activity;
 mod basicsettings;
 mod discord;
 mod fastflags;
+mod friends;
 mod launch;
 mod paths;
 mod region;
@@ -100,6 +101,7 @@ pub fn run() {
             roblox_api::game_extras,
             roblox_api::search_suggest,
             account::account_get,
+            friends::friends_online,
             auth::auth_status,
             auth::auth_login,
             auth::auth_logout,

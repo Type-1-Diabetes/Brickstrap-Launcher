@@ -163,6 +163,17 @@ function servers(placeId, cursor, order, excludeFull) {
 let vollbildAn = false;
 const handlers = {
   discord_seite: () => null,
+  async friends_online() {
+    await delay(300);
+    if (modus.has("leer") || modus.has("abgemeldet")) return [];
+    const g = games[0];
+    return [
+      { userId: 11, name: "FeuerFuchs", displayName: "Feuerfuchs", avatarUrl: null, status: "spielt", gameName: g.name, placeId: g.placeId, universeId: g.universeId, jobId: "0a1b2c3d-0000-4444-8888-aabbccddeeff" },
+      { userId: 12, name: "Kiesel_07", displayName: "Kiesel", avatarUrl: null, status: "spielt", gameName: games[1]?.name ?? g.name, placeId: games[1]?.placeId ?? g.placeId, universeId: games[1]?.universeId ?? g.universeId, jobId: null },
+      { userId: 13, name: "Nachtwache", displayName: "Nachtwache", avatarUrl: null, status: "studio", gameName: null, placeId: null, universeId: null, jobId: null },
+      { userId: 14, name: "lenny_b", displayName: "Lenny", avatarUrl: null, status: "online", gameName: null, placeId: null, universeId: null, jobId: null },
+    ];
+  },
   vollbild: () => (vollbildAn = !vollbildAn),
   async home_feed({ fresh }) {
     await delay(fresh ? 600 : 5);
