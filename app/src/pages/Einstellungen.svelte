@@ -1,4 +1,5 @@
 <script>
+  import { upd, updateSuchen } from "../lib/update.svelte.js";
   // Einstellungen von Brickstrap selbst.
   import Icon from "../ui/Icon.svelte";
   import { app, saveConfig, toast } from "../lib/app.svelte.js";
@@ -101,6 +102,13 @@
         </div>
         <div class="zeile">
           <div class="text">
+            <span class="label">Automatisch nach Updates suchen</span>
+            <p class="hint">Beim Start und alle drei Stunden. Gibt es eine neue Version, fragt Brickstrap dich vor dem Aktualisieren.</p>
+          </div>
+          <span class="schalter"><input type="checkbox" aria-label="Automatisch nach Updates suchen" checked={app.config.updateCheck ?? true} onchange={(e) => setze({ updateCheck: e.currentTarget.checked })} /><span></span></span>
+        </div>
+        <div class="zeile">
+          <div class="text">
             <span class="label">Volle Server ausblenden</span>
             <p class="hint">Standard für die Serverliste. Auf jeder Spielseite umschaltbar.</p>
           </div>
@@ -112,7 +120,10 @@
     <section>
       <h2>Über Brickstrap</h2>
       <div class="karte ueber">
-        <p><strong>Brickstrap {__APP_VERSION__}</strong>{#if isDemo} · Vorschau im Browser mit Demo-Daten{/if}</p>
+        <div class="version">
+          <p><strong>Brickstrap {__APP_VERSION__}</strong>{#if isDemo} · Vorschau im Browser mit Demo-Daten{/if}</p>
+          <button class="knopf klein" onclick={updateSuchen} disabled={upd.sucht}>{upd.sucht ? "Sucht …" : "Nach Updates suchen"}</button>
+        </div>
         <p class="hint">Brickstrap startet den offiziellen Roblox-Client nur von außen, per Link oder über das Programm von Roblox. Es ändert nichts am Client, greift nicht auf seinen Speicher zu und braucht kein Login.</p>
         <p class="hint">Kein Produkt von Roblox Corporation. Roblox ist eine Marke der Roblox Corporation.</p>
         <p class="hint">Schrift: Archivo (SIL Open Font License).</p>
@@ -122,6 +133,7 @@
 </div>
 
 <style>
+  .version { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .einst { display: flex; flex-direction: column; gap: 28px; max-width: var(--inhalt-max); }
   section { display: flex; flex-direction: column; gap: 10px; }
   .karte { display: flex; flex-direction: column; gap: 4px; }

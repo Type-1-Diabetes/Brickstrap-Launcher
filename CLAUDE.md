@@ -97,6 +97,7 @@ app/
 │  │  ├─ app.svelte.js         Zustand: Route/Verlauf, Config, Angepinnt, Aktivität, Hinweise, Bilder-Bündelung,
 │  │  │                        Server-Vorladen (30 s), launch(), Leiste einklappen
 │  │  ├─ flags.svelte.js       FastFlag-Zustand für Editor und Dock (Preset, setzen, verzögert speichern)
+│  │  ├─ update.svelte.js      Zustand des Update-Dialogs (Ereignisse `update`, `update-progress`, „Später“)
 │  │  ├─ suche.svelte.js       Suchbegriff (Kopf ↔ Suchseite)
 │  │  ├─ errors.js, format.js  Fehlercodes → Text; Zahlen, Dauer, „vor X“
 │  ├─ ui/                      Leiste, Dock, Toasts, Icon (+icons.js), Bild, Spielkarte, Reihe, Hinweis, Serverliste,
@@ -115,6 +116,7 @@ app/
       ├─ roblox_api.rs         Startseite (Cache), Suche + Vorschläge, Details (50 je Abruf), Bewertung, Abzeichen/Pässe/Events,
       │                        Bilder (1 Tag Cache), Serverliste, game_brief, Rohantworten (`roh/`)
       ├─ friends.rs            Online-Freunde: Freundesliste + Presence (mit Cookie, nur *.roblox.com), Avatare, 30 s gemerkt
+      ├─ update.rs             Updates über GitHub-Releases: suchen (Start + alle 3 Std.), laden, SHA-256 prüfen, exe tauschen, neu starten
       ├─ region.rs             Region eines Servers aus der IP (Tabelle, kein fremder Dienst)
       ├─ launch.rs             Start per Deeplink oder `--app`, Roblox-Update prüfen, Einladungslink, Config, Anpinnen
       ├─ fastflags.rs          Allowlist, Presets, ClientAppSettings.json vor jedem Start (nur bei Änderung)
@@ -164,9 +166,10 @@ Der Workflow erwartet die App unter `app/` mit `app/package-lock.json` und `app/
 - **Discord-Knöpfe** brauchen http(s): „Server beitreten“ zeigt auf `https://www.roblox.com/games/start?placeId=…&gameInstanceId=…` (Format unbestätigt).
 - **Schalter (`.schalter`):** Die sichtbare Fläche hat `pointer-events: none`, sonst kommen Mausklicks nicht am Kontrollkästchen an. So lassen.
 - **Bool-Flags sind dreiwertig:** kein Wert = „Standard“ (Roblox entscheidet), An = `True`, Aus = `False`. Manche Flags sind ab Werk an.
-- **Mock lädt die echte `allowlist.json`** und hat dieselben Presets wie `fastflags.rs`. Presets in beiden ändern. Zustände ansehen über die Adresse: `?leer`, `?offline`, `?ohne-roblox`, `?update`, `?abgemeldet` (kombinierbar).
+- **Mock lädt die echte `allowlist.json`** und hat dieselben Presets wie `fastflags.rs`. Presets in beiden ändern. Zustände ansehen über die Adresse: `?leer`, `?offline`, `?ohne-roblox`, `?update`, `?neue-version`, `?abgemeldet` (kombinierbar).
 - **Microsoft-Store-Roblox:** „installiert“ heißt Versionsordner **oder** registriertes `roblox://`. Logs und `GlobalBasicSettings_13.xml` werden auch unter `Packages\ROBLOXCORPORATION.ROBLOX_55nm5eh3cm0pr\LocalState` gesucht. FastFlags lassen sich dort nicht schreiben.
 - **FastFlags und Roblox-Updates:** Aktualisiert sich Roblox beim Start, entsteht ein neuer Versionsordner ohne `ClientAppSettings.json`. `activity.rs` prüft jede Sekunde die Versionsordner und schreibt die Flags sofort in einen neuen. Ob das schneller ist als der Start des Clients, ist am echten PC zu prüfen; sonst greifen die Flags erst beim nächsten Start.
+- **Updates von Brickstrap** (`update.rs`): fragt `api.github.com/repos/Type-1-Diabetes/Brickstrap-Launcher/releases/latest` ohne Token ab (Repo muss **öffentlich** sein, sonst 404 = „kein Update“). Nimmt das erste `.exe`-Asset und die passende `<exe>.sha256`. Tausch: laufende exe → `<name>.old`, neue → alter Pfad, Neustart über `cmd /C ping … & start` (wegen Einzelinstanz verzögert). Asset-Namen und Repo-Pfad darum **nicht ändern**. Vorschau des Dialogs: `?neue-version`.
 - **Fenster-Rückfall:** `lib.rs` zeigt das Fenster nach 4 s selbst, falls die Oberfläche beim Laden scheitert.
 - **Neuer Befehl:** Rust-Funktion → `generate_handler!` → Handler in `mock.js` → Aufruf über `call()`. Ohne Mock bricht die Browser-Vorschau.
 - **Overlay-Fenster** nur als eigenes transparentes Tauri-Fenster (`always_on_top`, Klick-Durchlass). Es zeigt nur, was der Launcher von außen weiß.
@@ -205,7 +208,8 @@ Nicht in der Cloud prüfbar: Start von Roblox, Registry, Mutex, WebView2, Tray, 
 - Am PC prüfen (mit Ordner `roh`): Vorschläge, Game-Pässe, Events, Einladungslink mit Server, Flags im neuen Versionsordner nach einem Update, Regionen.
 - Lizenz (MIT?).
 - Region der Server (braucht Login) und Mod-Manager folgen in späteren Stufen.
-- Repo öffentlich machen: dann kosten Actions nichts mehr. Vorher prüfen, dass keine Geheimnisse in der Historie liegen.
+- Repo öffentlich machen (Entscheidung des Projektinhabers vom 14.11.2026, nötig für die Update-Suche): dann kosten Actions nichts mehr. Vorher prüfen, dass keine Geheimnisse in der Historie liegen.
+- Update-Tausch am echten PC prüfen (Rechte im Ordner der exe, Neustart, Aufräumen der `.old`). Erst ab dem zweiten Release mit Updater testbar.
 - Code-Signatur-Zertifikat (sonst warnen SmartScreen und Defender).
 - `brand/build_logo.py` trägt noch Kommentare und Pixel-Tabellen der älteren Noppen-Fassung. Die PNGs sind die schlichte finale Fassung.
 - Unbestätigt (Plan §13): Registry-Formate, Schlüssel in `GlobalBasicSettings_13.xml` (die Grafikstufe heißt laut Fishstrap-Vorlage `SavedQualityLevel`), Wirkung von `DFIntDebugDynamicRenderKiloPixels`, Werte der Presets „Hohe Qualität“ und „Max FPS“ (Renderauflösung 720).

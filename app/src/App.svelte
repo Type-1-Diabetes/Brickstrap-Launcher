@@ -3,6 +3,8 @@
   import Leiste from "./ui/Leiste.svelte";
   import Dock from "./ui/Dock.svelte";
   import Toasts from "./ui/Toasts.svelte";
+  import UpdateDialog from "./ui/UpdateDialog.svelte";
+  import { updateStart } from "./lib/update.svelte.js";
   import RechteSpalte from "./ui/RechteSpalte.svelte";
   import Icon from "./ui/Icon.svelte";
   import Start from "./pages/Start.svelte";
@@ -41,6 +43,7 @@
 
   onMount(async () => {
     try {
+      updateStart();
       await init();
     } finally {
       bereit = true;
@@ -147,6 +150,7 @@
 {#if bereit && !app.auth?.loggedIn}
   <Anmelden />
   <Toasts />
+  <UpdateDialog />
 {:else if bereit}
   <div class="shell" class:zu={eingeklappt()} class:breit={leiste.breite >= 1360}>
     <Leiste />
@@ -214,6 +218,7 @@
     <Dock />
   </div>
   <Toasts />
+  <UpdateDialog />
 {/if}
 
 <style>

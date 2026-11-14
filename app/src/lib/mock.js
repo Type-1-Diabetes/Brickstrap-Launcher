@@ -65,6 +65,7 @@ let config = {
   hideOnLaunch: true,
   hideFullServers: false,
   showOnExit: true,
+  updateCheck: true,
 };
 
 // Gleiche Allowlist wie im Rust-Teil (eingebettete Datei)
@@ -163,6 +164,19 @@ function servers(placeId, cursor, order, excludeFull) {
 let vollbildAn = false;
 const handlers = {
   discord_seite: () => null,
+  // Update-Dialog ansehen: Adresse mit ?neue-version
+  async update_check() {
+    await delay(500);
+    return modus.has("neue-version") ? { version: "0.0.8", current: __APP_VERSION__, size: 11_800_000, notes: "## Neu\n- Freunde online in der rechten Spalte\n- Discord zeigt Region und Spielerzahl\n\n## Behoben\n- Spielerkennung mit CrashHandler-Logs" } : null;
+  },
+  async update_install() {
+    const total = 11_800_000;
+    for (let done = 0; done <= total; done += 900_000) {
+      for (const h of listeners.get("update-progress") ?? []) h({ done: Math.min(done, total), total });
+      await delay(120);
+    }
+    throw "FORMAT|Vorschau: Im Browser wird nichts installiert.";
+  },
   async friends_online() {
     await delay(300);
     if (modus.has("leer") || modus.has("abgemeldet")) return [];
@@ -338,6 +352,12 @@ export async function call(cmd, args) {
   if (!h) throw { code: "UNBEKANNT", message: `Mock kennt ${cmd} nicht` };
   return h(args);
 }
+
+// Wie in Rust: Suche kurz nach dem Start meldet ein Update per Ereignis.
+setTimeout(async () => {
+  const info = await handlers.update_check();
+  if (info) for (const h of listeners.get("update") ?? []) h(info);
+}, 1500);
 
 export function on(event, handler) {
   if (!listeners.has(event)) listeners.set(event, new Set());

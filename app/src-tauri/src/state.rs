@@ -38,6 +38,8 @@ pub struct Config {
     pub hide_full_servers: bool,
     /// Brickstrap öffnen, wenn Roblox beendet wird
     pub show_on_exit: bool,
+    /// Beim Start und alle paar Stunden nach Brickstrap-Updates suchen
+    pub update_check: bool,
 }
 
 /// Discord-Anwendung von Brickstrap (öffentliche ID, kein Geheimnis).
@@ -63,6 +65,7 @@ impl Default for Config {
             hide_on_launch: true,
             hide_full_servers: false,
             show_on_exit: true,
+            update_check: true,
         }
     }
 }

@@ -13,6 +13,7 @@ mod paths;
 mod region;
 mod roblox_api;
 mod state;
+mod update;
 
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
@@ -36,6 +37,7 @@ pub fn run() {
             let data_dir = app.path().app_data_dir()?;
             region::init(&data_dir);
             app.manage(state::AppState::new(data_dir));
+            update::start(app.handle().clone());
 
             // Symbol im Infobereich
             let open = MenuItem::with_id(app, "open", "Brickstrap öffnen", true, None::<&str>)?;
@@ -88,6 +90,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             vollbild,
+            update::update_check,
+            update::update_install,
             discord::discord_seite,
             roblox_api::home_feed,
             roblox_api::search,
